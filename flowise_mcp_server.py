@@ -29,7 +29,12 @@ class FlowiseMCPServer:
             logger.error("FLOWISE_API_KEY must be set in .env")
             sys.exit(1)
         
+        # Check if chatflow_id is a placeholder and try to get/create a real one
+        if self.chatflow_id == 'your_chatflow_id' or not self.chatflow_id:
+            self.chatflow_id = self._get_or_create_chatflow()
+        
         logger.info(f"Flowise MCP Server initialized at {self.flowise_api_endpoint}")
+        logger.info(f"Using chatflow ID: {self.chatflow_id}")
 
     def handle_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
         try:
@@ -169,6 +174,13 @@ class FlowiseMCPServer:
         if not query:
             return {"error": "Query parameter is required"}
         
+        # Check if we have a valid chatflow ID
+        if self.chatflow_id == 'your_chatflow_id':
+            return {
+                "error": "No valid chatflow configured. Please set up a chatflow in Flowise first.",
+                "setup_instructions": "1. Go to http://localhost:3000\n2. Create a new chatflow\n3. Update FLOWISE_CHATFLOW_ID in .env file"
+            }
+        
         headers = {'Authorization': f'Bearer {self.flowise_api_key}', 'Content-Type': 'application/json'}
         payload = {
             "question": query,
@@ -177,14 +189,30 @@ class FlowiseMCPServer:
                 "output_type": output_type
             }
         }
-        response = requests.post(f"{self.flowise_api_endpoint}/api/v1/prediction/{self.chatflow_id}", headers=headers, json=payload)
         
-        if response.status_code == 200:
-            result = response.json()
-            return {"result": result, "output": result.get('text', '')}
-        else:
-            logger.error(f"Flowise API error: {response.status_code} - {response.text}")
-            return {"error": f"Flowise API error: {response.text}"}
+        try:
+            response = requests.post(f"{self.flowise_api_endpoint}/api/v1/prediction/{self.chatflow_id}", 
+                                   headers=headers, json=payload, timeout=30)
+            
+            if response.status_code == 200:
+                result = response.json()
+                return {"result": result, "output": result.get('text', '')}
+            elif response.status_code == 404:
+                return {
+                    "error": f"Chatflow {self.chatflow_id} not found. Please check the chatflow ID.",
+                    "available_chatflows": self._get_available_chatflows()
+                }
+            else:
+                logger.error(f"Flowise API error: {response.status_code} - {response.text}")
+                return {"error": f"Flowise API error: {response.text}"}
+                
+        except requests.exceptions.Timeout:
+            return {"error": "Request timed out. Flowise may be starting up."}
+        except requests.exceptions.ConnectionError:
+            return {"error": "Cannot connect to Flowise. Make sure it's running on http://localhost:3000"}
+        except Exception as e:
+            logger.error(f"Query error: {e}")
+            return {"error": f"Query failed: {str(e)}"}
 
     def _get_status(self) -> Dict[str, Any]:
         try:
@@ -207,6 +235,88 @@ class FlowiseMCPServer:
         except Exception as e:
             logger.error(f"Status error: {e}")
             return {"error": str(e)}
+
+    def _get_or_create_chatflow(self) -> str:
+        """Get existing chatflow or create a basic one if none exists"""
+        try:
+            headers = {'Authorization': f'Bearer {self.flowise_api_key}'}
+            
+            # First, try to get existing chatflows
+            response = requests.get(f"{self.flowise_api_endpoint}/api/v1/chatflows", headers=headers)
+            if response.status_code == 200:
+                chatflows = response.json()
+                if chatflows:
+                    # Use the first available chatflow
+                    chatflow_id = chatflows[0].get('id')
+                    if chatflow_id:
+                        logger.info(f"Found existing chatflow: {chatflow_id}")
+                        return chatflow_id
+            
+            # If no chatflows exist, create a basic one
+            logger.info("No chatflows found, creating basic chatflow...")
+            basic_chatflow = {
+                "name": "Living Truth Engine",
+                "description": "Biblical forensic analysis system",
+                "flowData": {
+                    "nodes": [
+                        {
+                            "id": "input-node",
+                            "type": "input",
+                            "data": {"label": "Query Input", "type": "string", "required": True},
+                            "position": {"x": 100, "y": 100}
+                        },
+                        {
+                            "id": "output-node",
+                            "type": "output",
+                            "data": {"label": "Response", "type": "string"},
+                            "position": {"x": 300, "y": 100}
+                        }
+                    ],
+                    "edges": [
+                        {
+                            "id": "input-to-output",
+                            "source": "input-node",
+                            "target": "output-node"
+                        }
+                    ]
+                },
+                "deployed": False,
+                "isPublic": False,
+                "apikeyid": "",
+                "chatbotConfig": {},
+                "category": ""
+            }
+            
+            response = requests.post(f"{self.flowise_api_endpoint}/api/v1/chatflows", 
+                                   headers=headers, json=basic_chatflow)
+            
+            if response.status_code == 201:
+                result = response.json()
+                chatflow_id = result.get('id')
+                if chatflow_id:
+                    logger.info(f"Created new chatflow: {chatflow_id}")
+                    return chatflow_id
+            
+            logger.error(f"Failed to create chatflow: {response.text}")
+            return "your_chatflow_id"  # Fallback to placeholder
+            
+        except Exception as e:
+            logger.error(f"Error getting/creating chatflow: {e}")
+            return "your_chatflow_id"  # Fallback to placeholder
+
+    def _get_available_chatflows(self) -> List[Dict[str, Any]]:
+        """Get list of available chatflows"""
+        try:
+            headers = {'Authorization': f'Bearer {self.flowise_api_key}'}
+            response = requests.get(f"{self.flowise_api_endpoint}/api/v1/chatflows", headers=headers)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logger.error(f"Failed to get chatflows: {response.text}")
+                return []
+        except Exception as e:
+            logger.error(f"Error getting chatflows: {e}")
+            return []
 
     def _fix_flow(self, args: Dict[str, Any]) -> Dict[str, Any]:
         fix_request = args.get('fix_request', '')
