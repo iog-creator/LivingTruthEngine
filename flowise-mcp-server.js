@@ -7,7 +7,7 @@ const path = require('path');
 const pythonScript = path.join(__dirname, 'flowise_mcp_server.py');
 
 // Spawn the Python process
-const pythonProcess = spawn('python', [pythonScript], {
+const pythonProcess = spawn('./living_venv/bin/python', [pythonScript], {
     stdio: ['pipe', 'pipe', 'pipe'],
     env: {
         ...process.env,
