@@ -16,7 +16,19 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Setup logging
-logging.basicConfig(level=logging.INFO, handlers=[logging.StreamHandler(), logging.FileHandler('mcp_server.log')])
+import os
+
+# Ensure logs directory exists
+os.makedirs('logs', exist_ok=True)
+
+logging.basicConfig(
+    level=logging.DEBUG, 
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(), 
+        logging.FileHandler('logs/mcp_server.log')
+    ]
+)
 logger = logging.getLogger(__name__)
 
 class FlowiseMCPServer:
@@ -38,20 +50,27 @@ class FlowiseMCPServer:
 
     def handle_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
         try:
+            logger.debug(f"Received request: {request}")
             method = request.get('method')
             params = request.get('params', {})
             request_id = request.get('id')
             
+            logger.debug(f"Processing method: {method}, params: {params}, id: {request_id}")
+            
             if method == 'initialize':
+                logger.debug("Handling initialize request")
                 return self.initialize(params, request_id)
             elif method == 'tools/list':
+                logger.debug("Handling tools/list request")
                 return self.list_tools(request_id)
             elif method == 'tools/call':
+                logger.debug("Handling tools/call request")
                 return self.call_tool(params, request_id)
             else:
+                logger.warning(f"Unknown method: {method}")
                 return self.error_response(f"Unknown method: {method}", request_id)
         except Exception as e:
-            logger.error(f"Request handling error: {e}")
+            logger.error(f"Request handling error: {e}", exc_info=True)
             return self.error_response(str(e), request.get('id'))
 
     def initialize(self, params: Dict[str, Any], request_id: str) -> Dict[str, Any]:
@@ -327,6 +346,7 @@ class FlowiseMCPServer:
         return {"result": f"Fix request logged: {fix_request}. Manual update required via Flowise UI at http://localhost:3000."}
 
 def main():
+    logger.info("Starting Flowise MCP Server...")
     server = FlowiseMCPServer()
     
     # Send initialization notification
@@ -335,13 +355,18 @@ def main():
         "method": "notifications/initialized",
         "params": {}
     }
+    logger.debug(f"Sending init notification: {init_notification}")
     print(json.dumps(init_notification))
     sys.stdout.flush()
     
+    logger.info("MCP Server ready, waiting for requests...")
     for line in sys.stdin:
         try:
+            logger.debug(f"Received line: {line.strip()}")
             request = json.loads(line.strip())
+            logger.debug(f"Parsed request: {request}")
             response = server.handle_request(request)
+            logger.debug(f"Sending response: {response}")
             print(json.dumps(response))
             sys.stdout.flush()
         except json.JSONDecodeError as e:
@@ -356,6 +381,9 @@ def main():
             }
             print(json.dumps(error_response))
             sys.stdout.flush()
+        except Exception as e:
+            logger.error(f"Unexpected error in main loop: {e}", exc_info=True)
+            sys.exit(1)
 
 if __name__ == "__main__":
     main() 
