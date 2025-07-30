@@ -74,13 +74,22 @@ class LivingTruthMCPServer:
 
     def initialize(self, params: Dict[str, Any], request_id: str) -> Dict[str, Any]:
         logger.debug("Handling initialize request")
+        
+        # Send the initialized notification after responding to initialize
+        init_notification = {
+            "jsonrpc": "2.0",
+            "method": "notifications/initialized",
+            "params": {}
+        }
+        print(json.dumps(init_notification))
+        
         return {
             "jsonrpc": "2.0",
             "id": request_id,
             "result": {
                 "protocolVersion": "2024-11-05",
                 "capabilities": {
-                    "tools": {}
+                    "tools": True
                 },
                 "serverInfo": {
                     "name": "living-truth-mcp-server",
@@ -379,14 +388,6 @@ def main():
     logger.info("Starting Living Truth MCP Server...")
     
     server = LivingTruthMCPServer()
-    
-    # Send initialization notification
-    init_notification = {
-        "jsonrpc": "2.0",
-        "method": "notifications/initialized",
-        "params": {}
-    }
-    print(json.dumps(init_notification))
     
     logger.info("MCP Server ready, waiting for requests...")
     
