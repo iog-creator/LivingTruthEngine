@@ -3,6 +3,9 @@
 const { spawn } = require('child_process');
 const path = require('path');
 
+// Keep process alive to prevent timeout issues
+process.stdin.resume();
+
 // Path to our Python script
 const pythonScript = path.join(__dirname, 'flowise_mcp_server.py');
 
@@ -29,6 +32,7 @@ pythonProcess.stderr.pipe(process.stderr);
 
 // Handle process exit
 pythonProcess.on('exit', (code) => {
+    console.error('Python process exited with code:', code);
     process.exit(code);
 });
 
@@ -36,4 +40,20 @@ pythonProcess.on('exit', (code) => {
 pythonProcess.on('error', (err) => {
     console.error('Failed to start Python process:', err);
     process.exit(1);
-}); 
+});
+
+// Handle our own process signals
+process.on('SIGTERM', () => {
+    pythonProcess.kill('SIGTERM');
+    process.exit(0);
+});
+
+process.on('SIGINT', () => {
+    pythonProcess.kill('SIGINT');
+    process.exit(0);
+});
+
+// Keep alive
+setInterval(() => {
+    // Heartbeat to prevent timeout
+}, 30000); 

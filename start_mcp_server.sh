@@ -22,4 +22,5 @@ export NODE_ENV=production
 trap 'exit 0' SIGTERM SIGINT
 
 # Start the MCP server with proper error handling
+# Use exec to replace shell process and prevent timeout issues
 exec node flowise-mcp-server.js 
