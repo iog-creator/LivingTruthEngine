@@ -80,16 +80,16 @@ The system uses the following key environment variables (configured in `.env`):
 ```bash
 # Flowise Configuration
 FLOWISE_API_ENDPOINT=http://localhost:3000
-FLOWISE_API_KEY=your_api_key_here
-FLOWISE_CHATFLOW_ID=your_chatflow_id_here
+FLOWISE_API_KEY=kkUVM9tTVKzL9btjElkJwn2fWQiXGQy1J_BvV3Mw-14
+FLOWISE_CHATFLOW_ID=9f8013d8-351a-4bd9-a973-fab86df45491
 
 # LangChain Configuration
-LANGCHAIN_API_KEY=your_langsmith_key_here
+LANGCHAIN_API_KEY=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
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_ENDPOINT=https://api.smith.langchain.com
 
 # SerpAPI Configuration
-SERP_API_KEY=your_serpapi_key_here
+SERP_API_KEY=e4028c8da98091dceacada2126436828ce06834c
 
 # Database Configuration
 POSTGRES_HOST=localhost
@@ -98,11 +98,36 @@ POSTGRES_DB=living_truth_engine
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=pass
 
+# LM Studio Configuration
+LM_STUDIO_URL=http://localhost:1234/v1
+LM_STUDIO_BASE_URL=http://localhost:1234
+
+# Dashboard Configuration
+DASHBOARD_PORT=8050
+DASHBOARD_HOST=0.0.0.0
+
+# MCP Server Configuration
+MCP_SERVER_PORT=3001
+MCP_SERVER_HOST=0.0.0.0
+
+# Logging Configuration
+LOG_LEVEL=INFO
+LOG_FILE=logs/living_truth_engine.log
+
 # Model Configuration
 DEFAULT_MODEL=qwen3-8b
 VISION_MODEL=google/gemma-3-4b
 EMBEDDING_MODEL=qwen3-0.6b
 RERANKER_MODEL=qwen.qwen3-reranker-0.6b
+
+# TTS Configuration
+TTS_MODEL_PATH=en_US-lessac-medium.onnx
+TTS_CONFIG_PATH=en_US-lessac-medium.json
+
+# Additional Configuration
+NODE_ENV=development
+FLOWISE_PORT=3000
+FLOWISE_HOST=0.0.0.0
 ```
 
 ### Service URLs
@@ -128,7 +153,7 @@ Query the Flowise chatflow for Biblical forensic analysis.
 
 **Example:**
 ```bash
-echo '{"method": "tools.execute", "params": ["query_flowise", {"query": "Survivor testimony patterns", "anonymize": true, "output_type": "summary"}]}' | python flowise_mcp_server.py
+echo '{"method": "tools.call", "params": {"name": "query_flowise", "arguments": {"query": "Survivor testimony patterns", "anonymize": true, "output_type": "summary"}}}' | node flowise-mcp-server.js
 ```
 
 #### 2. `get_status`
@@ -136,7 +161,7 @@ Get system status including chatflows, sources, and confidence metrics.
 
 **Example:**
 ```bash
-echo '{"method": "tools.execute", "params": ["get_status", {}]}' | python flowise_mcp_server.py
+echo '{"method": "tools.call", "params": {"name": "get_status", "arguments": {}}}' | node flowise-mcp-server.js
 ```
 
 #### 3. `fix_flow`
@@ -147,7 +172,7 @@ Request updates to the Flowise graph.
 
 **Example:**
 ```bash
-echo '{"method": "tools.execute", "params": ["fix_flow", {"fix_request": "Add node for web research"}]}' | python flowise_mcp_server.py
+echo '{"method": "tools.call", "params": {"name": "fix_flow", "arguments": {"fix_request": "Add node for web research"}}}' | node flowise-mcp-server.js
 ```
 
 ### Docker Management
@@ -223,7 +248,7 @@ sudo netstat -tulpn | grep :3000
 #### 4. MCP Server Connection
 ```bash
 # Test MCP server
-echo '{"method": "tools.list", "params": []}' | python flowise_mcp_server.py
+echo '{"method": "tools.list", "params": []}' | node flowise-mcp-server.js
 ```
 
 ### Health Checks
@@ -254,6 +279,7 @@ LivingTruthEngine/
 ├── quick_start.sh             # Quick start script
 ├── dashboard.py               # Dash web dashboard
 ├── flowise_mcp_server.py      # MCP server implementation
+├── flowise-mcp-server.js      # Node.js wrapper for MCP server
 ├── living_truth_full_flow.json # Flowise workflow
 ├── living_truth_config.json   # Application configuration
 ├── .env                       # Environment variables

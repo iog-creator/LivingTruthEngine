@@ -15,3 +15,40 @@ INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
 INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
 INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
 INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+ERROR:__main__:Flowise API error: 500 - {"statusCode":500,"success":false,"message":"Error: chatflowsService.getChatflowById - Chatflow your_chatflow_id not found in the database!","stack":{}}
+INFO:__main__:No chatflows found, creating basic chatflow...
+ERROR:__main__:Failed to create chatflow: {"statusCode":500,"success":false,"message":"Error: chatflowsService.saveChatflow - \"[object Object]\" is not valid JSON","stack":{}}
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Using chatflow ID: your_chatflow_id
+INFO:__main__:No chatflows found, creating basic chatflow...
+ERROR:__main__:Failed to create chatflow: {"statusCode":500,"success":false,"message":"Error: chatflowsService.saveChatflow - \"[object Object]\" is not valid JSON","stack":{}}
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Using chatflow ID: your_chatflow_id
+INFO:__main__:No chatflows found, creating basic chatflow...
+ERROR:__main__:Failed to create chatflow: {"statusCode":500,"success":false,"message":"Error: chatflowsService.saveChatflow - \"[object Object]\" is not valid JSON","stack":{}}
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Using chatflow ID: your_chatflow_id
+INFO:__main__:No chatflows found, creating basic chatflow...
+ERROR:__main__:Failed to create chatflow: {"statusCode":500,"success":false,"message":"Error: chatflowsService.saveChatflow - \"[object Object]\" is not valid JSON","stack":{}}
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Using chatflow ID: your_chatflow_id
+INFO:__main__:Fix request: Add web research capability
+INFO:__main__:No chatflows found, creating basic chatflow...
+ERROR:__main__:Failed to create chatflow: {"statusCode":500,"success":false,"message":"Error: chatflowsService.saveChatflow - \"[object Object]\" is not valid JSON","stack":{}}
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Using chatflow ID: your_chatflow_id
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Using chatflow ID: LivingTruthEngine
+ERROR:__main__:Flowise API error: 500 - {"statusCode":500,"success":false,"message":"Error: chatflowsService.getChatflowById - Chatflow LivingTruthEngine not found in the database!","stack":{}}
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Using chatflow ID: 9f8013d8-351a-4bd9-a973-fab86df45491
+ERROR:__main__:Flowise API error: 500 - {"statusCode":500,"success":false,"message":"Error: chatflowsService.checkIfChatflowIsValidForStreaming - Ending nodes not found","stack":{}}
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Using chatflow ID: 9f8013d8-351a-4bd9-a973-fab86df45491
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Using chatflow ID: 9f8013d8-351a-4bd9-a973-fab86df45491

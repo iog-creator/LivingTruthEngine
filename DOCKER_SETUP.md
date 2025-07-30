@@ -80,6 +80,7 @@ LivingTruthEngine/
 ├── setup_docker.sh            # Automated setup script
 ├── dashboard.py               # Dash web dashboard
 ├── flowise_mcp_server.py      # MCP server implementation
+├── flowise-mcp-server.js      # Node.js wrapper for MCP server
 ├── living_truth_full_flow.json # Flowise workflow
 ├── living_truth_config.json   # Application configuration
 ├── .env                       # Environment variables
@@ -107,7 +108,7 @@ The following environment variables need to be configured in `.env`:
 - `SERP_API_KEY`: Your SerpAPI key
 
 #### Service Configuration
-- `FLOWISE_CHATFLOW_ID`: ID of your Flowise chatflow
+- `FLOWISE_CHATFLOW_ID`: ID of your Flowise chatflow (currently: 9f8013d8-351a-4bd9-a973-fab86df45491)
 - `POSTGRES_PASSWORD`: Database password
 - `DASHBOARD_PORT`: Dashboard port (default: 8050)
 
