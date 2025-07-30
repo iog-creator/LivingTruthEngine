@@ -10,5 +10,4 @@ dash
 piper-tts
 serpapi
 requests
-python-dotenv
-mcp-flowise 
+python-dotenv 

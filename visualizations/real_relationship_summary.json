@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025-07-28T20:51:34.812354",
+  "files_processed": 3,
+  "entities_extracted": 12,
+  "real_relationships_found": 15,
+  "nodes_in_graph": 11,
+  "edges_in_graph": 14,
+  "visualization_file": "real_relationship_3d_graph_20250728_205134.html",
+  "relationship_types": [
+    "elite_network",
+    "related",
+    "family_relationship",
+    "location_relationship"
+  ],
+  "status": "success"
+}

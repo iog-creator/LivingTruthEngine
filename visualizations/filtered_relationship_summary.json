@@ -1,0 +1,27 @@
+{
+  "timestamp": "2025-07-28T20:51:44.533162",
+  "files_processed": 3,
+  "entities_extracted": 9,
+  "real_relationships_found": 11,
+  "nodes_in_graph": 9,
+  "edges_in_graph": 11,
+  "visualization_file": "filtered_relationship_3d_graph_20250728_205144.html",
+  "relationship_types": [
+    "elite_network",
+    "family_relationship"
+  ],
+  "entity_types": [
+    "ORG",
+    "GPE",
+    "PERSON",
+    "WORK_OF_ART"
+  ],
+  "filtered_entities_removed": [
+    "today",
+    "yesterday",
+    "tomorrow",
+    "now",
+    "tonight"
+  ],
+  "status": "success"
+}

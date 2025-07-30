@@ -9,7 +9,7 @@ import json
 import logging
 import requests
 import os
-from typing import Dict, Any
+from typing import Dict, Any, List
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -25,8 +25,8 @@ class FlowiseMCPServer:
         self.flowise_api_key = os.getenv('FLOWISE_API_KEY')
         self.chatflow_id = os.getenv('FLOWISE_CHATFLOW_ID')
         
-        if not self.flowise_api_key or not self.chatflow_id:
-            logger.error("FLOWISE_API_KEY and FLOWISE_CHATFLOW_ID must be set in .env")
+        if not self.flowise_api_key:
+            logger.error("FLOWISE_API_KEY must be set in .env")
             sys.exit(1)
         
         logger.info(f"Flowise MCP Server initialized at {self.flowise_api_endpoint}")
@@ -34,62 +34,132 @@ class FlowiseMCPServer:
     def handle_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
         try:
             method = request.get('method')
-            params = request.get('params', [])
+            params = request.get('params', {})
+            request_id = request.get('id')
             
-            if method == 'tools.list':
-                return self.list_tools()
-            elif method == 'tools.execute':
-                if not params or len(params) < 1:
-                    return {"error": "Tool name required"}
-                tool_name = params[0]
-                args = params[1] if len(params) > 1 else {}
-                return self.execute_tool(tool_name, args)
+            if method == 'initialize':
+                return self.initialize(params, request_id)
+            elif method == 'tools/list':
+                return self.list_tools(request_id)
+            elif method == 'tools/call':
+                return self.call_tool(params, request_id)
             else:
-                return {"error": f"Unknown method: {method}"}
+                return self.error_response(f"Unknown method: {method}", request_id)
         except Exception as e:
             logger.error(f"Request handling error: {e}")
-            return {"error": str(e)}
+            return self.error_response(str(e), request.get('id'))
 
-    def list_tools(self) -> Dict[str, Any]:
+    def initialize(self, params: Dict[str, Any], request_id: str) -> Dict[str, Any]:
         return {
-            "result": [
-                {
-                    "name": "query_flowise",
-                    "description": "Query the Flowise chatflow for Biblical forensic analysis, survivor testimony corroboration, anonymization, structured outputs (summary, study guide, timeline, audio), and visualizations",
-                    "parameters": [
-                        {"name": "query", "type": "string", "description": "Query string (e.g., 'Survivor testimony patterns' or YouTube URL)", "required": True},
-                        {"name": "anonymize", "type": "boolean", "description": "Anonymize sensitive data (names hashed)", "default": False},
-                        {"name": "output_type", "type": "string", "description": "Output type: summary, study guide, timeline, audio", "default": "summary"}
-                    ]
+            "jsonrpc": "2.0",
+            "id": request_id,
+            "result": {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {
+                    "tools": {}
                 },
-                {
-                    "name": "get_status",
-                    "description": "Get system status (chatflows, sources, confidence metrics, dashboard link)",
-                    "parameters": []
-                },
-                {
-                    "name": "fix_flow",
-                    "description": "Request updates to the Flowise graph (e.g., 'Add node for web research')",
-                    "parameters": [
-                        {"name": "fix_request", "type": "string", "description": "Description of fix or update needed", "required": True}
-                    ]
+                "serverInfo": {
+                    "name": "flowise-mcp-server",
+                    "version": "1.0.0"
                 }
-            ]
+            }
         }
 
-    def execute_tool(self, tool_name: str, args: Dict[str, Any]) -> Dict[str, Any]:
+    def error_response(self, message: str, request_id: str) -> Dict[str, Any]:
+        return {
+            "jsonrpc": "2.0",
+            "id": request_id,
+            "error": {
+                "code": -32601,
+                "message": message
+            }
+        }
+
+    def list_tools(self, request_id: str) -> Dict[str, Any]:
+        return {
+            "jsonrpc": "2.0",
+            "id": request_id,
+            "result": {
+                "tools": [
+                    {
+                        "name": "query_flowise",
+                        "description": "Query the Flowise chatflow for Biblical forensic analysis, survivor testimony corroboration, anonymization, structured outputs (summary, study guide, timeline, audio), and visualizations",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "query": {
+                                    "type": "string",
+                                    "description": "Query string (e.g., 'Survivor testimony patterns' or YouTube URL)"
+                                },
+                                "anonymize": {
+                                    "type": "boolean",
+                                    "description": "Anonymize sensitive data (names hashed)",
+                                    "default": False
+                                },
+                                "output_type": {
+                                    "type": "string",
+                                    "description": "Output type: summary, study guide, timeline, audio",
+                                    "default": "summary"
+                                }
+                            },
+                            "required": ["query"]
+                        }
+                    },
+                    {
+                        "name": "get_status",
+                        "description": "Get system status (chatflows, sources, confidence metrics, dashboard link)",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {}
+                        }
+                    },
+                    {
+                        "name": "fix_flow",
+                        "description": "Request updates to the Flowise graph (e.g., 'Add node for web research')",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "fix_request": {
+                                    "type": "string",
+                                    "description": "Description of fix or update needed"
+                                }
+                            },
+                            "required": ["fix_request"]
+                        }
+                    }
+                ]
+            }
+        }
+
+    def call_tool(self, params: Dict[str, Any], request_id: str) -> Dict[str, Any]:
         try:
+            tool_name = params.get('name')
+            arguments = params.get('arguments', {})
+            
             if tool_name == "query_flowise":
-                return self._query_flowise(args)
+                result = self._query_flowise(arguments)
             elif tool_name == "get_status":
-                return self._get_status()
+                result = self._get_status()
             elif tool_name == "fix_flow":
-                return self._fix_flow(args)
+                result = self._fix_flow(arguments)
             else:
-                return {"error": f"Unknown tool: {tool_name}"}
+                return self.error_response(f"Unknown tool: {tool_name}", request_id)
+            
+            return {
+                "jsonrpc": "2.0",
+                "id": request_id,
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": str(result)
+                        }
+                    ]
+                }
+            }
         except Exception as e:
             logger.error(f"Tool execution error: {e}")
-            return {"error": str(e)}
+            return self.error_response(str(e), request_id)
 
     def _query_flowise(self, args: Dict[str, Any]) -> Dict[str, Any]:
         query = args.get('query', '')
@@ -148,6 +218,16 @@ class FlowiseMCPServer:
 
 def main():
     server = FlowiseMCPServer()
+    
+    # Send initialization notification
+    init_notification = {
+        "jsonrpc": "2.0",
+        "method": "notifications/initialized",
+        "params": {}
+    }
+    print(json.dumps(init_notification))
+    sys.stdout.flush()
+    
     for line in sys.stdin:
         try:
             request = json.loads(line.strip())
@@ -156,7 +236,15 @@ def main():
             sys.stdout.flush()
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON: {e}")
-            print(json.dumps({"error": "Invalid JSON input"}))
+            error_response = {
+                "jsonrpc": "2.0",
+                "id": None,
+                "error": {
+                    "code": -32700,
+                    "message": "Parse error"
+                }
+            }
+            print(json.dumps(error_response))
             sys.stdout.flush()
 
 if __name__ == "__main__":

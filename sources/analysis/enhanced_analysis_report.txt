@@ -1,0 +1,98 @@
+
+ENHANCED RESEARCH ANALYSIS REPORT
+Generated: 2025-07-28 16:34:45
+
+SUMMARY STATISTICS:
+- Total Claims: 94873
+- Total Entities: 2813
+- Total Relationships: 9151
+- Network Connections: 9151
+
+CLAIM TYPE BREAKDOWN:
+- personal_experience: 92912
+- survivor_testimony: 1315
+- conspiracy: 475
+- historical_fact: 171
+
+CONFIDENCE DISTRIBUTION:
+- High (0.8-1.0): 1315
+- Medium (0.6-0.8): 646
+- Low (0.0-0.6): 92912
+
+ENTITY BREAKDOWN:
+- unknown: 2796
+- person: 6
+- place: 6
+- organization: 5
+
+SURVIVOR TESTIMONY ANALYSIS:
+- Survivor Claims: 1315
+- Average Confidence: 0.90
+
+FORENSIC INFERENCE RESULTS:
+- Inferred Relationships: 9151
+- Co-mention Patterns: 0
+
+HIGH-CONFIDENCE ENTITIES (>0.8):
+- Bshire (unknown): 0.90
+- Ritual Substack (unknown): 0.90
+- Bronze (unknown): 0.90
+- Alah (unknown): 0.90
+- Creation Museum (unknown): 0.90
+- Raphaim (unknown): 0.90
+- Long Island (unknown): 0.90
+- Abdon (unknown): 0.90
+- Angelic Intervention (unknown): 0.90
+- Mensah (unknown): 0.90
+- Chase Road (unknown): 0.90
+- Middle Ages (unknown): 0.90
+- Ritual Abuse (unknown): 0.90
+- Skype (unknown): 0.90
+- Molina (unknown): 0.90
+- Lynen (unknown): 0.90
+- Harry (unknown): 0.90
+- Nightsbridge Hotel (unknown): 0.90
+- Cadillac (unknown): 0.90
+- East Hampton (unknown): 0.90
+- Ark Encounter (unknown): 0.90
+- Museum (unknown): 0.82
+- Buckingham (unknown): 0.90
+- Parksville (unknown): 0.90
+- Empress (unknown): 0.90
+- Richmond (unknown): 0.90
+- Carrie Alah (unknown): 0.90
+- Aboriginal (unknown): 0.90
+- Jesuits (unknown): 0.90
+- Sinai (unknown): 0.90
+- Buckingham Palace (unknown): 0.90
+- Arise Shine (unknown): 0.90
+- Lyme (unknown): 0.90
+- Mount Sinai (unknown): 0.90
+- Ammo Amodo (unknown): 0.90
+- Harry Alah (unknown): 0.90
+- Zineia (unknown): 0.90
+- Project Analog (unknown): 0.90
+- Nightsbridge (unknown): 0.90
+- Abuse (unknown): 0.90
+- Empress Hotel (unknown): 0.90
+- Wars (unknown): 0.90
+- Bosnia (unknown): 0.90
+- Jesuit (unknown): 0.90
+- Yaheemed (unknown): 0.90
+- Hamptons (unknown): 0.90
+- Vancouver Island (unknown): 0.90
+- Alexia Abuse (unknown): 0.90
+- Ruther Research (unknown): 0.90
+- Tuesdays (unknown): 0.90
+
+EVIDENCE-BASED VERIFICATIONS:
+- Verified Claims: 0
+- Partially Verified: 0
+- Unverified: 94873
+
+METHODOLOGY:
+- Survivor Correctness Assumption: Baseline 0.8 confidence for personal testimonies
+- No Discarding: All claims retained and scored
+- Forensic Inference: Co-mentions, temporal context, pattern analysis
+- Evidence Integration: External verification against known facts
+- Confidence Adjustments: +0.1 for supporting evidence, -0.1-0.3 for contradictions

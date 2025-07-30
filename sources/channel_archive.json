@@ -1,0 +1,116 @@
+{
+  "channel_url": "https://www.youtube.com/@imaginationpodcastofficial",
+  "total_videos": 10,
+  "successful_archives": 9,
+  "failed_archives": 1,
+  "archive_date": "2025-07-28 13:50:19",
+  "videos": [
+    {
+      "id": "VngZLePoNME",
+      "title": "S5E91 | Sharri Burggraaf - GATE, MK ULTRA Medical Experimentation & Catholic Criminal Cult Overcomer",
+      "url": "https://www.youtube.com/watch?v=VngZLePoNME",
+      "status": "success",
+      "transcript_length": 970815,
+      "archived_at": "2025-07-28 13:49:09",
+      "duration": 11068.0,
+      "upload_date": "",
+      "view_count": 919
+    },
+    {
+      "id": "k86D0zrNbxg",
+      "title": "TIP Movie Night | CKLN MC Radio Series 3: Claudia Mullen & Radiation Hearings Mind Control Testimony",
+      "url": "https://www.youtube.com/watch?v=k86D0zrNbxg",
+      "status": "failed",
+      "error": "Transcript file not created",
+      "archived_at": "2025-07-28 13:49:13"
+    },
+    {
+      "id": "yife06w3W5Q",
+      "title": "S5E90 | Magnolia Dove - From Satanic Ritual Abuse & MK ULTRA Networks to Angelic Intervention",
+      "url": "https://www.youtube.com/watch?v=yife06w3W5Q",
+      "status": "success",
+      "transcript_length": 115815,
+      "archived_at": "2025-07-28 13:49:20",
+      "duration": 8365.0,
+      "upload_date": "",
+      "view_count": 2176
+    },
+    {
+      "id": "j7vhgKG_W2w",
+      "title": "TIP Movie Night | CKLN MC Radio Series P2 - Dr. Colin Ross Mind Control Interview with Wayne Morris",
+      "url": "https://www.youtube.com/watch?v=j7vhgKG_W2w",
+      "status": "success",
+      "transcript_length": 125664,
+      "archived_at": "2025-07-28 13:49:29",
+      "duration": 6643.0,
+      "upload_date": "",
+      "view_count": 719
+    },
+    {
+      "id": "fqZ043ntkxA",
+      "title": "TIP 'Movie Night': CKLN Mind Control Radio Series P1 - Dr. Colin Ross on CIA & Military Mind Control",
+      "url": "https://www.youtube.com/watch?v=fqZ043ntkxA",
+      "status": "success",
+      "transcript_length": 1025940,
+      "archived_at": "2025-07-28 13:49:37",
+      "duration": 10551.0,
+      "upload_date": "",
+      "view_count": 647
+    },
+    {
+      "id": "28zJLP1wGEM",
+      "title": "S5E89 | Kadaya - Children Stolen by Illuminati, Psych Wards & Scars, MONARCH Slave Torture & the NWO",
+      "url": "https://www.youtube.com/watch?v=28zJLP1wGEM",
+      "status": "success",
+      "transcript_length": 218840,
+      "archived_at": "2025-07-28 13:49:45",
+      "duration": 13378.0,
+      "upload_date": "",
+      "view_count": 4004
+    },
+    {
+      "id": "gLZZwNSLQ0I",
+      "title": "S5E88 | Kevin Annett - Governing Ourselves: A Guide for Personal, Political, & Spiritual Sovereignty",
+      "url": "https://www.youtube.com/watch?v=gLZZwNSLQ0I",
+      "status": "success",
+      "transcript_length": 108556,
+      "archived_at": "2025-07-28 13:49:53",
+      "duration": 5342.0,
+      "upload_date": "",
+      "view_count": 966
+    },
+    {
+      "id": "OXvfvVDOWQQ",
+      "title": "S5E87 | Lynne Scott Haggerman - Sex Trafficking Ring, Child Auction, & Underground Labs Survivor",
+      "url": "https://www.youtube.com/watch?v=OXvfvVDOWQQ",
+      "status": "success",
+      "transcript_length": 944319,
+      "archived_at": "2025-07-28 13:50:01",
+      "duration": 9435.0,
+      "upload_date": "",
+      "view_count": 2662
+    },
+    {
+      "id": "G9a0HaQQ4ps",
+      "title": "S5E86 | Dr. Juliette Engel & Kevin Annett - Exposing Hidden Atrocities & Empowering the Silenced",
+      "url": "https://www.youtube.com/watch?v=G9a0HaQQ4ps",
+      "status": "success",
+      "transcript_length": 441966,
+      "archived_at": "2025-07-28 13:50:09",
+      "duration": 4518.0,
+      "upload_date": "",
+      "view_count": 1736
+    },
+    {
+      "id": "L-uTj1dsTGU",
+      "title": "TIP Movie Night Presents: James Casbolt (Michael Prince) Former Black Ops MI6 Agent Testimony | 2012",
+      "url": "https://www.youtube.com/watch?v=L-uTj1dsTGU",
+      "status": "success",
+      "transcript_length": 172156,
+      "archived_at": "2025-07-28 13:50:17",
+      "duration": 10658.0,
+      "upload_date": "",
+      "view_count": 2645
+    }
+  ]
+}
