@@ -15,11 +15,10 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
-# Setup logging
-import os
-
 # Ensure logs directory exists
 os.makedirs('logs', exist_ok=True)
+
+# Setup logging
 
 logging.basicConfig(
     level=logging.DEBUG, 
