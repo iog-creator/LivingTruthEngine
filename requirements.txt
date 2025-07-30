@@ -1,0 +1,14 @@
+langchain
+langchain-huggingface
+langchain-openai
+langchain-community
+yt_dlp
+spacy
+plotly
+psycopg2-binary
+dash
+piper-tts
+serpapi
+requests
+python-dotenv
+mcp-flowise 

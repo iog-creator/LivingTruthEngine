@@ -1,0 +1,158 @@
+{
+  "nodes": [
+    {
+      "id": "input-node",
+      "type": "input",
+      "data": {
+        "label": "Query Input",
+        "type": "string",
+        "required": true
+      },
+      "position": { "x": 100, "y": 100 }
+    },
+    {
+      "id": "anonymize-toggle",
+      "type": "boolean",
+      "data": {
+        "label": "Anonymize",
+        "default": false
+      },
+      "position": { "x": 100, "y": 200 }
+    },
+    {
+      "id": "output-type",
+      "type": "select",
+      "data": {
+        "label": "Output Type",
+        "options": ["summary", "study_guide", "timeline", "audio_overview"],
+        "default": "summary"
+      },
+      "position": { "x": 100, "y": 300 }
+    },
+    {
+      "id": "embedder",
+      "type": "embedding",
+      "data": {
+        "label": "Qwen3 Embedder",
+        "model": "text-embedding-qwen3-embedding-0.6b",
+        "dimensions": 1024
+      },
+      "position": { "x": 300, "y": 100 }
+    },
+    {
+      "id": "reranker",
+      "type": "reranker",
+      "data": {
+        "label": "Qwen3 Reranker",
+        "model": "qwen.qwen3-reranker-0.6b"
+      },
+      "position": { "x": 300, "y": 200 }
+    },
+    {
+      "id": "llm",
+      "type": "llm",
+      "data": {
+        "label": "Qwen3 LLM",
+        "model": "qwen/qwen3-8b",
+        "temperature": 0.7,
+        "max_tokens": 2048
+      },
+      "position": { "x": 300, "y": 300 }
+    },
+    {
+      "id": "vector-store",
+      "type": "vectorstore",
+      "data": {
+        "label": "PGVector Store",
+        "connection": "postgresql://postgres:pass@localhost:5432/living_truth_engine"
+      },
+      "position": { "x": 500, "y": 100 }
+    },
+    {
+      "id": "retriever",
+      "type": "retriever",
+      "data": {
+        "label": "Hybrid Retriever",
+        "k": 10,
+        "rerank": true
+      },
+      "position": { "x": 500, "y": 200 }
+    },
+    {
+      "id": "chain",
+      "type": "chain",
+      "data": {
+        "label": "Analysis Chain",
+        "type": "qa_chain"
+      },
+      "position": { "x": 500, "y": 300 }
+    },
+    {
+      "id": "output-formatter",
+      "type": "output",
+      "data": {
+        "label": "Output Formatter",
+        "format": "json"
+      },
+      "position": { "x": 700, "y": 200 }
+    },
+    {
+      "id": "visualizer",
+      "type": "visualization",
+      "data": {
+        "label": "Dashboard",
+        "type": "plotly",
+        "port": 8050
+      },
+      "position": { "x": 700, "y": 300 }
+    }
+  ],
+  "edges": [
+    {
+      "id": "input-to-embedder",
+      "source": "input-node",
+      "target": "embedder"
+    },
+    {
+      "id": "embedder-to-store",
+      "source": "embedder",
+      "target": "vector-store"
+    },
+    {
+      "id": "store-to-retriever",
+      "source": "vector-store",
+      "target": "retriever"
+    },
+    {
+      "id": "retriever-to-reranker",
+      "source": "retriever",
+      "target": "reranker"
+    },
+    {
+      "id": "reranker-to-chain",
+      "source": "reranker",
+      "target": "chain"
+    },
+    {
+      "id": "llm-to-chain",
+      "source": "llm",
+      "target": "chain"
+    },
+    {
+      "id": "chain-to-formatter",
+      "source": "chain",
+      "target": "output-formatter"
+    },
+    {
+      "id": "formatter-to-visualizer",
+      "source": "output-formatter",
+      "target": "visualizer"
+    }
+  ],
+  "metadata": {
+    "name": "Living Truth Engine",
+    "description": "Flowise-based AI system for Biblical forensic analysis",
+    "version": "1.0.0",
+    "author": "Living Truth Engine Team"
+  }
+} 

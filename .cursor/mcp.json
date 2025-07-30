@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "flowise-mcp": {
+      "command": "python",
+      "args": ["flowise_mcp_server.py"],
+      "env": {
+        "FLOWISE_API_ENDPOINT": "http://localhost:3000",
+        "FLOWISE_API_KEY": "your_flowise_api_key",
+        "FLOWISE_CHATFLOW_ID": "your_chatflow_id"
+      },
+      "description": "Living Truth Engine Flowise MCP Server for Biblical analysis"
+    }
+  }
+} 

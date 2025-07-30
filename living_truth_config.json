@@ -1,0 +1,47 @@
+{
+  "flowise": {
+    "api_endpoint": "http://localhost:3000",
+    "api_key": "your_flowise_api_key",
+    "chatflow_id": "your_chatflow_id"
+  },
+  "langchain": {
+    "api_key": "your_langsmith_key",
+    "tracing_v2": true,
+    "endpoint": "https://api.smith.langchain.com"
+  },
+  "serpapi": {
+    "api_key": "your_serpapi_key"
+  },
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "name": "living_truth_engine",
+    "user": "postgres",
+    "password": "pass"
+  },
+  "lm_studio": {
+    "url": "http://localhost:1234/v1",
+    "base_url": "http://localhost:1234"
+  },
+  "dashboard": {
+    "port": 8050,
+    "host": "0.0.0.0"
+  },
+  "mcp_server": {
+    "port": 3001,
+    "host": "0.0.0.0"
+  },
+  "logging": {
+    "level": "INFO",
+    "file": "logs/living_truth_engine.log"
+  },
+  "models": {
+    "default": "qwen3-8b",
+    "vision": "qwen2.5-vl-7b",
+    "embedding": "qwen3-0.6b"
+  },
+  "tts": {
+    "model_path": "en_US-lessac-medium.onnx",
+    "config_path": "en_US-lessac-medium.json"
+  }
+} 

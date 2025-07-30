@@ -1,0 +1,75 @@
+version: '3.8'
+services:
+  flowise:
+    image: flowiseai/flowise
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./.flowise:/root/.flowise
+    environment:
+      - FLOWISE_API_KEY=${FLOWISE_API_KEY}
+      - FLOWISE_CHATFLOW_ID=${FLOWISE_CHATFLOW_ID}
+      - LANGCHAIN_API_KEY=${LANGCHAIN_API_KEY}
+      - SERP_API_KEY=${SERP_API_KEY}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/v1/chatflows"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  postgres:
+    image: ankane/pgvector
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=living_truth_engine
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: ["postgres", "-c", "shared_preload_libraries=pgvector"]
+
+  mcp-server:
+    build: .
+    command: python flowise_mcp_server.py
+    volumes:
+      - .:/app
+    environment:
+      - FLOWISE_API_ENDPOINT=http://flowise:3000
+      - FLOWISE_API_KEY=${FLOWISE_API_KEY}
+      - FLOWISE_CHATFLOW_ID=${FLOWISE_CHATFLOW_ID}
+    depends_on:
+      - flowise
+
+  lm-studio:
+    image: lmstudio-ai/lmstudio
+    ports:
+      - "1234:1234"
+    volumes:
+      - ./models:/models
+    command: ["--models-path", "/models"]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1234/v1/models"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  dashboard:
+    build: .
+    command: python dashboard.py
+    ports:
+      - "8050:8050"
+    volumes:
+      - ./visualizations:/app/visualizations
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata: 

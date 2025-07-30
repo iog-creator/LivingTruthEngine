@@ -1,0 +1,5 @@
+ERROR:__main__:FLOWISE_API_KEY and FLOWISE_CHATFLOW_ID must be set in .env
+ERROR:__main__:FLOWISE_API_KEY and FLOWISE_CHATFLOW_ID must be set in .env
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000
+INFO:__main__:Flowise MCP Server initialized at http://localhost:3000

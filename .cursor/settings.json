@@ -1,0 +1,162 @@
+{
+  "project": {
+    "name": "Living Truth Engine",
+    "description": "Flowise-based NotebookLM clone for Biblical forensic analysis",
+    "version": "1.0.0"
+  },
+  "environment": {
+    "python": {
+      "virtual_env": "living_venv",
+      "python_path": "./living_venv/bin/python",
+      "requirements": [
+        "langchain",
+        "langchain-huggingface",
+        "langchain-openai",
+        "langchain-community",
+        "yt_dlp",
+        "spacy",
+        "plotly",
+        "psycopg2-binary",
+        "dash",
+        "piper-tts",
+        "serpapi",
+        "requests",
+        "python-dotenv"
+      ]
+    },
+    "node": {
+      "version": "18.15.0+",
+      "global_packages": ["flowise"]
+    },
+    "database": {
+      "type": "postgresql",
+      "version": "12+",
+      "extensions": ["pgvector"]
+    }
+  },
+  "services": {
+    "flowise": {
+      "url": "http://localhost:3000",
+      "api_endpoint": "http://localhost:3000/api/v1",
+      "dashboard": "http://localhost:3000"
+    },
+    "lm_studio": {
+      "url": "http://localhost:1234",
+      "models": [
+        "text-embedding-qwen3-embedding-0.6b",
+        "qwen.qwen3-reranker-0.6b",
+        "qwen/qwen3-8b"
+      ]
+    },
+    "database": {
+      "host": "localhost",
+      "port": 5432,
+      "name": "living_truth_engine",
+      "user": "postgres"
+    }
+  },
+  "mcp": {
+    "server": "flowise-mcp-server",
+    "tools": [
+      "query_flowise",
+      "get_status",
+      "fix_flow"
+    ],
+    "config_path": "~/.cursor/mcp.json"
+  },
+  "development": {
+    "editor": {
+      "format_on_save": true,
+      "format_on_paste": true,
+      "tab_size": 2,
+      "insert_spaces": true,
+      "rulers": [88],
+      "word_wrap": "off"
+    },
+    "linting": {
+      "python": {
+        "enabled": true,
+        "linter": "flake8",
+        "args": ["--max-line-length=88", "--ignore=E203,W503"]
+      },
+      "json": {
+        "enabled": true,
+        "validate_on_save": true
+      }
+    },
+    "testing": {
+      "framework": "pytest",
+      "coverage": true,
+      "test_pattern": "test_*.py"
+    }
+  },
+  "ai": {
+    "rules_file": ".cursorrules",
+    "context": {
+      "project_type": "ai_analysis_system",
+      "primary_language": "python",
+      "framework": "flowise_langchain",
+      "database": "postgresql_pgvector"
+    },
+    "behavior": {
+      "environment_aware": true,
+      "mcp_integration": true,
+      "file_management": "check_existing",
+      "documentation_focused": true
+    }
+  },
+  "security": {
+    "environment_variables": {
+      "file": ".env",
+      "sensitive_keys": [
+        "FLOWISE_API_KEY",
+        "LANGCHAIN_API_KEY",
+        "SERP_API_KEY",
+        "POSTGRES_PASSWORD"
+      ]
+    },
+    "anonymization": {
+      "enabled": true,
+      "default": false,
+      "toggle_parameter": "anonymize"
+    }
+  },
+  "performance": {
+    "batch_processing": {
+      "embed_batch_size": 128,
+      "max_concurrent_requests": 10
+    },
+    "caching": {
+      "enabled": true,
+      "vector_store": true,
+      "api_responses": true
+    }
+  },
+  "monitoring": {
+    "logging": {
+      "level": "INFO",
+      "file": "mcp_server.log",
+      "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    },
+    "metrics": {
+      "enabled": true,
+      "response_times": true,
+      "error_rates": true,
+      "usage_stats": true
+    }
+  },
+  "documentation": {
+    "structure": {
+      "readme": "README.md",
+      "api_docs": ".cursor/mcp-server-docs.md",
+      "project_structure": ".cursor/project-structure.md",
+      "workflow": ".cursor/development-workflow.md",
+      "troubleshooting": ".cursor/troubleshooting.md"
+    },
+    "standards": {
+      "format": "markdown",
+      "include_examples": true,
+      "update_with_code": true
+    }
+  }
+} 
