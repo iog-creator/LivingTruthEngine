@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "flowise-mcp-server": {
+      "command": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/start_mcp_server.sh",
+      "args": []
+    }
+  }
+} 
