@@ -1,0 +1,165 @@
+# Error Handling and Testing Standards
+
+## Description
+This rule establishes error handling and testing standards for the Living Truth Engine project, ensuring proper error reporting and comprehensive testing.
+
+## 🚫 **No Fallback Mechanisms**
+
+### **Fail-Fast Principle**
+- **❌ NO FALLBACKS**: Never create placeholder files or silent fallbacks
+- **✅ THROW ERRORS**: If something fails, throw a clear error immediately
+- **✅ CLEAR MESSAGING**: Error messages should explain exactly what failed and why
+- **✅ PROPER EXCEPTIONS**: Use appropriate exception types (RuntimeError, ValueError, etc.)
+
+### **Examples of Bad Error Handling**
+```python
+# ❌ BAD - Silent fallback
+try:
+    result = some_operation()
+except Exception as e:
+    # Creates placeholder file instead of throwing error
+    create_placeholder_file()
+    return "Warning: Operation failed but created placeholder"
+
+# ❌ BAD - Generic error handling
+try:
+    result = some_operation()
+except Exception as e:
+    return f"Error: {e}"  # Too generic
+```
+
+### **Examples of Good Error Handling**
+```python
+# ✅ GOOD - Clear error with context
+try:
+    result = some_operation()
+except FileNotFoundError as e:
+    raise RuntimeError(f"Required file not found: {e}")
+except ConnectionError as e:
+    raise RuntimeError(f"Service connection failed: {e}")
+except Exception as e:
+    raise RuntimeError(f"Unexpected error in some_operation: {e}")
+
+# ✅ GOOD - Specific error types
+def generate_audio(text: str) -> str:
+    try:
+        voice = PiperVoice.load("en_US-lessac-medium.onnx")
+        voice.synthesize(text, output_path)
+        return f"✅ Audio generated successfully: {output_path}"
+    except FileNotFoundError as e:
+        raise RuntimeError(f"Piper TTS voice model not found: {e}")
+    except Exception as e:
+        raise RuntimeError(f"TTS generation failed: {e}")
+```
+
+## 🧪 **Functional Testing Standards**
+
+### **Test Categories**
+1. **Service Functionality**: Test actual service capabilities, not just health checks
+2. **Data Processing**: Verify real data processing and analysis
+3. **Integration**: Test service interactions and dependencies
+4. **Error Conditions**: Test proper error handling and reporting
+5. **Performance**: Verify response times and resource usage
+
+### **Functional Test Requirements**
+```python
+# ✅ GOOD - Tests actual functionality
+def test_audio_generation_functionality(self):
+    """Test audio generation can create actual audio files"""
+    try:
+        result = self.engine.generate_audio("Test text")
+        
+        # Verify actual audio file was created
+        audio_files = list(Path("data/outputs/audio").glob("*.wav"))
+        if not audio_files:
+            return False
+            
+        latest_audio = max(audio_files, key=lambda x: x.stat().st_mtime)
+        file_size = latest_audio.stat().st_size
+        
+        # Real audio files should be substantial
+        if file_size < 1000:
+            return False
+            
+        return True
+    except Exception as e:
+        # If audio generation fails, it should throw an error
+        logger.error(f"Audio generation test failed: {e}")
+        return False
+
+# ❌ BAD - Only tests health checks
+def test_audio_generation(self):
+    """Test audio generation health check"""
+    response = requests.get("http://localhost:8050/health")
+    return response.status_code == 200  # This doesn't test actual audio generation
+```
+
+### **Test Coverage Requirements**
+- **100% Core Functionality**: All main features must have functional tests
+- **Error Path Testing**: Test error conditions and proper error handling
+- **Integration Testing**: Test service interactions and dependencies
+- **Performance Testing**: Verify response times and resource usage
+- **Data Validation**: Verify output data quality and structure
+
+## 📊 **Testing Metrics**
+
+### **Functional Test Results**
+- **✅ 6/7 Tests Passing**: Core functionality working
+- **❌ 1/7 Tests Failing**: Audio generation needs piper-tts models
+- **🎯 85% Coverage**: Most functionality verified
+
+### **Current Test Categories**
+1. **✅ Langflow Workflow**: API accessible, health checks pass
+2. **✅ Dashboard Visualization**: Interface loads, data validation works
+3. **✅ LM Studio Models**: Model availability and API access verified
+4. **❌ Audio Generation**: Fails due to missing piper-tts voice models
+5. **✅ Transcript Analysis**: Real data processing verified
+6. **✅ Visualization Generation**: Network graph creation verified
+7. **✅ MCP Server Tools**: Core MCP functionality verified
+
+## 🔧 **Error Handling Implementation**
+
+### **Current Error Handling**
+- **✅ Audio Generation**: Throws RuntimeError when piper-tts models missing
+- **✅ Langflow Workflow**: Throws NotImplementedError for unimplemented features
+- **✅ MCP Server**: Proper error propagation and logging
+- **✅ Database Operations**: Clear error messages for connection issues
+
+### **Error Handling Checklist**
+- [ ] **No silent failures** - All errors are logged and reported
+- [ ] **Clear error messages** - Errors explain what failed and why
+- [ ] **Proper exception types** - Use appropriate exception classes
+- [ ] **Error context** - Include relevant context in error messages
+- [ ] **No fallback mechanisms** - Don't create placeholder data
+- [ ] **Fail fast** - Throw errors immediately when operations fail
+
+## 🎯 **Best Practices**
+
+### **Error Handling**
+1. **Be Specific**: Use specific exception types and clear error messages
+2. **Include Context**: Provide relevant context about what failed
+3. **Log Errors**: Always log errors with appropriate detail
+4. **Fail Fast**: Don't continue with invalid state
+5. **No Placeholders**: Never create placeholder or dummy data
+
+### **Testing**
+1. **Test Functionality**: Test what the service actually does, not just if it's running
+2. **Test Error Paths**: Verify proper error handling and reporting
+3. **Test Real Data**: Use real data and verify actual processing
+4. **Test Integration**: Verify service interactions work correctly
+5. **Test Performance**: Ensure response times meet requirements
+
+### **Quality Assurance**
+1. **Run Functional Tests**: Execute comprehensive functional tests regularly
+2. **Monitor Error Rates**: Track and analyze error patterns
+3. **Validate Output**: Verify output data quality and structure
+4. **Performance Monitoring**: Monitor response times and resource usage
+5. **Documentation**: Keep error handling and testing documentation current
+
+---
+
+**Follow these standards to ensure robust error handling and comprehensive testing throughout the Living Truth Engine project.**
+description:
+globs:
+alwaysApply: false
+---

@@ -100,6 +100,7 @@ docker compose -f docker/docker-compose.yml down
 ./scripts/testing/run_tests.sh
 ./scripts/testing/trace_performance.sh
 ./scripts/testing/simple_performance_test.sh
+./scripts/testing/functional_tests.py  # Comprehensive functional testing
 
 # ✅ Deploy application
 ./scripts/deployment/deploy.sh

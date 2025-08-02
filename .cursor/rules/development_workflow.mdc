@@ -125,6 +125,7 @@ mcp_living_truth_fastmcp_server_query_langflow("Test query")
 ./scripts/testing/run_tests.sh
 ./scripts/testing/trace_performance.sh
 ./scripts/testing/simple_performance_test.sh
+./scripts/testing/functional_tests.py  # Comprehensive functional testing
 ./scripts/deployment/deploy.sh
 ```
 
@@ -144,6 +145,8 @@ mcp_living_truth_fastmcp_server_query_langflow("Test query")
 - **Test coverage metrics**
 - **Development velocity**
 - **Performance testing scripts** for comprehensive monitoring
+- **Functional testing** - 7 test categories verifying actual service capabilities
+- **Error handling validation** - ensuring no fallback mechanisms, proper error reporting
 
 ## 🎯 **Best Practices**
 
