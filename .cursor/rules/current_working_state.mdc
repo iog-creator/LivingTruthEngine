@@ -64,8 +64,9 @@ All MCP servers are working with green dots in Cursor:
    - **Deployment**: Running locally (not in Docker) for stability
    - **Error Handling**: Fail-fast approach - no fallback mechanisms, clear error reporting
 
-2. **✅ Langflow MCP Server**: 5 tools available
+2. **✅ Langflow MCP Server**: 6 tools available
    - `query_langflow` - Query Langflow workflow
+   - `create_langflow` - Create or update Langflow workflows
    - `get_langflow_status` - Langflow status
    - `list_langflow_tools` - List available tools
    - `get_current_time` - Time verification
@@ -193,7 +194,7 @@ redis-cli ping  # Redis
 
 ## 📊 **Success Metrics**
 - ✅ **100% service uptime** for all core services
-- ✅ **100% MCP server functionality** with green dots (8 servers, 22+ tools)
+- ✅ **100% MCP server functionality** with green dots (8 servers, 23+ tools)
 - ✅ **100% Langflow operational** with health checks
 - ✅ **100% database connectivity** with proper permissions
 - ✅ **100% Dash Dashboard operational** with interactive visualizations

@@ -357,6 +357,14 @@ mcp_langflow_mcp_server_query_langflow(
     anonymize=False
 )
 
+# ✅ Create or update Langflow workflows
+mcp_langflow_mcp_server_create_langflow(
+    flow_config={
+        "name": "Test Workflow",
+        "data": {"nodes": [], "edges": []}
+    }
+)
+
 # ✅ Langflow operations
 mcp_langflow_mcp_server_list_langflow_tools()
 ```
