@@ -12,18 +12,18 @@ The Living Truth Engine is an advanced AI system that combines multiple technolo
 - **Modern Containerization**: Docker Compose v2 with best practices
 - **MCP Integration**: Model Context Protocol for tool automation
 - **Real-time Processing**: PostgreSQL database with vector storage
-- **Unified Services**: All services running under `notebook_agent` group
+- **Unified Services**: All services running under `LivingTruthEngine` group
 
 ## 🏗️ **Architecture**
 
 ### **Service Architecture**
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Langflow      │    │   PostgreSQL    │    │   MCP Server    │
-│   (Port 7860)   │    │   (Port 5434)   │    │   (Port 8000)   │
-│                 │    │                 │    │                 │
-│ • AI Workflows  │    │ • Data Storage  │    │ • Tool Server   │
-│ • Multi-Agent   │    │ • User Data     │    │ • API Endpoints │
+│   Langflow      │    │   PostgreSQL    │    │   Living Truth  │
+│   (Port 7860)   │    │   (Port 5432)   │    │   Engine        │
+│                 │    │                 │    │   (Port 9123)   │
+│ • AI Workflows  │    │ • Data Storage  │    │ • FastAPI       │
+│ • Multi-Agent   │    │ • User Data     │    │ • Dashboard     │
 │ • Node Editor   │    │ • Analysis Data │    │ • Integration   │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
                     ┌─────────────────┐    ┌─────────────────┐
@@ -34,13 +34,31 @@ The Living Truth Engine is an advanced AI system that combines multiple technolo
                     │ • Sessions      │    │ • Relationships │
                     │ • Performance   │    │ • Network Maps  │
                     └─────────────────┘    └─────────────────┘
+                    ┌─────────────────┐    ┌─────────────────┐
+                    │   LM Studio     │    │   MCP Server    │
+                    │   (Port 1234)   │    │   (Local)       │
+                    │                 │    │                 │
+                    │ • Local Models  │    │ • Tool Server   │
+                    │ • AI Inference  │    │ • API Endpoints │
+                    │ • Model Hosting │    │ • Integration   │
+                    └─────────────────┘    └─────────────────┘
+                    ┌─────────────────┐    ┌─────────────────┐
+                    │   DevDocs       │    │   Rulego        │
+                    │   (Port 9126)   │    │   (Port 9127)   │
+                    │   (Optional)    │    │   (Optional)    │
+                    │                 │    │                 │
+                    │ • Doc Retrieval │    │ • Workflows     │
+                    │ • Crawling      │    │ • Chains        │
+                    │ • Search        │    │ • Orchestration │
+                    └─────────────────┘    └─────────────────┘
                     ┌─────────────────┐
-                    │   LM Studio     │
-                    │   (Port 1234)   │
+                    │   MCP Solver    │
+                    │   (Port 9128)   │
+                    │   (Optional)    │
                     │                 │
-                    │ • Local Models  │
-                    │ • AI Inference  │
-                    │ • Model Hosting │
+                    │ • Constraints   │
+                    │ • LLM Routing   │
+                    │ • Optimization  │
                     └─────────────────┘
 ```
 
@@ -105,8 +123,8 @@ pip install -r requirements.txt
 
 ### **3. Start Services**
 ```bash
-# Start all services under notebook_agent group
-cd /home/mccoy/Projects/RippleAGI/notebook_agent
+# Start all services under LivingTruthEngine group
+cd /home/mccoy/Projects/NotebookLM/LivingTruthEngine
 docker compose -f docker/docker-compose.yml up -d
 
 # Validate setup
@@ -115,8 +133,8 @@ docker compose -f docker/docker-compose.yml up -d
 
 ### **4. Access Services**
 - **Langflow**: http://localhost:7860 (admin/admin)
-- **MCP Server**: http://localhost:8000
-- **PostgreSQL**: localhost:5434
+- **MCP Server**: Running locally (not in Docker)
+- **PostgreSQL**: localhost:5432
 - **Redis**: localhost:6379
 - **Neo4j**: http://localhost:7474
 - **LM Studio**: http://localhost:1234 (with system model access)
@@ -138,7 +156,6 @@ LivingTruthEngine/
 │   └── settings.json                 # Workspace settings
 ├── docker/                           # Docker configuration
 │   ├── docker-compose.yml           # Service orchestration (v2)
-│   ├── Dockerfile.mcp               # MCP server container
 │   └── .dockerignore                # Build exclusions
 ├── scripts/                          # Automation scripts
 │   ├── setup/                       # Setup and configuration
@@ -167,12 +184,13 @@ LivingTruthEngine/
 
 ## 🔧 **Development Features**
 
-### **MCP Server Tools**
+### **MCP Server Tools (22 Total)**
 - **`query_langflow`**: Query Langflow workflows for survivor testimony analysis
 - **`get_status`**: System status and health checks
 - **`list_sources`**: Available data sources
 - **`analyze_transcript`**: Transcript and data analysis
 - **`generate_viz`**: Data visualization and pattern mapping
+- **`generate_audio`**: Generate audio from text using TTS
 - **`get_lm_studio_models`**: List available LM Studio models
 - **`generate_lm_studio_text`**: Generate text using LM Studio models
 - **`test_lm_studio_connection`**: Test LM Studio connection
@@ -187,6 +205,11 @@ LivingTruthEngine/
 - **`comprehensive_health_check`**: Perform comprehensive health check
 - **`fix_flow`**: Request Langflow workflow updates
 - **`query_flowise`**: Query Flowise chatflow (DEPRECATED - use query_langflow)
+
+### **Additional MCP Servers**
+- **DevDocs**: Document retrieval and crawling (`crawl_docs`, `retrieve_docs`)
+- **Rulego**: Workflow orchestration (`query_rulego_chain`, `list_rulego_chains`)
+- **MCP Solver**: Constraint solving and LLM routing (`solve_constraint`, `route_llm`)
 
 ### **AI-Assisted Development**
 - **Code generation** with context awareness
@@ -385,8 +408,15 @@ docker image prune -f
 
 ### **Service URLs**
 - **Langflow**: http://localhost:7860
-- **MCP Server**: http://localhost:8000
-- **PostgreSQL**: localhost:5434
+- **PostgreSQL**: localhost:5432
+- **Neo4j**: http://localhost:7474
+- **Redis**: localhost:6379
+- **LM Studio**: http://localhost:1234
+- **Living Truth Engine**: http://localhost:9123-9124
+- **MCP Server**: Running locally (not in Docker) for stability
+- **DevDocs**: http://localhost:9126 (Optional)
+- **Rulego**: http://localhost:9127 (Optional)
+- **MCP Solver**: http://localhost:9128 (Optional)
 
 ### **Key Files**
 - **Docker Compose**: `docker/docker-compose.yml`

@@ -19,6 +19,7 @@ The Living Truth Engine is an AI-powered system for survivor testimony corrobora
 - **PostgreSQL**: Primary database for data storage with langflow database
 - **Neo4j**: Graph database for relationship analysis
 - **Redis**: Caching and session management
+- **Dash Dashboard**: Interactive visualizations for survivor testimony analysis
 - **MCP Server**: Model Context Protocol server for tool integration
 - **Python Backend**: Core analysis and processing logic
 - **Docker**: Containerized deployment and development
@@ -29,7 +30,7 @@ The Living Truth Engine is an AI-powered system for survivor testimony corrobora
 ```
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Langflow      │    │   PostgreSQL    │    │   MCP Server    │
-│   (Port 7860)   │    │   (Port 5434)   │    │   (Port 8000)   │
+│   (Port 7860)   │    │   (Port 5432)   │    │   (Local)       │
 │                 │    │                 │    │                 │
 │ • Multi-Agent   │    │ • Data Storage  │    │ • Tool Server   │
 │ • Python Native │    │ • Langflow DB   │    │ • API Endpoints │
@@ -38,14 +39,14 @@ The Living Truth Engine is an AI-powered system for survivor testimony corrobora
          │                       │                       │
          └───────────────────────┼───────────────────────┘
                                  │
-                    ┌─────────────────┐
-                    │   Neo4j         │
-                    │   (Port 7474)   │
-                    │                 │
-                    │ • Graph DB      │
-                    │ • Relationships │
-                    │ • Network Data  │
-                    └─────────────────┘
+                    ┌─────────────────┐    ┌─────────────────┐
+                    │   Neo4j         │    │   Dash Dashboard│
+                    │   (Port 7474)   │    │   (Port 8050)   │
+                    │                 │    │                 │
+                    │ • Graph DB      │    │ • Visualizations│
+                    │ • Relationships │    │ • Interactive UI│
+                    │ • Network Data  │    │ • Real-time Data│
+                    └─────────────────┘    └─────────────────┘
 ```
 
 ### **Data Flow**
@@ -61,7 +62,6 @@ The Living Truth Engine is an AI-powered system for survivor testimony corrobora
 LivingTruthEngine/
 ├── docker/                    # Docker configuration
 │   ├── docker-compose.yml    # Service orchestration
-│   ├── Dockerfile.mcp        # MCP server container
 │   └── .dockerignore         # Build exclusions
 ├── scripts/                   # Automation scripts
 │   ├── setup/                # Setup and configuration
@@ -98,6 +98,8 @@ LivingTruthEngine/
 - **Hugging Face**: Model hosting and inference
 - **OpenAI**: Language model API
 - **SpaCy**: Natural language processing
+- **Piper TTS**: Text-to-speech synthesis
+- **Dash/Plotly**: Interactive data visualizations
 
 ### **Development Tools**
 - **Cursor IDE**: AI-assisted development environment

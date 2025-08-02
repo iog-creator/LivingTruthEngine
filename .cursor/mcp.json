@@ -56,6 +56,39 @@
         "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
       },
       "description": "Langflow MCP Server for workflow integration using Python-based MCP server"
+    },
+    "devdocs_mcp_server": {
+      "command": "python3",
+      "args": [
+        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/devdocs_mcp_server.py"
+      ],
+      "env": {
+        "DEVDOCS_URL": "http://localhost:9126",
+        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
+      },
+      "description": "DevDocs MCP Server for document retrieval and crawling"
+    },
+    "rulego_mcp_server": {
+      "command": "python3",
+      "args": [
+        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/rulego_mcp_server.py"
+      ],
+      "env": {
+        "RULEGO_URL": "http://localhost:9127",
+        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
+      },
+      "description": "Rulego MCP Server for workflow orchestration and chain management"
+    },
+    "mcp_solver_server": {
+      "command": "python3",
+      "args": [
+        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/mcp_solver_server.py"
+      ],
+      "env": {
+        "MCP_SOLVER_URL": "http://localhost:9128",
+        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
+      },
+      "description": "MCP Solver Server for constraint solving and LLM routing"
     }
   }
 }

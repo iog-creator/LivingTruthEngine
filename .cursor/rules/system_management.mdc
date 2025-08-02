@@ -23,7 +23,7 @@ This rule defines system management practices for the Living Truth Engine, inclu
 source living_venv/bin/activate
 
 # ✅ Good - Environment-driven configuration
-export AGI_DASHBOARD_PORT=5001
+export AGI_DASHBOARD_PORT=8050
 export AGI_LOG_LEVEL=INFO
 export AGI_ENVIRONMENT=development
 ```
@@ -76,12 +76,12 @@ python -c "import sys; print('Environment:', sys.executable)"
 
 ### **Service Management**
 ```bash
-# ✅ Start all services (notebook_agent group)
-cd /home/mccoy/Projects/RippleAGI/notebook_agent
+# ✅ Start all services (LivingTruthEngine group)
+cd /home/mccoy/Projects/NotebookLM/LivingTruthEngine
 docker compose -f docker/docker-compose.yml up -d
 
 # ✅ Stop all services
-cd /home/mccoy/Projects/RippleAGI/notebook_agent
+cd /home/mccoy/Projects/NotebookLM/LivingTruthEngine
 docker compose -f docker/docker-compose.yml down
 
 # ✅ Validate Docker setup
@@ -98,6 +98,8 @@ docker compose -f docker/docker-compose.yml down
 
 # ✅ Run tests
 ./scripts/testing/run_tests.sh
+./scripts/testing/trace_performance.sh
+./scripts/testing/simple_performance_test.sh
 
 # ✅ Deploy application
 ./scripts/deployment/deploy.sh

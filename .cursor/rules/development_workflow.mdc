@@ -123,6 +123,8 @@ mcp_living_truth_fastmcp_server_query_langflow("Test query")
 # ✅ Automated workflows
 ./scripts/setup/start_development.sh
 ./scripts/testing/run_tests.sh
+./scripts/testing/trace_performance.sh
+./scripts/testing/simple_performance_test.sh
 ./scripts/deployment/deploy.sh
 ```
 
@@ -137,9 +139,11 @@ mcp_living_truth_fastmcp_server_query_langflow("Test query")
 
 ### **Performance Monitoring**
 - **Response times** for MCP tools
+- **Service health checks** (<2s response time target)
 - **Code generation accuracy**
 - **Test coverage metrics**
 - **Development velocity**
+- **Performance testing scripts** for comprehensive monitoring
 
 ## 🎯 **Best Practices**
 

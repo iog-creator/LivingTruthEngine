@@ -101,7 +101,7 @@ services:
     restart: always
     user: postgres
     ports:
-      - "5434:5432"
+      - "5432:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-living_truth_engine}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -201,8 +201,8 @@ services:
       PYTHONPATH: /app
       PYTHONUNBUFFERED: 1
     ports:
-      - "8000:8000"  # FastAPI
-      - "8001:8001"  # Dashboard
+      - "9123:8000"  # FastAPI
+      - "9124:8001"  # Dashboard
     volumes:
       - ../data/sources:/app/sources
       - ../data/outputs/logs:/app/logs
@@ -226,34 +226,128 @@ services:
     networks:
       - living-truth-network
 
-  living-truth-mcp:
+  # DevDocs - Document Retrieval Service
+  devdocs:
+    image: node:18-alpine
+    container_name: living-truth-devdocs
+    ports:
+      - "9126:24125"  # DevDocs backend port
+    volumes:
+      - ../data/sources/devdocs:/app/crawl_results
+      - ../data/sources:/app/sources:ro
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:24125
+      - NODE_ENV=production
+    working_dir: /app
+    command: >
+      sh -c "
+        git clone https://github.com/flowiseai/devdocs.git /app &&
+        cd /app &&
+        npm install &&
+        npm run build &&
+        npm start
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:24125/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - living-truth-network
+
+  # Rulego - Workflow Orchestration Service
+  rulego:
+    image: golang:1.21-alpine
+    container_name: living-truth-rulego
+    ports:
+      - "9127:8080"  # Rulego server port
+    volumes:
+      - ../data/sources:/app/sources:ro
+      - ../config:/app/config:ro
+    environment:
+      - RULEGO_CONFIG_PATH=/app/config/rulego.conf
+    working_dir: /app
+    command: >
+      sh -c "
+        git clone https://github.com/rulego/rulego.git /app/rulego &&
+        cd /app/rulego &&
+        go build -tags with_extend cmd/server &&
+        ./server -c=/app/config/rulego.conf
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - living-truth-network
+
+  # MCP Solver - Constraint Solving Service
+  mcp-solver:
+    image: python:3.12-slim
+    container_name: living-truth-mcp-solver
+    ports:
+      - "9128:3000"  # MCP Solver port
+    volumes:
+      - ../data/sources:/app/sources:ro
+      - ../src/mcp_servers:/app/mcp_servers:ro
+    environment:
+      - PYTHONPATH=/app
+      - SOLVER_PORT=3000
+    working_dir: /app
+    command: >
+      sh -c "
+        git clone https://github.com/szeider/mcp-solver.git /app/solver &&
+        cd /app/solver &&
+        pip install -r requirements.txt &&
+        python -m mcp_solver.server
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - living-truth-network
+
+  # Dash Dashboard Service for Visualizations
+  dashboard:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.mcp
-    container_name: living-truth-mcp
+      dockerfile: docker/Dockerfile.dash
+    container_name: living-truth-dashboard
     ports:
-      - "8002:8000"  # Changed port to avoid conflict
+      - "8050:8050"
     volumes:
-      - ../data/sources:/app/data/sources:ro
-      - ../data/outputs/logs:/app/data/outputs/logs
-      - ../data/outputs/visualizations:/app/data/outputs/visualizations
-      - ../.env:/app/.env:ro
+      - ../data/outputs/visualizations:/app/visualizations
     environment:
-      LANGFLOW_API_ENDPOINT: http://langflow:7860
-      LM_STUDIO_ENDPOINT: http://lm-studio:1234
-      LANGFLOW_API_KEY: ${LANGFLOW_API_KEY:-}
-      PYTHONPATH: /app/src
+      - PYTHONPATH=/app/src
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8050/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     depends_on:
-      lm-studio:
+      langflow:
         condition: service_healthy
       postgres:
         condition: service_healthy
-      langflow:
+      redis:
+        condition: service_healthy
+      neo4j:
         condition: service_healthy
     restart: unless-stopped
     networks:
       - living-truth-network
-    command: ["python", "src/mcp_servers/living_truth_fastmcp_server.py"]
+
+
 
 networks:
   living-truth-network:

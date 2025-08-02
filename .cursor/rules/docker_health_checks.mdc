@@ -23,6 +23,14 @@ healthcheck:
   timeout: 10s
   retries: 3
   start_period: 60s
+
+# ✅ Good - Dashboard health check
+healthcheck:
+  test: ["CMD", "curl", "-f", "http://localhost:8050/health"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 60s
 ```
 
 #### **TCP Services**

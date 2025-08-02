@@ -39,11 +39,22 @@ mcp = FastMCP()
 
 class LivingTruthEngine:
     def __init__(self):
-        self.langflow_api_endpoint = os.getenv('LANGFLOW_API_ENDPOINT', 'http://localhost:7860')
+        # Handle Docker vs local environment
+        docker_env = os.getenv('DOCKER_ENVIRONMENT', 'false').lower() == 'true'
+        
+        if docker_env:
+            # Use container names in Docker environment
+            self.langflow_api_endpoint = os.getenv('LANGFLOW_API_ENDPOINT', 'http://langflow:7860')
+            self.lm_studio_endpoint = os.getenv('LM_STUDIO_ENDPOINT', 'http://lm-studio:1234')
+        else:
+            # Use localhost for local development
+            self.langflow_api_endpoint = os.getenv('LANGFLOW_API_ENDPOINT', 'http://localhost:7860')
+            self.lm_studio_endpoint = os.getenv('LM_STUDIO_ENDPOINT', 'http://localhost:1234')
+        
         self.langflow_api_key = os.getenv('LANGFLOW_API_KEY')
-        self.lm_studio_endpoint = os.getenv('LM_STUDIO_ENDPOINT', 'http://localhost:1234')
         
         logger.info(f"Living Truth Engine initialized")
+        logger.info(f"Environment: {'Docker' if docker_env else 'Local'}")
         logger.info(f"Langflow endpoint: {self.langflow_api_endpoint}")
         logger.info(f"LM Studio endpoint: {self.lm_studio_endpoint}")
 
@@ -329,6 +340,59 @@ class LivingTruthEngine:
             return f"✅ LM Studio Server Status:\n{json.dumps(status_info, indent=2)}"
         except requests.exceptions.RequestException as e:
             return f"❌ LM Studio Server Status:\nEndpoint: {self.lm_studio_endpoint}\nStatus: unhealthy\nError: {str(e)}"
+
+    def generate_audio(self, text: str) -> str:
+        """Generate audio from text using TTS model.
+        
+        Args:
+            text: Input text for audio generation.
+        
+        Returns:
+            Path to generated audio file.
+        
+        Raises:
+            ValueError: If text is empty.
+            RuntimeError: If TTS fails.
+        """
+        if not text:
+            raise ValueError("Text cannot be empty")
+        
+        try:
+            # Ensure audio output directory exists
+            audio_dir = project_root / 'data' / 'outputs' / 'audio'
+            audio_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Create unique filename
+            import hashlib
+            import datetime
+            text_hash = hashlib.md5(text.encode()).hexdigest()[:8]
+            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_path = audio_dir / f"audio_{timestamp}_{text_hash}.wav"
+            
+            # Use piper-tts for actual TTS generation
+            from piper import PiperVoice
+            
+            # Use default voice or specify a voice model
+            # For now, use a simple approach - in production you'd have voice models
+            try:
+                # Try to use piper-tts if available
+                voice = PiperVoice.load("en_US-lessac-medium.onnx")
+                voice.synthesize(text, str(output_path))
+                logger.info(f"Audio generated successfully: {output_path}")
+                return f"✅ Audio generated successfully\n📁 Output: {output_path}\n🎵 Text: {text[:100]}..."
+            except Exception as tts_error:
+                logger.warning(f"Piper TTS failed, using fallback: {tts_error}")
+                # Fallback to placeholder if piper-tts fails
+                with open(output_path, 'w') as f:
+                    f.write(f"# Audio placeholder for: {text}\n")
+                    f.write(f"# Generated: {datetime.datetime.now()}\n")
+                    f.write(f"# TTS Error: {tts_error}\n")
+                
+                return f"⚠️ TTS generation failed, created placeholder\n📁 Output: {output_path}\n❌ Error: {tts_error}"
+            
+        except Exception as e:
+            logger.error(f"Audio generation failed: {e}")
+            raise RuntimeError(f"TTS generation failed: {e}")
 
     def auto_detect_and_add_tools(self) -> str:
         """Automatically detect development needs and add tools."""
@@ -617,6 +681,7 @@ def get_project_info() -> str:
             "list_sources - List available sources",
             "analyze_transcript - Analyze specific transcript",
             "generate_viz - Generate visualizations",
+            "generate_audio - Generate audio from text using TTS",
             "fix_flow - Request Langflow workflow updates",
             "get_lm_studio_models - Get list of available models in LM Studio",
             "generate_lm_studio_text - Generate text using LM Studio models",
@@ -664,6 +729,11 @@ def get_lm_studio_status() -> str:
     return engine.get_lm_studio_status()
 
 @mcp.tool()
+def generate_audio(text: str) -> str:
+    """Generate audio from text using TTS model."""
+    return engine.generate_audio(text)
+
+@mcp.tool()
 def auto_detect_and_add_tools() -> str:
     """Automatically detect development needs and add tools."""
     return engine.auto_detect_and_add_tools()
@@ -691,10 +761,24 @@ def comprehensive_health_check() -> str:
 if __name__ == "__main__":
     logger.info("Living Truth Engine FastMCP Server starting...")
     print("Living Truth Engine FastMCP Server started...")
+    
+    # Initialize the engine
     try:
+        engine = LivingTruthEngine()
+        logger.info("Engine initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize engine: {e}")
+        sys.exit(1)
+    
+    # Start the MCP server
+    try:
+        logger.info("Starting FastMCP server...")
         mcp.run()
     except KeyboardInterrupt:
         logger.info("MCP Server stopped by user")
     except Exception as e:
         logger.error(f"MCP Server error: {e}")
+        logger.error(f"Error type: {type(e)}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
         sys.exit(1) 

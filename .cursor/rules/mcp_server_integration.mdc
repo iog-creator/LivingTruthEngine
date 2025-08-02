@@ -37,6 +37,30 @@ This rule defines MCP (Model Context Protocol) server integration practices for 
         "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
       },
       "description": "Langflow MCP Server for workflow integration using Python-based MCP server"
+    },
+    "devdocs_mcp_server": {
+      "command": "python3",
+      "args": ["/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/devdocs_mcp_server.py"],
+      "env": {
+        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
+      },
+      "description": "DevDocs MCP Server for document retrieval and crawling"
+    },
+    "rulego_mcp_server": {
+      "command": "python3",
+      "args": ["/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/rulego_mcp_server.py"],
+      "env": {
+        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
+      },
+      "description": "Rulego MCP Server for workflow orchestration"
+    },
+    "mcp_solver_server": {
+      "command": "python3",
+      "args": ["/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/mcp_solver_server.py"],
+      "env": {
+        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
+      },
+      "description": "MCP Solver Server for constraint solving and LLM routing"
     }
   }
 }
@@ -92,6 +116,24 @@ mcp_living_truth_fastmcp_server_get_current_time()
 mcp_langflow_mcp_server_get_langflow_status()
 
 # ✅ System operations
+```
+
+### **Documentation and Analysis Tools**
+```python
+# ✅ DevDocs tools
+mcp_devdocs_mcp_server_crawl_docs()
+mcp_devdocs_mcp_server_retrieve_docs()
+mcp_devdocs_mcp_server_get_devdocs_status()
+
+# ✅ Rulego workflow tools
+mcp_rulego_mcp_server_query_rulego_chain()
+mcp_rulego_mcp_server_list_rulego_chains()
+mcp_rulego_mcp_server_get_rulego_status()
+
+# ✅ MCP Solver tools
+mcp_mcp_solver_server_solve_constraint()
+mcp_mcp_solver_server_route_llm()
+mcp_mcp_solver_server_get_solver_status()
 ```
 
 ## 🎯 **MCP Server Standards**

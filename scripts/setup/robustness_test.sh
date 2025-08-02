@@ -106,7 +106,7 @@ check_service "LM Studio" "http://localhost:1234/v1/models"
 check_service "Living Truth Engine" "http://localhost:8000/health"
 
 # Test 8: PostgreSQL Health
-run_test "PostgreSQL Connection" "pg_isready -h localhost -p 5434"
+run_test "PostgreSQL Connection" "pg_isready -h localhost -p 5432"
 
 # Test 9: Redis Health
 run_test "Redis Connection" "docker exec living_truth_redis redis-cli ping"
@@ -122,7 +122,7 @@ echo "----------------------------------------"
 test_port "7860" "Langflow"
 test_port "1234" "LM Studio"
 test_port "8000" "Living Truth Engine"
-test_port "5434" "PostgreSQL"
+test_port "5432" "PostgreSQL"
 test_port "6379" "Redis"
 test_port "7474" "Neo4j Web"
 test_port "7687" "Neo4j Bolt"
