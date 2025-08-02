@@ -184,8 +184,9 @@ LivingTruthEngine/
 
 ## 🔧 **Development Features**
 
-### **MCP Server Tools (22 Total)**
+### **MCP Server Tools (23 Total)**
 - **`query_langflow`**: Query Langflow workflows for survivor testimony analysis
+- **`create_langflow`**: Create or update Langflow workflows programmatically
 - **`get_status`**: System status and health checks
 - **`list_sources`**: Available data sources
 - **`analyze_transcript`**: Transcript and data analysis

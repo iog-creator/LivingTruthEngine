@@ -13,6 +13,7 @@ import time
 from typing import Dict, Any, List, Optional
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
+from fastapi import HTTPException
 
 # Load environment variables from project root
 import pathlib
@@ -140,6 +141,61 @@ class LangflowMCP:
             logger.error(f"List tools error: {e}")
             return f"❌ List tools error: {str(e)}"
 
+    def create_langflow(self, flow_config: Dict[str, Any], flow_id: Optional[str] = None) -> Dict[str, Any]:
+        """Create or update a Langflow workflow via API.
+
+        Args:
+            flow_config: Dictionary with workflow configuration (required: 'name', 'data'; optional: 'description', etc.).
+            flow_id: Optional ID of existing flow to update (uses PATCH if provided).
+
+        Returns:
+            Dict with the created/updated flow details.
+
+        Raises:
+            ValueError: If flow_config is invalid or missing required fields.
+            ConnectionError: If Langflow API is unavailable.
+            HTTPException: For HTTP-related errors with appropriate status codes.
+        """
+        if not flow_config or not isinstance(flow_config, dict):
+            logger.error("Invalid flow configuration: %s", flow_config)
+            raise ValueError("Flow configuration must be a non-empty dictionary")
+
+        required_fields = ["name", "data"]  # Verified: 'name' and 'data' (nodes/edges) required
+        if not all(key in flow_config for key in required_fields):
+            logger.error("Missing required fields in flow_config: %s", required_fields)
+            raise ValueError(f"Flow configuration must include: {required_fields}")
+
+        try:
+            headers = {
+                "x-api-key": self.langflow_api_key,
+                "Content-Type": "application/json",
+                "accept": "application/json"
+            }
+            url = f"{self.langflow_api_endpoint}/api/v1/flows"
+            if flow_id:
+                url += f"/{flow_id}"
+                method = "PATCH"  # Verified update method
+            else:
+                method = "POST"  # Verified create method
+
+            logger.debug("Sending %s request to %s with config: %s", method, url, flow_config)
+            response = requests.request(method, url, json=flow_config, headers=headers, timeout=10)
+            response.raise_for_status()
+
+            result = response.json()
+            logger.info("Workflow %s: %s", "updated" if flow_id else "created", result.get("id", "unknown"))
+            return result  # Returns full flow object, e.g., {"id": "...", "name": "...", "data": {...}}
+
+        except requests.exceptions.ConnectionError as e:
+            logger.error("Failed to connect to Langflow API: %s", e)
+            raise ConnectionError("Langflow API unavailable")
+        except requests.exceptions.HTTPError as e:
+            logger.error("HTTP error from Langflow API: %s - Response: %s", e, response.text if 'response' in locals() else "N/A")
+            raise HTTPException(status_code=response.status_code, detail=response.text if 'response' in locals() else str(e))
+        except Exception as e:
+            logger.error("Unexpected error creating/updating workflow: %s", e)
+            raise ConnectionError(f"Error processing workflow: {e}")
+
 # Create Langflow instance
 langflow = LangflowMCP()
 
@@ -170,6 +226,11 @@ def get_current_time() -> str:
 def test_tool(message: str) -> str:
     """A simple test tool for Cursor detection."""
     return f"Langflow MCP test tool response: {message}"
+
+@mcp.tool()
+def create_langflow(flow_config: Dict[str, Any], flow_id: Optional[str] = None) -> Dict[str, Any]:
+    """Create or update a Langflow workflow (MCP tool)."""
+    return langflow.create_langflow(flow_config, flow_id)
 
 if __name__ == "__main__":
     logger.info("Langflow MCP Server starting...")
