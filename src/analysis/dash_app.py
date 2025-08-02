@@ -23,6 +23,11 @@ logger = logging.getLogger(__name__)
 app = dash.Dash(__name__)
 app.title = "Living Truth Engine Dashboard"
 
+# Add health check endpoint to Dash app
+@app.server.route('/health')
+def health_check():
+    return {"status": "healthy", "service": "dashboard"}
+
 # Get visualizations directory
 visualizations_dir = Path("/app/visualizations")
 if not visualizations_dir.exists():
@@ -230,17 +235,16 @@ def update_refresh_button(n_clicks):
 # Create ASGI app for uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.wsgi import WSGIMiddleware
+from fastapi.responses import RedirectResponse
 
 # Create FastAPI app
 fastapi_app = FastAPI(title="Living Truth Engine Dashboard")
 
-# Mount Dash app as WSGI middleware
-fastapi_app.mount("/dash", WSGIMiddleware(app.server))
+# Mount Dash app as WSGI middleware at root
+fastapi_app.mount("/", WSGIMiddleware(app.server))
 
-# Add health check endpoint
-@fastapi_app.get("/health")
-async def health_check():
-    return {"status": "healthy", "service": "dashboard"}
+# Add health check endpoint (this won't work if mounted at root)
+# We'll use a different approach - add it to the Dash app itself
 
 if __name__ == '__main__':
     app.run_server(debug=True, host='0.0.0.0', port=8050) 
