@@ -1,0 +1,404 @@
+{
+  "description": "Living Truth Engine Biblical Forensic Analysis - Multi-Agent System for analyzing survivor testimony for Biblical patterns",
+  "name": "Living Truth Engine Biblical Forensic Analysis",
+  "id": "living-truth-biblical-forensic-analysis",
+  "nodes": [
+    {
+      "id": "start-node",
+      "type": "start",
+      "position": {
+        "x": 100,
+        "y": 100
+      },
+      "data": {
+        "type": "form",
+        "form": {
+          "title": "Biblical Forensic Analysis",
+          "description": "Provide details for analyzing survivor testimony for Biblical patterns",
+          "inputs": [
+            {
+              "type": "string",
+              "label": "Query or Transcript",
+              "name": "query",
+              "required": true,
+              "placeholder": "Enter your query or transcript text for Biblical analysis"
+            },
+            {
+              "type": "boolean",
+              "label": "Anonymize",
+              "name": "anonymize",
+              "default": false,
+              "description": "Anonymize personal information in the analysis"
+            },
+            {
+              "type": "options",
+              "label": "Output Type",
+              "name": "output_type",
+              "options": [
+                {
+                  "label": "Summary",
+                  "value": "summary"
+                },
+                {
+                  "label": "Study Guide",
+                  "value": "study_guide"
+                },
+                {
+                  "label": "Timeline",
+                  "value": "timeline"
+                },
+                {
+                  "label": "Audio",
+                  "value": "audio"
+                }
+              ],
+              "default": "summary"
+            }
+          ]
+        },
+        "flow_state": {
+          "subagents": [],
+          "findings": ""
+        },
+        "persist_state": true
+      }
+    },
+    {
+      "id": "chatlocalai-qwen3-8b",
+      "type": "chatlocalai",
+      "position": {
+        "x": 300,
+        "y": 100
+      },
+      "data": {
+        "label": "ChatLocalAI (Qwen3-8B)",
+        "model_name": "Qwen3-8B",
+        "api_endpoint": "http://lm-studio:1234/v1",
+        "temperature": 0.7,
+        "max_tokens": 512,
+        "top_p": 0.9,
+        "frequency_penalty": 0.0,
+        "presence_penalty": 0.0,
+        "stop": [],
+        "stream": false
+      }
+    },
+    {
+      "id": "planner-node",
+      "type": "llm",
+      "position": {
+        "x": 500,
+        "y": 100
+      },
+      "data": {
+        "label": "Planner",
+        "model": "chatlocalai-qwen3-8b",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a Biblical forensic analysis planner for the Living Truth Engine. Your role is to analyze survivor testimony and create a structured research plan to identify Biblical patterns, references, and theological insights.\n\n<research_process>\n1. **Initial Analysis**: Examine the query/transcript for potential Biblical themes, references, and patterns\n2. **Pattern Recognition**: Identify recurring themes, motifs, and theological concepts\n3. **Reference Extraction**: Find explicit and implicit Biblical references\n4. **Contextual Analysis**: Understand the historical and cultural context\n5. **Corroboration**: Cross-reference findings with Biblical texts and theological sources\n6. **Synthesis**: Combine findings into coherent analysis\n</research_process>\n\n<subagent_count_guidelines>\n- **Simple queries** (1-2 themes): 2-3 subagents\n- **Moderate complexity** (3-5 themes): 4-6 subagents\n- **Complex analysis** (6+ themes): 7-10 subagents\n- **Maximum subagents**: 10 to maintain quality and efficiency\n</subagent_count_guidelines>\n\n<delegation_instructions>\nCreate specialized subagents for:\n1. **Biblical Reference Analysis**: Extract and analyze explicit Biblical quotes and references\n2. **Theological Pattern Recognition**: Identify theological themes and doctrinal patterns\n3. **Historical Context Research**: Research historical and cultural context\n4. **Cross-Reference Validation**: Verify findings against multiple Biblical sources\n5. **Survivor Testimony Analysis**: Analyze patterns in survivor narratives\n6. **Ethical and Pastoral Considerations**: Examine ethical implications and pastoral care aspects\n7. **Comparative Analysis**: Compare with similar cases or Biblical narratives\n8. **Documentation and Evidence**: Compile supporting evidence and documentation\n</delegation_instructions>\n\n<answer_formatting>\nReturn a JSON array of subagent tasks:\n```json\n{\n  \"subagents\": [\n    {\n      \"task\": \"Detailed description of the research task for this subagent\"\n    }\n  ]\n}\n```\n</answer_formatting>\n\n<important_guidelines>\n- Focus on Biblical accuracy and theological soundness\n- Consider the sensitive nature of survivor testimony\n- Maintain objectivity while showing compassion\n- Use proper Biblical hermeneutics and exegesis\n- Respect diverse theological perspectives\n- Ensure findings are actionable for pastoral care\n- Consider the impact on survivors and communities\n- Maintain confidentiality and ethical standards\n</important_guidelines>"
+          },
+          {
+            "role": "user",
+            "content": "Query: {{ $form.query }}\nAnonymize: {{ $form.anonymize }}\nOutput Type: {{ $form.output_type }}"
+          }
+        ],
+        "enable_memory": true,
+        "memory_type": "allMessages",
+        "return_response_as": "userMessage",
+        "json_structured_output": {
+          "key": "subagents",
+          "type": "jsonArray",
+          "json_schema": {
+            "task": {
+              "type": "string",
+              "description": "The research task for subagent"
+            }
+          },
+          "description": "A list of subagents to perform research task"
+        },
+        "update_flow_state": {
+          "key": "subagents",
+          "value": "{{ output.subagents }}"
+        }
+      }
+    },
+    {
+      "id": "iteration-node",
+      "type": "iteration",
+      "position": {
+        "x": 700,
+        "y": 100
+      },
+      "data": {
+        "label": "Spawn SubAgents",
+        "array_input": "{{ $flow.state.subagents }}"
+      }
+    },
+    {
+      "id": "subagent-node",
+      "type": "agent",
+      "position": {
+        "x": 900,
+        "y": 100
+      },
+      "data": {
+        "label": "SubAgent",
+        "model": "chatlocalai-qwen3-0.6b",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a specialized Biblical research subagent for the Living Truth Engine. Your task is to conduct focused research on a specific aspect of Biblical forensic analysis.\n\n<task>{{ $iteration.task }}</task>\n\n<research_process>\n1. **Task Understanding**: Clearly understand your specific research task\n2. **Source Identification**: Identify relevant Biblical texts, theological sources, and academic references\n3. **Pattern Analysis**: Look for patterns, themes, and connections\n4. **Evidence Collection**: Gather supporting evidence and documentation\n5. **Critical Evaluation**: Assess the quality and relevance of findings\n6. **Synthesis**: Compile findings into coherent analysis\n</research_process>\n\n<research_guidelines>\n- Use multiple sources for verification\n- Consider historical and cultural context\n- Apply proper Biblical hermeneutics\n- Maintain theological accuracy\n- Respect diverse perspectives\n- Focus on actionable insights\n- Consider pastoral implications\n- Maintain ethical standards\n</research_guidelines>\n\n<think_about_source_quality>\nBefore using any source:\n- Is it theologically sound and academically credible?\n- Does it provide relevant insights for the task?\n- Is it from a reputable Biblical or theological source?\n- Does it contribute to understanding the survivor testimony?\n- Is it appropriate for the sensitive nature of the analysis?\n</think_about_source_quality>\n\n<use_parallel_tool_calls>\nUse multiple tools simultaneously when appropriate:\n- Combine web search with Biblical text analysis\n- Cross-reference findings across multiple sources\n- Validate patterns with theological databases\n- Corroborate evidence from different perspectives\n</use_parallel_tool_calls>\n\n<maximum_tool_call_limit>\nMaximum 5 tool calls per research task to maintain efficiency and focus.\n</maximum_tool_call_limit>\n\n<citations>\nAlways provide proper citations for:\n- Biblical references (book, chapter, verse)\n- Theological sources (author, title, publication)\n- Academic references (author, title, journal/publisher)\n- Historical sources (author, title, date)\n</citations>"
+          },
+          {
+            "role": "user",
+            "content": "Research task: {{ $iteration.task }}"
+          }
+        ],
+        "tools": [
+          {
+            "type": "arxiv",
+            "label": "Arxiv",
+            "top_k_results": 3,
+            "load_full_content": true
+          },
+          {
+            "type": "google_custom_search",
+            "label": "Google Custom Search",
+            "api_key": "{{ $env.SERP_API_KEY }}",
+            "cse_id": "{{ $env.GOOGLE_CSE_ID }}"
+          },
+          {
+            "type": "web_scraper",
+            "label": "Web Scraper",
+            "recursive": true,
+            "max_depth": 1,
+            "max_pages": 2
+          },
+          {
+            "type": "custom",
+            "label": "pgVectorSearch",
+            "description": "Search for Biblical references in PostgreSQL vector database using Qwen3-0.6B embeddings",
+            "vector_store": "living_truth_biblical_db",
+            "embedding_model": "Qwen3-0.6B",
+            "knowledge_name": "Biblical References",
+            "knowledge_description": "Contains embeddings of Biblical texts for pattern matching and corroboration",
+            "return_source_documents": true,
+            "api_endpoint": "http://living-truth-mcp:8000",
+            "api_key": "{{ $env.MCP_API_KEY }}"
+          }
+        ],
+        "enable_memory": true,
+        "memory_type": "allMessages",
+        "return_response_as": "userMessage"
+      }
+    },
+    {
+      "id": "writer-agent-node",
+      "type": "agent",
+      "position": {
+        "x": 1100,
+        "y": 100
+      },
+      "data": {
+        "label": "Writer Agent",
+        "model": "chatlocalai-qwen3-8b",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are the Writer Agent for the Living Truth Engine Biblical Forensic Analysis. Your role is to synthesize findings from subagents into comprehensive, structured reports.\n\n<guiding_principles>\n- **Preserve Context**: Maintain the full context of Biblical analysis and survivor testimony\n- **Citation Integrity**: Ensure all Biblical references and sources are properly cited\n- **Structure**: Organize findings in logical, coherent structure\n- **Markdown Output**: Use proper Markdown formatting for readability\n- **Sensitivity**: Handle survivor testimony with appropriate care and respect\n</guiding_principles>\n\n<writing_guidelines>\n\n**Title**: Clear, descriptive title reflecting the analysis focus\n\n**Abstract**: Concise summary of key findings and Biblical patterns identified\n\n**Introduction**:\n- Context of the analysis\n- Objectives and scope\n- Methodology overview\n- Biblical framework for analysis\n\n**Main Body**:\n- **Biblical Pattern Analysis**: Detailed examination of identified patterns\n- **Theological Insights**: Theological implications and interpretations\n- **Historical Context**: Relevant historical and cultural background\n- **Cross-References**: Connections to other Biblical texts and themes\n- **Survivor Testimony Integration**: How findings relate to survivor narratives\n- **Ethical Considerations**: Pastoral and ethical implications\n\n**Synthesis**:\n- Integration of all findings\n- Pattern recognition summary\n- Theological coherence assessment\n- Practical applications\n\n**Implications**:\n- Pastoral care recommendations\n- Community impact considerations\n- Further research directions\n- Actionable next steps\n\n**Conclusion**:\n- Summary of key insights\n- Biblical wisdom application\n- Hope and healing perspectives\n\n</writing_guidelines>\n\n<style>\n- **Extensive**: Provide comprehensive analysis with depth\n- **Structured**: Use clear headings and logical flow\n- **Analytical**: Apply critical thinking and theological reasoning\n- **Objective**: Maintain scholarly objectivity while showing compassion\n- **Formal**: Use appropriate academic and theological language\n- **Sensitive**: Handle difficult topics with care and respect\n</style>\n\n<output_type_adaptations>\n\n**Summary**: Focus on key findings and main patterns\n**Study Guide**: Include discussion questions and reflection points\n**Timeline**: Organize findings chronologically with Biblical parallels\n**Audio**: Structure for spoken presentation with clear sections\n\n</output_type_adaptations>\n\n<anonymization>\nIf anonymize is true:\n- Remove or generalize personal identifiers\n- Maintain narrative integrity\n- Focus on patterns rather than specific details\n- Use general examples and case studies\n</anonymization>"
+          },
+          {
+            "role": "user",
+            "content": "<research_topic>{{ $form.query }}</research_topic>\n<existing_findings>{{ $flow.state.findings }}</existing_findings>\n<new_findings>{{ iterationAgentflow_0 }}</new_findings>\n<anonymize>{{ $form.anonymize }}</anonymize>\n<output_type>{{ $form.output_type }}</output_type>"
+          }
+        ],
+        "tools": [],
+        "enable_memory": false,
+        "return_response_as": "userMessage",
+        "update_flow_state": {
+          "key": "findings",
+          "value": "{{ output }}"
+        }
+      }
+    },
+    {
+      "id": "condition-agent-node",
+      "type": "conditionAgent",
+      "position": {
+        "x": 1300,
+        "y": 100
+      },
+      "data": {
+        "label": "More SubAgents?",
+        "model": "chatlocalai-qwen3-0.6b",
+        "instructions": "Given a research topic, previous subagents and their findings, determine if more subagents are needed for further research or the findings are sufficient for the research topic",
+        "input": "<research_topic>{{ $form.query }}</research_topic>\n<subagents>{{ $flow.state.subagents }}</subagents>\n<findings>{{ $flow.state.findings }}</findings>\n<anonymize>{{ $form.anonymize }}</anonymize>\n<output_type>{{ $form.output_type }}</output_type>",
+        "scenarios": [
+          "More subagents are needed",
+          "Findings are sufficient"
+        ],
+        "override_system_prompt": false
+      }
+    },
+    {
+      "id": "loop-node",
+      "type": "loop",
+      "position": {
+        "x": 1500,
+        "y": 50
+      },
+      "data": {
+        "label": "Back to Planner",
+        "loop_back_to": "llmAgentflow_0-Planner",
+        "max_loop_count": 5
+      }
+    },
+    {
+      "id": "direct-reply-node",
+      "type": "directReply",
+      "position": {
+        "x": 1500,
+        "y": 150
+      },
+      "data": {
+        "label": "Generate Report",
+        "message": "{{ $flow.state.findings }}"
+      }
+    },
+    {
+      "id": "sticky-note-1",
+      "type": "stickyNote",
+      "position": {
+        "x": 100,
+        "y": 300
+      },
+      "data": {
+        "content": "Planner will generate list of subagents for Biblical forensic analysis"
+      }
+    },
+    {
+      "id": "sticky-note-2",
+      "type": "stickyNote",
+      "position": {
+        "x": 300,
+        "y": 300
+      },
+      "data": {
+        "content": "Each SubAgent has its own research task and tools to complete its findings for Biblical analysis"
+      }
+    },
+    {
+      "id": "sticky-note-3",
+      "type": "stickyNote",
+      "position": {
+        "x": 500,
+        "y": 300
+      },
+      "data": {
+        "content": "Writer Agent combines the findings and generates an updated report with Biblical insights"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-start-to-chatlocalai",
+      "source": "start-node",
+      "target": "chatlocalai-qwen3-8b",
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-chatlocalai-to-planner",
+      "source": "chatlocalai-qwen3-8b",
+      "target": "planner-node",
+      "sourceHandle": "output",
+      "targetHandle": "model"
+    },
+    {
+      "id": "edge-start-to-planner",
+      "source": "start-node",
+      "target": "planner-node",
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-planner-to-iteration",
+      "source": "planner-node",
+      "target": "iteration-node",
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-iteration-to-subagent",
+      "source": "iteration-node",
+      "target": "subagent-node",
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-subagent-to-writer",
+      "source": "subagent-node",
+      "target": "writer-agent-node",
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-writer-to-condition",
+      "source": "writer-agent-node",
+      "target": "condition-agent-node",
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-condition-to-loop",
+      "source": "condition-agent-node",
+      "target": "loop-node",
+      "sourceHandle": "output-0",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-condition-to-direct-reply",
+      "source": "condition-agent-node",
+      "target": "direct-reply-node",
+      "sourceHandle": "output-1",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-loop-to-planner",
+      "source": "loop-node",
+      "target": "planner-node",
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "created_by": "Living Truth Engine",
+    "description": "Multi-agent system for Biblical forensic analysis of survivor testimony",
+    "tags": ["biblical", "forensic", "analysis", "survivor", "testimony", "multi-agent"],
+    "integrations": {
+      "mcp_server": "living_truth_fastmcp_server.py",
+      "models": {
+        "qwen3-8b": "http://lm-studio:1234/v1",
+        "qwen3-0.6b": "http://lm-studio:1234/v1"
+      },
+      "database": "PostgreSQL with PGVector",
+      "tools": [
+        "query_flowise",
+        "analyze_transcript",
+        "list_sources",
+        "generate_viz",
+        "pgVectorSearch"
+      ]
+    },
+    "environment_variables": {
+      "FLOWISE_API_ENDPOINT": "http://flowise:3000",
+      "LANGFLOW_API_ENDPOINT": "http://langflow:7860",
+      "LM_STUDIO_ENDPOINT": "http://lm-studio:1234",
+      "MCP_API_KEY": "required",
+      "SERP_API_KEY": "required",
+      "GOOGLE_CSE_ID": "required"
+    }
+  }
+} 

@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "flowise-mcp-server": {
+      "command": "${PROJECT_ROOT}/NotebookLM/LivingTruthEngine/living_venv/bin/python",
+      "args": ["${PROJECT_ROOT}/NotebookLM/LivingTruthEngine/flowise_mcp_server.py"],
+      "env": {
+        "FLOWISE_API_ENDPOINT": "http://localhost:3000",
+        "FLOWISE_API_KEY": "kkUVM9tTVKzL9btjElkJwn2fWQiXGQy1J_BvV3Mw-14",
+        "FLOWISE_CHATFLOW_ID": "your_chatflow_id",
+        "PYTHONPATH": "${PROJECT_ROOT}/NotebookLM/LivingTruthEngine"
+      },
+      "description": "Living Truth Engine Flowise MCP Server for Biblical analysis"
+    }
+  }
+} 

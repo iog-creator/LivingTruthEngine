@@ -1,0 +1,217 @@
+---
+description: "Docker best practices for the Living Truth Engine project, ensuring modern, secure, and efficient containerization"
+globs: ["**/docker/**/*", "**/docker-compose.yml", "**/Dockerfile*", "**/.dockerignore"]
+alwaysApply: true
+---
+
+---
+description: "Docker best practices for the Living Truth Engine project, ensuring modern, secure, and efficient containerization"
+globs: ["**/docker/**/*", "**/docker-compose.yml", "**/Dockerfile*", "**/.dockerignore"]
+alwaysApply: true
+---
+
+# Docker Best Practices for Living Truth Engine
+
+## Description
+This rule establishes Docker best practices for the Living Truth Engine project, ensuring modern, secure, and efficient containerization.
+
+## 🐳 **Docker Configuration Standards**
+
+### **Docker Compose v2 (Required)**
+```yaml
+# ✅ Good - Modern Docker Compose v2 syntax
+services:
+  langflow:
+    image: langflowai/langflow:latest
+    container_name: living_truth_langflow
+    ports:
+      - "7860:7860"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - living-truth-network
+
+# ❌ Bad - Deprecated v1 syntax
+version: '3.8'
+services:
+  langflow:
+    image: langflowai/langflow
+    ports:
+      - "7860:7860"
+```
+
+### **Security Best Practices**
+```dockerfile
+# ✅ Good - Non-root user, security hardening
+FROM python:3.12-slim
+
+# Install system dependencies with cleanup
+RUN apt-get update && apt-get install -y \
+    curl \
+    postgresql-client \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user for security
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
+USER appuser
+
+# Health check
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+```
+
+### **Volume and Network Configuration**
+```yaml
+# ✅ Good - Explicit networks, read-only volumes
+services:
+  living-truth-mcp:
+    volumes:
+      - ../data/sources:/app/data/sources:ro  # Read-only
+      - ../data/outputs/logs:/app/data/outputs/logs
+      - ../.env:/app/.env:ro  # Read-only
+    networks:
+      - living-truth-network
+
+networks:
+  living-truth-network:
+    driver: bridge
+    name: living-truth-network
+
+volumes:
+  postgres_data:
+    driver: local
+    name: living-truth-postgres-data
+```
+
+## 📋 **Docker Configuration Checklist**
+
+### **Before Creating Dockerfile**
+- [ ] **Use slim base images** (e.g., `python:3.12-slim`)
+- [ ] **Install dependencies before code copy** (layer caching)
+- [ ] **Create non-root user** for security
+- [ ] **Add health checks** for monitoring
+- [ ] **Use .dockerignore** to exclude unnecessary files
+
+### **Before Creating docker-compose.yml**
+- [ ] **Use Docker Compose v2** syntax (no `version` field)
+- [ ] **Specify image tags** (e.g., `:latest`, `:17-alpine`)
+- [ ] **Add container names** for easy identification
+- [ ] **Configure health checks** for all services
+- [ ] **Set restart policies** (`unless-stopped`, `always`)
+- [ ] **Use explicit networks** and volumes
+- [ ] **Make sensitive volumes read-only** (`:ro`)
+
+### **Before Deploying**
+- [ ] **Validate compose file** with `docker compose config`
+- [ ] **Test health checks** manually
+- [ ] **Verify environment variables** are loaded
+- [ ] **Check port conflicts** before starting
+- [ ] **Run validation script** (`./scripts/setup/validate_docker.sh`)
+
+## 🔧 **Docker Commands and Scripts**
+
+### **Service Management**
+```bash
+# ✅ Use Docker Compose v2 commands
+docker compose -f docker/docker-compose.yml up -d
+docker compose -f docker/docker-compose.yml down
+docker compose -f docker/docker-compose.yml logs -f
+
+# ✅ Use project scripts
+./scripts/setup/start_services.sh
+./scripts/setup/stop_services.sh
+./scripts/setup/validate_docker.sh
+```
+
+### **Build Optimization**
+```bash
+# ✅ Enable BuildKit for faster builds
+DOCKER_BUILDKIT=1 docker compose -f docker/docker-compose.yml build
+
+# ✅ Use BuildKit inline cache
+docker build --build-arg BUILDKIT_INLINE_CACHE=1 .
+```
+
+### **System Maintenance**
+```bash
+# ✅ Clean up unused resources
+docker image prune -f
+docker system prune
+docker volume prune
+
+# ✅ Update system components
+./scripts/setup/update_system.sh
+```
+
+## 🚨 **Common Docker Mistakes to Avoid**
+
+### **Security Issues**
+- ❌ **Running as root** in containers
+- ❌ **Mounting volumes without read-only** for sensitive data
+- ❌ **Using latest tags** without pinning versions
+- ❌ **Exposing unnecessary ports**
+- ❌ **Not using health checks**
+
+### **Performance Issues**
+- ❌ **Not using .dockerignore** (large build context)
+- ❌ **Copying code before dependencies** (poor layer caching)
+- ❌ **Not using BuildKit** (slower builds)
+- ❌ **Using full base images** instead of slim
+- ❌ **Not cleaning up** apt cache in Dockerfile
+
+### **Configuration Issues**
+- ❌ **Using Docker Compose v1** syntax
+- ❌ **Not specifying restart policies**
+- ❌ **Missing health checks**
+- ❌ **Not using explicit networks**
+- ❌ **Hardcoded values** instead of environment variables
+
+## 📊 **Docker Best Practices Metrics**
+
+- ✅ **Security**: 100% non-root containers
+- ✅ **Performance**: BuildKit enabled, slim images
+- ✅ **Reliability**: Health checks on all services
+- ✅ **Maintainability**: Clear naming, documentation
+- ✅ **Modern**: Docker Compose v2, latest practices
+
+## 🎯 **Docker Development Workflow**
+
+### **1. Development Setup**
+```bash
+# Start development environment
+./scripts/setup/start_services.sh
+
+# Validate configuration
+./scripts/setup/validate_docker.sh
+```
+
+### **2. Testing**
+```bash
+# Test services individually
+curl -f http://localhost:7860/health  # Langflow
+curl -f http://localhost:8000/health  # MCP Server
+pg_isready -h localhost -p 5432  # PostgreSQL
+```
+
+### **3. Deployment**
+```bash
+# Build and deploy
+DOCKER_BUILDKIT=1 docker compose -f docker/docker-compose.yml up -d --build
+
+# Monitor deployment
+docker compose -f docker/docker-compose.yml logs -f
+```
+
+---
+
+**Follow these Docker best practices to ensure secure, efficient, and maintainable containerized applications.**
+
+@coding_standards.mdc
+@development_workflow.mdc

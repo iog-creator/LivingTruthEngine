@@ -1,15 +1,61 @@
 {
   "mcpServers": {
-    "flowise-mcp-server": {
-      "command": "${PROJECT_ROOT}/NotebookLM/LivingTruthEngine/living_venv/bin/python",
-      "args": ["${PROJECT_ROOT}/NotebookLM/LivingTruthEngine/flowise_mcp_server.py"],
+    "living_truth_fastmcp_server": {
+      "command": "python3",
+      "args": [
+        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py"
+      ],
       "env": {
-        "FLOWISE_API_ENDPOINT": "http://localhost:3000",
-        "FLOWISE_API_KEY": "kkUVM9tTVKzL9btjElkJwn2fWQiXGQy1J_BvV3Mw-14",
-        "FLOWISE_CHATFLOW_ID": "your_chatflow_id",
-        "PYTHONPATH": "${PROJECT_ROOT}/NotebookLM/LivingTruthEngine"
+        "LANGFLOW_API_ENDPOINT": "http://localhost:7860",
+        "LANGFLOW_API_KEY": "${LANGFLOW_API_KEY}",
+        "LANGFLOW_PROJECT_ID": "399a0977-d08a-4d61-ba52-fd9811676762",
+        "LM_STUDIO_ENDPOINT": "http://localhost:1234",
+        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
       },
-      "description": "Living Truth Engine Flowise MCP Server for Biblical analysis"
+      "description": "Living Truth Engine FastMCP Server for survivor testimony analysis with Langflow and LM Studio integration"
+    },
+    "github_mcp_server": {
+      "command": "python3",
+      "args": [
+        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/github_mcp_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
+      },
+      "description": "GitHub MCP Server for repository management and collaboration"
+    },
+    "postgresql_mcp_server": {
+      "command": "python3",
+      "args": [
+        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/postgresql_mcp_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
+      },
+      "description": "PostgreSQL MCP Server for database access and querying"
+    },
+    "huggingface_mcp_server": {
+      "command": "python3",
+      "args": [
+        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/huggingface_mcp_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
+      },
+      "description": "Hugging Face MCP Server for model and dataset access"
+    },
+    "langflow_mcp_server": {
+      "command": "python3",
+      "args": [
+        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/langflow_mcp_server.py"
+      ],
+      "env": {
+        "LANGFLOW_API_ENDPOINT": "http://localhost:7860",
+        "LANGFLOW_API_KEY": "${LANGFLOW_API_KEY}",
+        "LANGFLOW_PROJECT_ID": "399a0977-d08a-4d61-ba52-fd9811676762",
+        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
+      },
+      "description": "Langflow MCP Server for workflow integration using Python-based MCP server"
     }
   }
-} 
+}

@@ -1,0 +1,250 @@
+---
+description: "System management practices for the Living Truth Engine, including environment setup, automation, and monitoring"
+globs: ["**/*.sh", "**/*.py", "**/scripts/**/*", "**/.env*"]
+alwaysApply: true
+---
+
+---
+description: "System management practices for the Living Truth Engine, including environment setup, automation, and monitoring"
+globs: ["**/*.sh", "**/*.py", "**/scripts/**/*", "**/.env*"]
+alwaysApply: true
+---
+
+# System Management and Automation
+
+## Description
+This rule defines system management practices for the Living Truth Engine, including environment setup, automation, and monitoring.
+
+## 🖥️ **System Configuration Standards**
+
+### **Environment Management**
+```bash
+# ✅ Good - Use virtual environment
+source living_venv/bin/activate
+
+# ✅ Good - Environment-driven configuration
+export AGI_DASHBOARD_PORT=5001
+export AGI_LOG_LEVEL=INFO
+export AGI_ENVIRONMENT=development
+```
+
+### **Python Environment**
+```bash
+# ✅ Good - Canonical environment usage
+# Always use living_venv for all operations
+source living_venv/bin/activate
+
+# ✅ Good - Environment validation
+python -c "import sys; print('Environment:', sys.executable)"
+```
+
+### **System Updates**
+```bash
+# ✅ Good - Automated system updates
+./scripts/setup/update_system.sh
+
+# ✅ Good - Component-specific updates
+# Docker: Latest Engine, Compose v2, BuildKit
+# Node.js: Latest LTS version
+# Python: Latest packages and dependencies
+```
+
+## 📋 **System Management Checklist**
+
+### **Environment Setup**
+- [ ] **Activate virtual environment** before any Python operations
+- [ ] **Use environment variables** for configuration
+- [ ] **Validate environment** before operations
+- [ ] **Check dependencies** are installed
+- [ ] **Verify MCP server** is running
+
+### **System Maintenance**
+- [ ] **Update system components** regularly
+- [ ] **Clean up unused resources** (Docker, logs, cache)
+- [ ] **Monitor system resources** (CPU, memory, disk)
+- [ ] **Backup important data** regularly
+- [ ] **Validate configurations** after updates
+
+### **Development Workflow**
+- [ ] **Check for existing files** before creating new ones
+- [ ] **Use MCP server** for operations when possible
+- [ ] **Follow cursor rules** for all operations
+- [ ] **Update documentation** as you go
+- [ ] **Run compliance checks** regularly
+
+## 🔧 **Automation Scripts**
+
+### **Service Management**
+```bash
+# ✅ Start all services (notebook_agent group)
+cd /home/mccoy/Projects/RippleAGI/notebook_agent
+docker compose -f docker/docker-compose.yml up -d
+
+# ✅ Stop all services
+cd /home/mccoy/Projects/RippleAGI/notebook_agent
+docker compose -f docker/docker-compose.yml down
+
+# ✅ Validate Docker setup
+./scripts/setup/validate_docker.sh
+
+# ✅ Update system components
+./scripts/setup/update_system.sh
+```
+
+### **Development Automation**
+```bash
+# ✅ Check system status
+./scripts/setup/check_system.sh
+
+# ✅ Run tests
+./scripts/testing/run_tests.sh
+
+# ✅ Deploy application
+./scripts/deployment/deploy.sh
+```
+
+### **MCP Server Integration**
+```bash
+# ✅ Use MCP tools for operations
+mcp_living_truth_fastmcp_server_get_status()
+mcp_living_truth_fastmcp_server_query_flowise("query")
+mcp_living_truth_fastmcp_server_analyze_transcript("transcript_name")
+```
+
+## 🚨 **Common System Issues to Avoid**
+
+### **Environment Issues**
+- ❌ **Not activating virtual environment** before Python operations
+- ❌ **Using system Python** instead of project environment
+- ❌ **Hardcoding configuration** instead of environment variables
+- ❌ **Not validating environment** before operations
+- ❌ **Mixing environments** across different projects
+
+### **Automation Issues**
+- ❌ **Manual operations** that could be automated
+- ❌ **Not using MCP server** for available operations
+- ❌ **Inconsistent script usage** across team
+- ❌ **Not updating documentation** with changes
+- ❌ **Skipping validation steps**
+
+### **System Maintenance Issues**
+- ❌ **Not updating components** regularly
+- ❌ **Accumulating unused resources** (Docker images, logs)
+- ❌ **Not monitoring system health**
+- ❌ **No backup strategy** for important data
+- ❌ **Ignoring security updates**
+
+## 📊 **System Management Metrics**
+
+- ✅ **Environment consistency**: 100% virtual environment usage
+- ✅ **Automation coverage**: 90%+ operations automated
+- ✅ **System updates**: Monthly component updates
+- ✅ **Resource efficiency**: <10% unused resources
+- ✅ **Documentation**: 100% operations documented
+
+## 🎯 **System Management Workflow**
+
+### **1. Daily Operations**
+```bash
+# Start development environment
+source living_venv/bin/activate
+./scripts/setup/start_services.sh
+
+# Check system status
+./scripts/setup/check_system.sh
+```
+
+### **2. Weekly Maintenance**
+```bash
+# Update system components
+./scripts/setup/update_system.sh
+
+# Clean up resources
+docker system prune
+docker image prune -f
+
+# Validate configurations
+./scripts/setup/validate_docker.sh
+```
+
+### **3. Monthly Review**
+```bash
+# Comprehensive system check
+./scripts/setup/check_system.sh
+./scripts/setup/validate_docker.sh
+
+# Update documentation
+# Review and update cursor rules
+# Check for security updates
+```
+
+## 🔍 **Monitoring and Validation**
+
+### **System Health Checks**
+```bash
+# ✅ Service status
+docker compose -f docker/docker-compose.yml ps
+
+# ✅ Environment validation
+python -c "import sys; print('Python:', sys.version)"
+node --version
+docker --version
+
+# ✅ MCP server status
+mcp_living_truth_fastmcp_server_get_status()
+```
+
+### **Performance Monitoring**
+```bash
+# ✅ Resource usage
+docker stats
+df -h
+free -h
+
+# ✅ Service response times
+curl -w "@curl-format.txt" -o /dev/null -s http://localhost:3000/
+```
+
+### **Log Analysis**
+```bash
+# ✅ Service logs
+docker compose -f docker/docker-compose.yml logs -f
+
+# ✅ Application logs
+tail -f logs/application.log
+
+# ✅ Error monitoring
+grep -i error logs/*.log
+```
+
+## 🛠️ **Troubleshooting Guide**
+
+### **Common Problems**
+1. **Environment not activated**: `source living_venv/bin/activate`
+2. **Port conflicts**: Stop conflicting services, check `netstat -tulpn`
+3. **Docker issues**: Restart Docker daemon, validate compose file
+4. **MCP server errors**: Check configuration, restart server
+5. **Permission issues**: Check file permissions, use correct user
+
+### **Recovery Procedures**
+```bash
+# ✅ Full system restart
+./scripts/setup/stop_services.sh
+./scripts/setup/start_services.sh
+
+# ✅ Environment reset
+deactivate
+source living_venv/bin/activate
+
+# ✅ Docker reset
+docker compose -f docker/docker-compose.yml down
+docker compose -f docker/docker-compose.yml up -d
+```
+
+---
+
+**Follow these system management practices to ensure reliable, efficient, and maintainable operations.**
+
+@coding_standards.mdc
+@development_workflow.mdc
+@docker_best_practices.mdc

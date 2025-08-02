@@ -1,0 +1,84 @@
+# Living Truth Engine - Flowise Only Docker Compose Configuration
+# Independent Flowise service for testing purposes
+
+services:
+  flowise:
+    image: flowiseai/flowise:latest
+    container_name: living-truth-flowise
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../data/.flowise:/root/.flowise
+    environment:
+      FLOWISE_API_KEY: ${FLOWISE_API_KEY:-}
+      FLOWISE_CHATFLOW_ID: ${FLOWISE_CHATFLOW_ID:-}
+      LANGCHAIN_API_KEY: ${LANGCHAIN_API_KEY:-}
+      SERP_API_KEY: ${SERP_API_KEY:-}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - living-truth-network
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: living-truth-postgres
+    restart: always
+    user: postgres
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-living_truth_engine}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - living-truth-network
+
+  living-truth-mcp:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.mcp
+    container_name: living-truth-mcp
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../data/sources:/app/data/sources:ro
+      - ../data/outputs/logs:/app/data/outputs/logs
+      - ../data/outputs/visualizations:/app/data/outputs/visualizations
+      - ../.env:/app/.env:ro
+    environment:
+      FLOWISE_API_ENDPOINT: http://flowise:3000
+      FLOWISE_API_KEY: ${FLOWISE_API_KEY:-}
+      FLOWISE_CHATFLOW_ID: ${FLOWISE_CHATFLOW_ID:-}
+      PYTHONPATH: /app/src
+    depends_on:
+      flowise:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - living-truth-network
+    command: ["python", "src/mcp_servers/living_truth_fastmcp_server.py"]
+
+networks:
+  living-truth-network:
+    driver: bridge
+    name: living-truth-network
+
+volumes:
+  postgres_data:
+    driver: local
+    name: living-truth-postgres-data 

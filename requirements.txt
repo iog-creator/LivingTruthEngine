@@ -10,4 +10,8 @@ dash
 piper-tts
 serpapi
 requests
-python-dotenv 
+python-dotenv
+mcp
+fastmcp
+fastapi
+uvicorn 

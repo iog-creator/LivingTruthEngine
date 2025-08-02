@@ -2,12 +2,12 @@
 
 ## Overview
 
-The Flowise MCP Server provides integration between Cursor IDE and the Living Truth Engine's Flowise-based AI system for Biblical forensic analysis and survivor testimony corroboration.
+The Flowise MCP Server provides integration between Cursor IDE and the Living Truth Engine's Flowise-based AI system for survivor testimony analysis and evidence corroboration.
 
 ## Available Tools
 
 ### 1. `query_flowise`
-**Description**: Query the Flowise chatflow for Biblical forensic analysis, survivor testimony corroboration, anonymization, structured outputs (summary, study guide, timeline, audio), and visualizations
+**Description**: Query the Flowise chatflow for survivor testimony analysis, evidence corroboration, anonymization, structured outputs (summary, study guide, timeline, audio), and visualizations
 
 **Parameters**:
 - `query` (string, required): Query string (e.g., 'Survivor testimony patterns' or YouTube URL)
@@ -21,7 +21,7 @@ The Flowise MCP Server provides integration between Cursor IDE and the Living Tr
   "params": [
     "query_flowise",
     {
-      "query": "Biblical abuse patterns",
+      "query": "survivor testimony patterns",
       "anonymize": true,
       "output_type": "study_guide"
     }
@@ -96,7 +96,7 @@ Located at `~/.cursor/mcp.json`:
 ### Usage in Cursor
 1. Restart Cursor to load the MCP server
 2. Use the tools through Cursor's AI interface
-3. Example: "Use query_flowise to analyze 'Biblical abuse patterns' with anonymize=true and output_type=study guide"
+3. Example: "Use query_flowise to analyze 'survivor testimony patterns' with anonymize=true and output_type=study guide"
 
 ## Troubleshooting
 

@@ -1,0 +1,144 @@
+# MCP Server Configuration and Red Dot Prevention Rule
+
+## Description
+This rule prevents MCP server red dot issues by enforcing proper naming conventions, configuration hierarchy, and best practices for MCP server setup in Cursor.
+
+## Globs
+*.json, .cursor/*, **/mcp*.json, **/.cursor/*
+
+## Always Apply
+true
+
+## Rule Content
+
+### 🚨 CRITICAL: MCP Server Red Dot Prevention
+
+#### **Root Cause Analysis**
+The red dot in Cursor's MCP settings indicates connection failures, typically caused by:
+1. **Dashes (`-`) in server/tool names** - Cursor has known parsing issues with dashes
+2. **Conflicting configurations** between global and workspace-specific settings
+3. **Cached configurations** from previous setups
+4. **Multiple MCP config files** across different projects
+
+#### **MANDATORY Naming Conventions**
+- ✅ **ALWAYS use underscores (`_`) instead of dashes (`-`)**
+- ❌ **NEVER use dashes (`-`) in server names, tool names, or configuration keys**
+- ✅ **Examples**: `personal_mcp_server`, `flowise_mcp_server`, `my_tool_name`
+- ❌ **Avoid**: `personal-mcp-server`, `flowise-mcp-server`, `my-tool-name`
+- ✅ **Tool names MUST be 60 characters or less**
+- ❌ **NEVER exceed 60 characters in tool names**
+- ✅ **Examples**: `query_flowise` (15 chars), `get_status` (11 chars), `analyze_transcript` (18 chars)
+- ❌ **Avoid**: `living_truth_generate_visualization` (62 chars - too long!)
+
+#### **Configuration Hierarchy (Priority Order)**
+1. **Workspace-specific** (`.cursor/mcp.json` in project folder) - **Highest priority**
+2. **Global** (`~/.cursor/mcp.json`) - **Lower priority**
+3. **Environment-specific** (`~/.config/Cursor/User/mcp.env`) - **Lowest priority**
+
+#### **Best Practices for MCP Configuration**
+
+##### **Workspace-Specific Configuration (Recommended)**
+```json
+{
+  "mcpServers": {
+    "personal_mcp_server": {
+      "command": "python3",
+      "args": ["/path/to/your/server.py"],
+      "env": {}
+    }
+  }
+}
+```
+
+##### **Global Configuration (Use sparingly)**
+- Only for truly universal tools
+- Avoid conflicts with workspace-specific configs
+- Use unique names that won't conflict
+
+#### **Prevention Checklist**
+
+##### **Before Creating MCP Configuration**
+- [ ] Check for existing MCP config files in project
+- [ ] Verify no dashes in server/tool names
+- [ ] **Verify tool names are 60 characters or less**
+- [ ] Use absolute paths for commands and arguments
+- [ ] Validate JSON syntax before saving
+- [ ] Test server functionality independently
+
+##### **When Adding New MCP Servers**
+- [ ] Use workspace-specific config when possible
+- [ ] Ensure unique server names across all configs
+- [ ] Use underscores in all naming
+- [ ] **Verify all tool names are under 60 characters**
+- [ ] Test server connection before relying on it
+- [ ] Check Cursor logs for connection errors
+
+##### **Troubleshooting Red Dots**
+1. **Check naming conventions** - ensure no dashes
+2. **Verify tool name length** - ensure all tool names are 60 characters or less
+3. **Verify configuration hierarchy** - workspace overrides global
+4. **Clear Cursor cache** - restart Cursor completely
+5. **Check for conflicts** - multiple configs with same names
+6. **Validate JSON syntax** - use `python3 -m json.tool`
+7. **Test server independently** - run server manually first
+
+#### **File Structure Standards**
+```
+Project/
+├── .cursor/
+│   ├── mcp.json          # Workspace-specific MCP config
+│   └── settings.json     # Workspace settings
+├── mcp_servers/          # Local MCP server files
+└── .env                  # Environment variables
+```
+
+#### **Environment Variables Best Practices**
+- Use `.env` files for sensitive data
+- Never hardcode API keys in MCP config
+- Use absolute paths for environment variables
+- Validate environment before server startup
+
+#### **Debugging Commands**
+```bash
+# Validate JSON syntax
+python3 -m json.tool .cursor/mcp.json
+
+# Test server independently
+python3 /path/to/your/server.py
+
+# Check Cursor logs
+tail -f ~/.config/Cursor/logs/*/mcp*.log
+
+# Find all MCP configs
+find /home/$USER -name "mcp.json" -type f
+```
+
+#### **Common Pitfalls to Avoid**
+1. **Mixing dashes and underscores** in naming
+2. **Tool names exceeding 60 characters** (causes warnings and filtering)
+3. **Using relative paths** in MCP configuration
+4. **Creating duplicate server names** across configs
+5. **Ignoring workspace-specific overrides**
+6. **Not testing servers before deployment**
+7. **Using cached configurations** without validation
+
+#### **Success Metrics**
+- ✅ No red dots in MCP settings
+- ✅ All servers show green status
+- ✅ Tools function correctly
+- ✅ No naming conflicts
+- ✅ Clean configuration hierarchy
+
+#### **Emergency Fix Protocol**
+If red dots appear:
+1. **Immediate**: Check for dashes in names and replace with underscores
+2. **Immediate**: Check tool name length and shorten if over 60 characters
+3. **Short-term**: Create workspace-specific config with proper naming
+4. **Long-term**: Audit all MCP configurations for consistency
+5. **Prevention**: Implement this rule across all projects
+
+---
+
+**This rule is CRITICAL for maintaining functional MCP servers in Cursor. Always follow these guidelines to prevent red dot issues and ensure reliable MCP functionality.**
+
+@how_to_make_a_cursor_rule.mdc 

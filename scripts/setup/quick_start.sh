@@ -27,6 +27,13 @@ if $DOCKER_COMPOSE_CMD ps | grep -q "Up"; then
     exit 0
 fi
 
+# Ensure we're in the correct project directory
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
+
+echo "📁 Project root: $PROJECT_ROOT"
+cd "$PROJECT_ROOT"
+
 # Create necessary directories
 echo "📁 Creating directories..."
 mkdir -p logs config tests docs scripts models .flowise

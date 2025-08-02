@@ -1,0 +1,237 @@
+---
+description: "Coding standards optimized for AI-assisted development, ensuring code quality, consistency, and AI understanding"
+globs: ["**/*.py", "**/*.js", "**/*.ts", "**/*.json"]
+alwaysApply: true
+---
+
+# Coding Standards for AI-Assisted Development
+
+## Description
+This rule establishes coding standards optimized for AI-assisted development, ensuring code quality, consistency, and AI understanding.
+
+## 🎯 **AI-Optimized Coding Standards**
+
+### **Python Standards**
+
+#### **Type Hints (Required)**
+```python
+# ✅ Good - AI can understand types
+def analyze_transcript(transcript_name: str, anonymize: bool = False) -> dict[str, Any]:
+    """Analyze a transcript file with optional anonymization."""
+    pass
+
+# ❌ Bad - AI can't understand types
+def analyze_transcript(transcript_name, anonymize=False):
+    pass
+```
+
+#### **Docstrings (Required)**
+```python
+def query_langflow(query: str, output_type: str = "summary") -> str:
+    """
+    Query the Langflow workflow for survivor testimony analysis.
+    
+    Args:
+        query: The query string or analysis request
+        output_type: Type of output (summary, study_guide, timeline, audio)
+    
+    Returns:
+        Analysis results as formatted string
+        
+    Raises:
+        ValueError: If query is empty or invalid
+        ConnectionError: If Langflow service is unavailable
+    """
+    pass
+```
+
+#### **Naming Conventions**
+- **Functions**: `snake_case` (e.g., `analyze_transcript`)
+- **Classes**: `PascalCase` (e.g., `LivingTruthEngine`)
+- **Constants**: `UPPER_SNAKE_CASE` (e.g., `DEFAULT_MODEL`)
+- **Variables**: `snake_case` (e.g., `transcript_data`)
+
+### **JavaScript/TypeScript Standards**
+
+#### **Type Definitions**
+```typescript
+// ✅ Good - Clear types for AI
+interface AnalysisResult {
+  confidence: number;
+  sources: string[];
+  summary: string;
+  timestamp: Date;
+}
+
+// ❌ Bad - No types
+function analyzeData(data) {
+  return { confidence: 0.8, sources: [], summary: "" };
+}
+```
+
+#### **Function Documentation**
+```typescript
+/**
+ * Analyzes transcript data for survivor testimony patterns
+ * @param transcriptData - Raw transcript text
+ * @param options - Analysis options
+ * @returns Promise<AnalysisResult> - Analysis results
+ */
+async function analyzeTranscript(
+  transcriptData: string, 
+  options: AnalysisOptions
+): Promise<AnalysisResult> {
+  // Implementation
+}
+```
+
+## 📋 **Code Quality Checklist**
+
+### **Before Committing**
+- [ ] **Type hints** added to all functions
+- [ ] **Docstrings** with Args/Returns/Raises
+- [ ] **Consistent naming** conventions
+- [ ] **Error handling** implemented
+- [ ] **Logging** for debugging
+- [ ] **Tests** written for new functions
+
+### **AI Understanding**
+- [ ] **Clear function names** that describe purpose
+- [ ] **Descriptive variable names** (not `x`, `data`, `result`)
+- [ ] **Comments** for complex logic
+- [ ] **Modular functions** (single responsibility)
+- [ ] **Consistent patterns** across codebase
+
+## 🔧 **Best Practices**
+
+### **Function Design**
+```python
+# ✅ Good - Single responsibility, clear purpose
+def extract_evidence_references(text: str) -> list[dict[str, str]]:
+    """Extract evidence references from text."""
+    pass
+
+def validate_reference(reference: dict[str, str]) -> bool:
+    """Validate an evidence reference."""
+    pass
+
+# ❌ Bad - Multiple responsibilities, unclear purpose
+def process_text(text):
+    """Process text and do various things."""
+    # Too many responsibilities
+    pass
+```
+
+### **Error Handling**
+```python
+# ✅ Good - Specific error handling
+try:
+    result = query_langflow(query)
+except requests.ConnectionError:
+    logger.error("Langflow service unavailable")
+    return "Service temporarily unavailable"
+except ValueError as e:
+    logger.error(f"Invalid query: {e}")
+    return f"Invalid query: {e}"
+except Exception as e:
+    logger.error(f"Unexpected error: {e}")
+    return "An error occurred during analysis"
+```
+
+### **Logging**
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+def analyze_transcript(transcript_name: str) -> dict[str, Any]:
+    logger.info(f"Starting analysis of transcript: {transcript_name}")
+    
+    try:
+        # Analysis logic
+        logger.debug("Analysis completed successfully")
+        return result
+    except Exception as e:
+        logger.error(f"Analysis failed: {e}")
+        raise
+```
+
+## 🎨 **Code Organization**
+
+### **File Structure**
+```python
+# ✅ Good - Clear organization
+"""
+Living Truth Engine - Transcript Analysis Module
+
+This module provides functions for analyzing transcript data
+for survivor testimony corroboration and evidence analysis.
+"""
+
+import logging
+from typing import Dict, Any, List
+from pathlib import Path
+
+logger = logging.getLogger(__name__)
+
+class TranscriptAnalyzer:
+    """Analyzes transcript data for survivor testimony patterns."""
+    
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config
+        self.logger = logging.getLogger(__name__)
+    
+    def analyze(self, transcript_path: Path) -> Dict[str, Any]:
+        """Analyze a transcript file."""
+        pass
+```
+
+### **Import Organization**
+```python
+# Standard library imports
+import logging
+import os
+from pathlib import Path
+from typing import Dict, Any, List
+
+# Third-party imports
+import requests
+from dotenv import load_dotenv
+
+# Local imports
+from .utils import validate_input
+from .models import AnalysisResult
+```
+
+## 🚨 **Common Mistakes to Avoid**
+
+### **AI Confusion Issues**
+- ❌ **Generic variable names**: `data`, `result`, `x`
+- ❌ **No type hints**: AI can't understand data structures
+- ❌ **Complex functions**: Multiple responsibilities confuse AI
+- ❌ **Inconsistent patterns**: AI can't learn from examples
+- ❌ **Missing documentation**: AI lacks context
+
+### **Code Quality Issues**
+- ❌ **Magic numbers**: Use constants with descriptive names
+- ❌ **Deep nesting**: Keep functions flat and readable
+- ❌ **Long functions**: Break into smaller, focused functions
+- ❌ **Hardcoded values**: Use configuration files
+- ❌ **Silent failures**: Always handle errors explicitly
+
+## 📊 **Success Metrics**
+
+- ✅ **Type coverage**: 100% of functions have type hints
+- ✅ **Documentation**: All functions have docstrings
+- ✅ **Test coverage**: >90% code coverage
+- ✅ **AI understanding**: Clear, consistent patterns
+- ✅ **Maintainability**: Modular, readable code
+
+---
+
+**Follow these standards to ensure AI can effectively assist with code generation, refactoring, and maintenance.**
+
+@how_to_make_a_cursor_rule.mdc
+@docker_best_practices.mdc
+@system_management.mdc
+@mcp_server_integration.mdc

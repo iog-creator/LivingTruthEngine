@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Living Truth Engine is a Flowise-based NotebookLM clone designed for Biblical forensic analysis and survivor testimony corroboration. This document outlines the project structure and organization.
+The Living Truth Engine is a Flowise-based NotebookLM clone designed for survivor testimony analysis and evidence corroboration. This document outlines the project structure and organization.
 
 ## Directory Structure
 

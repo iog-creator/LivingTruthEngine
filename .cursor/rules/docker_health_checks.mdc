@@ -1,0 +1,188 @@
+# Docker Health Check Best Practices
+
+## Description
+This rule defines Docker health check best practices and troubleshooting procedures for the Living Truth Engine project.
+
+## 🎯 **Health Check Standards**
+
+### **Health Check Requirements**
+- **All services must have health checks** configured
+- **Health checks must be lightweight** and fast
+- **Use appropriate tools** available in the container
+- **Avoid external dependencies** when possible
+- **Set reasonable timeouts** and retry intervals
+
+### **Health Check Patterns**
+
+#### **HTTP Services**
+```yaml
+# ✅ Good - HTTP health check
+healthcheck:
+  test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 60s
+```
+
+#### **TCP Services**
+```yaml
+# ✅ Good - TCP connection test (when curl not available)
+healthcheck:
+  test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/1234' || exit 1"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 60s
+```
+
+#### **Database Services**
+```yaml
+# ✅ Good - Database-specific health check
+healthcheck:
+  test: ["CMD", "pg_isready", "-U", "postgres", "-d", "living_truth_engine"]
+  interval: 10s
+  timeout: 5s
+  retries: 5
+  start_period: 10s
+```
+
+## 🚨 **Common Health Check Issues**
+
+### **Tool Availability Issues**
+- ❌ **Using curl when not available**: LM Studio container doesn't have curl
+- ❌ **Using wget when not available**: Some containers lack wget
+- ❌ **Using python when not available**: Minimal containers may not have Python
+
+### **Port Mapping Issues**
+- ❌ **Wrong port in health check**: Using internal port instead of external
+- ❌ **Port conflicts**: Multiple services using same port
+- ❌ **Network issues**: Health check can't reach service
+
+### **Configuration Issues**
+- ❌ **Missing health check**: Service has no health check configured
+- ❌ **Incorrect test command**: Health check command doesn't work
+- ❌ **Wrong timeout values**: Too short or too long timeouts
+
+## 🔧 **Health Check Troubleshooting**
+
+### **Diagnosing Health Check Failures**
+```bash
+# Check container health status
+docker inspect <container_name> --format='{{.State.Health.Status}}'
+
+# View health check logs
+docker inspect <container_name> --format='{{range .State.Health.Log}}{{.Output}}{{end}}'
+
+# Test health check manually
+docker exec <container_name> <health_check_command>
+```
+
+### **Common Fixes**
+
+#### **LM Studio Health Check Fix**
+```yaml
+# ❌ Bad - Uses curl (not available)
+healthcheck:
+  test: ["CMD", "curl", "-f", "http://localhost:1234/v1/models"]
+
+# ✅ Good - Uses TCP connection test
+healthcheck:
+  test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/1234' || exit 1"]
+```
+
+#### **PostgreSQL Health Check Fix**
+```yaml
+# ❌ Bad - Generic health check
+healthcheck:
+  test: ["CMD", "pg_isready"]
+
+# ✅ Good - Specific database check
+healthcheck:
+  test: ["CMD", "pg_isready", "-U", "postgres", "-d", "living_truth_engine"]
+```
+
+## 📋 **Health Check Checklist**
+
+### **Before Deploying**
+- [ ] **Verify tool availability** in container
+- [ ] **Test health check command** manually
+- [ ] **Set appropriate timeouts** and intervals
+- [ ] **Configure start period** for slow-starting services
+- [ ] **Use container-specific tools** when available
+
+### **After Deployment**
+- [ ] **Monitor health status** for all containers
+- [ ] **Check health check logs** for failures
+- [ ] **Verify service functionality** despite health status
+- [ ] **Update health checks** if needed
+
+### **Troubleshooting Steps**
+- [ ] **Check container logs** for startup issues
+- [ ] **Test health check manually** inside container
+- [ ] **Verify port mappings** and network connectivity
+- [ ] **Update health check configuration** if needed
+- [ ] **Restart container** to apply changes
+
+## 🎯 **Service-Specific Health Checks**
+
+### **LM Studio**
+```yaml
+healthcheck:
+  test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/1234' || exit 1"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 60s
+```
+
+### **PostgreSQL**
+```yaml
+healthcheck:
+  test: ["CMD", "pg_isready", "-U", "postgres", "-d", "living_truth_engine"]
+  interval: 10s
+  timeout: 5s
+  retries: 5
+  start_period: 10s
+```
+
+### **Neo4j**
+```yaml
+healthcheck:
+  test: ["CMD-SHELL", "cypher-shell -u neo4j -p livingtruth123 'RETURN 1'"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+```
+
+### **Redis**
+```yaml
+healthcheck:
+  test: ["CMD", "redis-cli", "ping"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+```
+
+### **Langflow**
+```yaml
+healthcheck:
+  test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 60s
+```
+
+## 📊 **Health Check Metrics**
+- ✅ **100% health check coverage** for all services
+- ✅ **Appropriate tool usage** for each container
+- ✅ **Reasonable timeout values** and intervals
+- ✅ **Proper error handling** and retry logic
+- ✅ **Container-specific optimizations**
+
+---
+
+**This rule ensures reliable health monitoring for all Docker services in the Living Truth Engine project.**
+
+@how_to_make_a_cursor_rule.mdc

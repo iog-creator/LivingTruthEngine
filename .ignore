@@ -1,0 +1,4 @@
+# Allow .env files to be read in this workspace
+!.env
+!*.env
+!.env* 

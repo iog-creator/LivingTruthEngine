@@ -1,0 +1,97 @@
+# Living Truth Engine - Langflow Only Docker Compose Configuration
+# Independent Langflow service for testing purposes
+
+services:
+  langflow:
+    image: langflowai/langflow:latest
+    container_name: living-truth-langflow
+    user: "0:0"
+    ports:
+      - "3100:7860"
+    volumes:
+      - ../data/.langflow:/app/langflow
+      - ../data/sources:/app/data/sources:ro
+      - ../data/outputs:/app/data/outputs
+      - ../data/.cache:/app/data/.cache
+      - ../data/.composio:/app/data/.composio
+    environment:
+      LANGFLOW_DATABASE_URL: postgresql://postgres:pass@postgres:5432/langflow
+      LANGFLOW_SECRET_KEY: ${LANGFLOW_SECRET_KEY:-your-secret-key-here}
+      LANGFLOW_SUPERUSER: ${LANGFLOW_SUPERUSER:-admin}
+      LANGFLOW_SUPERUSER_PASSWORD: ${LANGFLOW_SUPERUSER_PASSWORD:-admin}
+      LANGFLOW_HOST: 0.0.0.0
+      LANGFLOW_PORT: 7860
+      COMPOSIO_CACHE_DIR: /app/data/.composio
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - living-truth-network
+
+  # LM Studio is running locally on port 1234
+  # No Docker container needed - using local service
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: living-truth-postgres
+    restart: always
+    user: postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-living_truth_engine}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass}
+      POSTGRES_MULTIPLE_DATABASES: langflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../scripts/setup/init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh:ro
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - living-truth-network
+
+  living-truth-mcp:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.mcp
+    container_name: living-truth-mcp
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../data/sources:/app/data/sources:ro
+      - ../data/outputs/logs:/app/data/outputs/logs
+      - ../data/outputs/visualizations:/app/data/outputs/visualizations
+      - ../.env:/app/.env:ro
+    environment:
+      LANGFLOW_API_ENDPOINT: http://langflow:7860
+      LM_STUDIO_ENDPOINT: http://host.docker.internal:1234
+      LANGFLOW_API_KEY: ${LANGFLOW_API_KEY:-}
+      PYTHONPATH: /app/src
+    depends_on:
+      langflow:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - living-truth-network
+    command: ["python", "src/mcp_servers/living_truth_fastmcp_server.py"]
+
+networks:
+  living-truth-network:
+    driver: bridge
+    name: living-truth-network
+
+volumes:
+  postgres_data:
+    driver: local
+    name: living-truth-postgres-data 

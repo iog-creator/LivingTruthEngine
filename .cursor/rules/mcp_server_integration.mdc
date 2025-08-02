@@ -1,0 +1,506 @@
+---
+description: "MCP (Model Context Protocol) server integration practices for the Living Truth Engine, ensuring proper tool usage and system integration"
+globs: ["**/*.py", "**/mcp_servers/**/*", "**/.cursor/mcp.json"]
+alwaysApply: true
+---
+
+# MCP Server Integration and Best Practices
+
+## Description
+This rule defines MCP (Model Context Protocol) server integration practices for the Living Truth Engine, ensuring proper tool usage and system integration.
+
+## 🔧 **MCP Server Configuration**
+
+### **MCP Server Setup**
+```json
+// ✅ Good - Workspace-specific MCP configuration with consolidated servers
+{
+  "mcpServers": {
+    "living_truth_fastmcp_server": {
+      "command": "python3",
+      "args": ["/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py"],
+      "env": {
+        "LANGFLOW_API_ENDPOINT": "http://localhost:7860",
+        "LANGFLOW_API_KEY": "${LANGFLOW_API_KEY}",
+        "LANGFLOW_PROJECT_ID": "399a0977-d08a-4d61-ba52-fd9811676762",
+        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
+      },
+      "description": "Living Truth Engine FastMCP Server for survivor testimony analysis with consolidated tools"
+    },
+    "langflow_mcp_server": {
+      "command": "python3",
+      "args": ["/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/langflow_mcp_server.py"],
+      "env": {
+        "LANGFLOW_API_ENDPOINT": "http://localhost:7860",
+        "LANGFLOW_API_KEY": "${LANGFLOW_API_KEY}",
+        "LANGFLOW_PROJECT_ID": "399a0977-d08a-4d61-ba52-fd9811676762",
+        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
+      },
+      "description": "Langflow MCP Server for workflow integration using Python-based MCP server"
+    }
+  }
+}
+```
+
+### **Tool Naming Conventions**
+```python
+# ✅ Good - Tool names under 60 characters
+mcp_living_truth_fastmcp_server_query_langflow()
+mcp_living_truth_fastmcp_server_get_status()
+mcp_living_truth_fastmcp_server_analyze_transcript()
+mcp_langflow_mcp_server_query_langflow()
+mcp_langflow_mcp_server_get_langflow_status()
+
+# ❌ Bad - Tool names over 60 characters
+mcp_living_truth_fastmcp_server_generate_visualization_and_analysis_report()
+```
+
+## 📋 **MCP Integration Checklist**
+
+### **Before Using MCP Tools**
+- [ ] **Verify MCP server is running** and accessible
+- [ ] **Check tool availability** with status call
+- [ ] **Validate input parameters** before calling tools
+- [ ] **Handle errors gracefully** with proper fallbacks
+- [ ] **Use appropriate tool** for the task
+- [ ] **Use batch operations** for efficiency when available
+- [ ] **Prefer consolidated tools** over individual operations
+
+### **MCP Server Operations**
+- [ ] **Start MCP server** before development work
+- [ ] **Monitor server health** during operations
+- [ ] **Restart server** if tools become unresponsive
+- [ ] **Update server configuration** when needed
+- [ ] **Test tool functionality** after changes
+
+### **Tool Usage Best Practices**
+- [ ] **Use MCP tools first** for available operations
+- [ ] **Use batch operations** for efficiency (e.g., `batch_system_operations`)
+- [ ] **Prefer consolidated tools** over multiple individual calls
+- [ ] **Fall back to direct commands** when MCP unavailable
+- [ ] **Document tool usage** in code and documentation
+- [ ] **Handle tool errors** with appropriate messaging
+- [ ] **Validate tool outputs** before using results
+
+## 🔧 **MCP Tool Categories**
+
+### **System Management Tools**
+```python
+# ✅ System status and health
+mcp_living_truth_fastmcp_server_get_status()
+mcp_living_truth_fastmcp_server_get_current_time()
+mcp_langflow_mcp_server_get_langflow_status()
+
+# ✅ System operations
+```
+
+## 🎯 **MCP Server Standards**
+
+### **Required Patterns**
+- **Use FastMCP library** for all MCP servers in this project
+- **Follow established structure** - add methods to existing classes
+- **Create corresponding tools** - each method should have a matching MCP tool
+- **Use proper naming conventions** - snake_case for methods, descriptive names
+
+### **Integration Patterns**
+
+#### **Adding New Functionality**
+```python
+# ✅ Good - Add method to existing class
+class LivingTruthEngine:
+    def new_functionality(self, param: str) -> str:
+        """Add new functionality to existing class."""
+        # Implementation
+        return result
+
+# ✅ Good - Add corresponding MCP tool
+@mcp.tool()
+def new_functionality(param: str) -> str:
+    """MCP tool for new functionality."""
+    return engine.new_functionality(param)
+```
+
+#### **LM Studio Integration Pattern**
+```python
+# ✅ Good - LM Studio method in LivingTruthEngine class
+def get_lm_studio_models(self) -> str:
+    """Get list of available models in LM Studio."""
+    try:
+        response = requests.get(f"{self.lm_studio_endpoint}/v1/models")
+        if response.status_code == 200:
+            models = response.json()
+            return f"✅ Available models in LM Studio:\n{json.dumps(models, indent=2)}"
+        else:
+            return f"❌ Failed to get models: {response.status_code}"
+    except Exception as e:
+        return f"❌ Error accessing LM Studio: {e}"
+
+# ✅ Good - Corresponding MCP tool
+@mcp.tool()
+def get_lm_studio_models() -> str:
+    """Get list of available models in LM Studio."""
+    return engine.get_lm_studio_models()
+```
+
+## 🚨 **Common MCP Issues**
+
+### **JSON Syntax Errors**
+- ❌ **Trailing commas** - Causes all MCP servers to disappear
+- ❌ **Missing quotes** - Invalid JSON syntax
+- ❌ **Wrong brackets** - Malformed JSON structure
+
+### **Pattern Violations**
+- ❌ **Using standard MCP** instead of FastMCP
+- ❌ **Creating separate servers** when integration is possible
+- ❌ **Not following existing structure** - inconsistent patterns
+
+### **Configuration Issues**
+- ❌ **Wrong file paths** - MCP servers can't find files
+- ❌ **Missing environment variables** - Servers can't connect
+- ❌ **Incorrect endpoints** - Wrong service ports
+
+## 🔧 **MCP Troubleshooting**
+
+### **Diagnosing MCP Issues**
+```bash
+# Validate JSON syntax
+python3 -m json.tool .cursor/mcp.json
+
+# Check MCP server status in Cursor
+# Look for green dots (working) vs red dots (errors)
+
+# Test MCP server manually
+python3 /path/to/mcp_server.py
+```
+
+### **Common Fixes**
+
+#### **JSON Syntax Fix**
+```json
+# ❌ Bad - Trailing comma
+{
+  "mcpServers": {
+    "server1": { ... },
+    "server2": { ... },  // <- This comma causes issues
+  }
+}
+
+# ✅ Good - No trailing comma
+{
+  "mcpServers": {
+    "server1": { ... },
+    "server2": { ... }   // <- No trailing comma
+  }
+}
+```
+
+#### **Integration Fix**
+```python
+# ❌ Bad - Separate MCP server
+class NewMCPServer:
+    def __init__(self):
+        self.server = Server("new_server")
+
+# ✅ Good - Integrate into existing
+class LivingTruthEngine:
+    def new_functionality(self) -> str:
+        # Add to existing class
+        pass
+
+@mcp.tool()
+def new_functionality() -> str:
+    return engine.new_functionality()
+```
+
+## 📋 **MCP Development Checklist**
+
+### **Before Creating New MCP Server**
+- [ ] **Check existing servers** for similar functionality
+- [ ] **Use FastMCP pattern** if creating new server
+- [ ] **Integrate into existing** when possible
+- [ ] **Follow naming conventions** consistently
+
+### **When Adding New Tools**
+- [ ] **Add method to class** first
+- [ ] **Create corresponding MCP tool** with @mcp.tool()
+- [ ] **Update tool list** in get_project_info()
+- [ ] **Test tool functionality** manually
+
+### **Before Updating Configuration**
+- [ ] **Validate JSON syntax** with python3 -m json.tool
+- [ ] **Check file paths** are correct
+- [ ] **Verify environment variables** are set
+- [ ] **Test server startup** manually
+
+## 🎯 **Current MCP Server Architecture**
+
+### **Living Truth FastMCP Server** (20 tools)
+- **File**: `src/mcp_servers/living_truth_fastmcp_server.py`
+- **Pattern**: FastMCP with LivingTruthEngine class
+- **Integration**: LM Studio, Langflow
+- **LM Studio Tools**: get_lm_studio_models, generate_lm_studio_text, test_lm_studio_connection, get_lm_studio_status
+- **Core Tools**: query_langflow, get_status, list_sources, analyze_transcript, generate_viz
+- **Batch Tools**: batch_system_operations, batch_analysis_operations
+- **Utility Tools**: get_project_info, get_current_time, test_tool, fix_flow, query_flowise
+- **Automation Tools**: auto_detect_and_add_tools, auto_update_all_documentation, auto_update_cursor_rules, auto_validate_system_state, comprehensive_health_check
+
+### **Langflow MCP Server** (5 tools)
+- **File**: `src/mcp_servers/langflow_mcp_server.py`
+- **Purpose**: Workflow integration
+- **Pattern**: FastMCP
+
+### **GitHub MCP Server**
+- **File**: `src/mcp_servers/github_mcp_server.py`
+- **Purpose**: Repository management
+- **Pattern**: FastMCP
+
+### **PostgreSQL MCP Server**
+- **File**: `src/mcp_servers/postgresql_mcp_server.py`
+- **Purpose**: Database operations
+- **Pattern**: FastMCP
+
+### **Hugging Face MCP Server**
+- **File**: `src/mcp_servers/huggingface_mcp_server.py`
+- **Purpose**: Model access
+- **Pattern**: FastMCP
+
+## 📊 **MCP Server Metrics**
+- ✅ **100% FastMCP usage** - All servers use FastMCP library
+- ✅ **100% JSON validation** - All configurations are valid JSON
+- ✅ **100% tool integration** - All methods have corresponding MCP tools
+- ✅ **100% naming consistency** - All tools follow established patterns
+- ✅ **100% error handling** - All tools include proper error handling
+
+## 🚀 **Best Practices Summary**
+
+### **1. Always Check Existing**
+- Look for existing MCP servers first
+- Integrate into existing structure when possible
+- Follow established patterns and naming
+
+### **2. Use FastMCP Library**
+- All MCP servers must use FastMCP
+- Add methods to existing classes
+- Create corresponding @mcp.tool() decorators
+
+### **3. Validate Configuration**
+- Always validate JSON syntax
+- Check file paths and environment variables
+- Test server startup manually
+
+### **4. Follow Integration Patterns**
+- Add functionality to existing classes
+- Create corresponding MCP tools
+- Update tool lists and documentation
+mcp_living_truth_fastmcp_server_test_tool("message")
+mcp_langflow_mcp_server_test_tool("message")
+```
+
+### **Langflow Integration Tools**
+```python
+# ✅ Query Langflow workflow
+mcp_living_truth_fastmcp_server_query_langflow(
+    query="Analyze this transcript for corroborating evidence",
+    output_type="summary",
+    anonymize=False
+)
+```
+
+### **Langflow Integration Tools**
+```python
+# ✅ Query Langflow workflow
+mcp_langflow_mcp_server_query_langflow(
+    query="Analyze this transcript for Biblical patterns",
+    output_type="summary",
+    anonymize=False
+)
+
+# ✅ Langflow operations
+mcp_langflow_mcp_server_list_langflow_tools()
+```
+
+### **Data Analysis Tools**
+```python
+# ✅ Transcript analysis
+mcp_living_truth_fastmcp_server_analyze_transcript("transcript_name")
+
+# ✅ Source management
+mcp_living_truth_fastmcp_server_list_sources()
+
+# ✅ Batch operations for efficiency
+mcp_living_truth_fastmcp_server_batch_system_operations()
+mcp_living_truth_fastmcp_server_batch_analysis_operations("query", "transcript_name")
+```
+mcp_living_truth_fastmcp_server_list_sources()
+
+# ✅ Visualization generation
+mcp_living_truth_fastmcp_server_generate_viz(viz_type="network")
+```
+
+## 🚨 **Common MCP Issues to Avoid**
+
+### **Configuration Issues**
+- ❌ **Using dashes in tool names** (use underscores)
+- ❌ **Tool names over 60 characters** (causes filtering)
+- ❌ **Incorrect server paths** or environment variables
+- ❌ **Missing PYTHONPATH** configuration
+- ❌ **Conflicting MCP configurations** across projects
+
+### **Usage Issues**
+- ❌ **Not checking server status** before using tools
+- ❌ **Ignoring tool errors** without fallback
+- ❌ **Using wrong tool** for the task
+- ❌ **Not validating tool outputs**
+- ❌ **Hardcoding tool calls** without error handling
+
+### **Integration Issues**
+- ❌ **Not using MCP tools** when available
+- ❌ **Bypassing MCP** for operations it can handle
+- ❌ **Inconsistent tool usage** patterns
+- ❌ **Not documenting tool dependencies**
+- ❌ **Ignoring MCP server health**
+
+## 📊 **MCP Integration Metrics**
+
+- ✅ **Tool availability**: 100% of available tools functional
+- ✅ **Error handling**: 100% of tool calls have error handling
+- ✅ **Server uptime**: 99%+ MCP server availability
+- ✅ **Tool usage**: 90%+ operations use MCP when available
+- ✅ **Documentation**: 100% of tools documented
+
+## 🎯 **MCP Development Workflow**
+
+### **1. Development Setup**
+```python
+# ✅ Start MCP server
+# Ensure living_truth_fastmcp_server.py is running
+
+# ✅ Check server status
+mcp_living_truth_fastmcp_server_get_status()
+
+# ✅ Validate tool availability
+mcp_living_truth_fastmcp_server_test_tool("MCP server ready")
+```
+
+### **2. Tool Usage Pattern**
+```python
+# ✅ Always check status first
+try:
+    status = mcp_living_truth_fastmcp_server_get_status()
+    if status.get("status") == "healthy":
+        # Use MCP tools
+        result = mcp_living_truth_fastmcp_server_query_langflow("query")
+    else:
+        # Fall back to direct operations
+        result = perform_direct_operation("query")
+except Exception as e:
+    # Handle MCP errors gracefully
+    logger.error(f"MCP tool error: {e}")
+    result = perform_fallback_operation("query")
+```
+
+### **3. Error Handling**
+```python
+# ✅ Comprehensive error handling
+def safe_mcp_operation(operation_func, *args, **kwargs):
+    """Safely execute MCP operation with fallback."""
+    try:
+        return operation_func(*args, **kwargs)
+    except ConnectionError:
+        logger.warning("MCP server unavailable, using fallback")
+        return fallback_operation(*args, **kwargs)
+    except ValueError as e:
+        logger.error(f"Invalid MCP operation parameters: {e}")
+        raise
+    except Exception as e:
+        logger.error(f"Unexpected MCP error: {e}")
+        return fallback_operation(*args, **kwargs)
+```
+
+## 🔍 **MCP Server Monitoring**
+
+### **Health Checks**
+```python
+# ✅ Regular status checks
+def check_mcp_health():
+    try:
+        status = mcp_living_truth_fastmcp_server_get_status()
+        return status.get("status") == "healthy"
+    except Exception:
+        return False
+
+# ✅ Tool availability validation
+def validate_tools():
+    tools = [
+        "get_status",
+        "query_langflow", 
+        "analyze_transcript",
+        "list_sources"
+    ]
+    available_tools = []
+    for tool in tools:
+        try:
+            # Test tool availability
+            pass
+        except Exception:
+            logger.warning(f"Tool {tool} not available")
+    return available_tools
+```
+
+### **Performance Monitoring**
+```python
+# ✅ Tool response times
+import time
+
+def measure_tool_performance(tool_func, *args, **kwargs):
+    start_time = time.time()
+    try:
+        result = tool_func(*args, **kwargs)
+        response_time = time.time() - start_time
+        logger.info(f"Tool {tool_func.__name__} completed in {response_time:.2f}s")
+        return result
+    except Exception as e:
+        logger.error(f"Tool {tool_func.__name__} failed after {time.time() - start_time:.2f}s: {e}")
+        raise
+```
+
+## 🛠️ **MCP Troubleshooting**
+
+### **Common Problems**
+1. **Server not running**: Start `living_truth_fastmcp_server.py`
+2. **Tool not found**: Check tool name spelling and availability
+3. **Connection errors**: Verify server configuration and network
+4. **Permission issues**: Check file permissions and user access
+5. **Environment issues**: Verify PYTHONPATH and dependencies
+
+### **Recovery Procedures**
+```python
+# ✅ Server restart procedure
+def restart_mcp_server():
+    try:
+        # Stop current server
+        stop_mcp_server()
+        # Start new server
+        start_mcp_server()
+        # Validate restart
+        status = mcp_living_truth_fastmcp_server_get_status()
+        return status.get("status") == "healthy"
+    except Exception as e:
+        logger.error(f"Failed to restart MCP server: {e}")
+        return False
+
+# ✅ Tool recovery
+def recover_tool_usage():
+    if not check_mcp_health():
+        restart_mcp_server()
+    return check_mcp_health()
+```
+
+---
+
+**Follow these MCP integration practices to ensure reliable, efficient, and maintainable tool usage.**
+
+@coding_standards.mdc
+@development_workflow.mdc
+@docker_best_practices.mdc
+@system_management.mdc

@@ -1,0 +1,45 @@
+{
+  "nodes": [
+    {
+      "id": "start",
+      "type": "start",
+      "data": {
+        "label": "Start",
+        "type": "start"
+      },
+      "position": {
+        "x": 100,
+        "y": 100
+      }
+    },
+    {
+      "id": "conversational-agent",
+      "type": "agent",
+      "data": {
+        "label": "Living Truth Agent",
+        "type": "conversational_agent",
+        "systemMessage": "You are the Living Truth Engine, an AI system designed for survivor testimony analysis and evidence corroboration. You help analyze survivor testimonies and provide insights based on multiple evidence sources.",
+        "model": "qwen/qwen3-8b",
+        "temperature": 0.7,
+        "max_tokens": 2048
+      },
+      "position": {
+        "x": 300,
+        "y": 100
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "start-to-agent",
+      "source": "start",
+      "target": "conversational-agent"
+    }
+  ],
+  "metadata": {
+    "name": "Living Truth Engine",
+    "description": "Flowise chatflow for survivor testimony analysis",
+    "version": "1.0.0",
+    "author": "Living Truth Engine Team"
+  }
+}

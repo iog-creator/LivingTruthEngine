@@ -1,0 +1,272 @@
+# How to Build Cursor Rules - Complete Guide
+
+## Description
+This rule provides comprehensive guidance on creating effective Cursor rules, including proper structure, metadata, content organization, and best practices for different rule types.
+
+## 🎯 **What Are Cursor Rules?**
+
+Cursor rules are **long-term memory** that you and your team can access. They capture:
+- Domain-specific context and workflows
+- Formatting and coding conventions
+- Architecture decisions and patterns
+- Project-specific knowledge and automation
+
+## 📋 **Rule Anatomy - Required Structure**
+
+### **Frontmatter (Required)**
+Every rule MUST have proper frontmatter:
+
+```yaml
+---
+description: Clear, concise description of what this rule does
+globs: ["file_patterns", "to_apply_to"]
+alwaysApply: true/false
+---
+```
+
+### **Rule Types and Properties**
+
+| Rule Type | Description | Properties |
+|-----------|-------------|------------|
+| **Always** | Always included in model context | `alwaysApply: true` |
+| **Auto Attached** | Included when files match glob patterns | `globs: ["*.ts", "*.js"]` |
+| **Agent Requested** | AI decides whether to include | `description: "required"` |
+| **Manual** | Only when explicitly mentioned | `@ruleName` |
+
+## 🏗️ **Creating Rules - Step-by-Step Process**
+
+### **1. Choose Rule Type**
+- **Always**: For critical, project-wide rules (coding standards, architecture)
+- **Auto Attached**: For file-type specific rules (React patterns, API conventions)
+- **Agent Requested**: For contextual rules (debugging, testing patterns)
+- **Manual**: For specialized rules (deployment, specific workflows)
+
+### **2. Define Scope with Globs**
+```yaml
+globs: 
+  - "*.ts"                    # All TypeScript files
+  - "**/components/**"        # All component directories
+  - "src/**/*.js"            # JavaScript files in src
+  - ".cursor/**"             # Cursor configuration files
+  - "**/mcp*.json"           # MCP configuration files
+```
+
+### **3. Write Clear Description**
+- **Be specific** about what the rule covers
+- **Include keywords** for AI discovery
+- **Mention file types** or contexts where it applies
+
+### **4. Structure Content Properly**
+
+#### **Header Section**
+```markdown
+# Rule Title
+
+## Description
+What this rule does and why it's important.
+
+## 🎯 **Key Objectives**
+- Primary goal 1
+- Primary goal 2
+```
+
+#### **Main Content**
+```markdown
+## 📋 **Requirements**
+- [ ] Requirement 1
+- [ ] Requirement 2
+
+## ✅ **Best Practices**
+- Do this
+- Don't do that
+
+## 🔧 **Examples**
+```code
+// Good example
+const goodCode = "example";
+
+// Bad example  
+const badCode = "avoid";
+```
+```
+
+#### **Footer**
+```markdown
+## 📚 **References**
+- Link to documentation
+- Related rules
+
+@related_rule.mdc
+```
+
+## 📁 **File Organization**
+
+### **Project Structure**
+```
+project/
+├── .cursor/
+│   ├── rules/
+│   │   ├── coding_standards.mdc
+│   │   ├── architecture.mdc
+│   │   └── workflows.mdc
+│   └── settings.json
+├── backend/
+│   └── .cursor/
+│       └── rules/
+│           └── api_conventions.mdc
+└── frontend/
+    └── .cursor/
+        └── rules/
+            └── react_patterns.mdc
+```
+
+### **Naming Conventions**
+- **Use descriptive names**: `api_conventions.mdc`, `react_patterns.mdc`
+- **Use underscores**: `coding_standards.mdc` (not `coding-standards.mdc`)
+- **Be specific**: `mcp_server_troubleshooting.mdc` (not `troubleshooting.mdc`)
+
+## 🎨 **Content Best Practices**
+
+### **Use Clear Headers**
+```markdown
+## 🚨 **CRITICAL** - Must follow
+## ✅ **Best Practices** - Recommended
+## ⚠️ **Warnings** - Be careful
+## 🔧 **Examples** - Code samples
+## 📋 **Checklist** - Step-by-step
+```
+
+### **Include Code Examples**
+```markdown
+#### **Good Example**
+```typescript
+// ✅ Correct way
+const apiResponse = await fetch('/api/data');
+```
+
+#### **Bad Example**
+```typescript
+// ❌ Avoid this
+const response = fetch('/api/data'); // Missing await
+```
+```
+
+### **Use Checklists**
+```markdown
+#### **Before Creating New Feature**
+- [ ] Check existing implementations
+- [ ] Follow naming conventions
+- [ ] Add proper error handling
+- [ ] Write tests
+- [ ] Update documentation
+```
+
+### **Reference Other Rules**
+```markdown
+## 📚 **Related Rules**
+- @coding_standards.mdc - For general coding practices
+- @api_conventions.mdc - For API-specific patterns
+```
+
+## 🔧 **Creating Rules from Conversations**
+
+### **Using `/Generate Cursor Rules`**
+1. **Have a detailed conversation** about a topic
+2. **Use `/Generate Cursor Rules`** command
+3. **Review and edit** the generated rule
+4. **Add proper frontmatter** and structure
+5. **Test the rule** in a new conversation
+
+### **Manual Creation Process**
+1. **Identify recurring patterns** from conversations
+2. **Create rule file** in `.cursor/rules/`
+3. **Add proper frontmatter**
+4. **Write comprehensive content**
+5. **Test with `@ruleName`**
+
+## 📊 **Rule Effectiveness Checklist**
+
+### **Before Publishing**
+- [ ] **Clear frontmatter** with proper description and globs
+- [ ] **Specific scope** - not too broad or narrow
+- [ ] **Actionable content** - tells what to do, not just what to avoid
+- [ ] **Code examples** - shows good and bad practices
+- [ ] **Proper formatting** - uses headers, lists, code blocks
+- [ ] **Tested functionality** - works when referenced
+
+### **After Publishing**
+- [ ] **Test with `@ruleName`** in conversation
+- [ ] **Verify auto-attachment** works for glob patterns
+- [ ] **Check team adoption** - others can use it
+- [ ] **Update as needed** - rules evolve with projects
+
+## 🚨 **Common Mistakes to Avoid**
+
+### **Frontmatter Issues**
+- ❌ **Missing frontmatter** - rule won't be recognized
+- ❌ **Vague description** - AI can't understand purpose
+- ❌ **Incorrect globs** - rule won't apply to intended files
+- ❌ **Missing `alwaysApply`** - unclear when rule should be used
+
+### **Content Issues**
+- ❌ **Too broad scope** - rule becomes irrelevant
+- ❌ **No examples** - hard to understand and follow
+- ❌ **Negative focus** - only says what not to do
+- ❌ **Outdated information** - rule becomes misleading
+
+### **Organization Issues**
+- ❌ **Poor naming** - hard to find and reference
+- ❌ **No cross-references** - rules don't work together
+- ❌ **Inconsistent structure** - hard to maintain
+
+## 🎯 **Advanced Techniques**
+
+### **Conditional Rules**
+```yaml
+---
+description: React patterns for components
+globs: ["**/components/**/*.tsx", "**/pages/**/*.tsx"]
+alwaysApply: false
+---
+```
+
+### **Nested Rules**
+```
+project/
+├── .cursor/rules/
+│   ├── general.mdc          # Project-wide rules
+│   └── frontend/
+│       ├── react.mdc        # React-specific rules
+│       └── styling.mdc      # CSS/styling rules
+```
+
+### **Rule Dependencies**
+```markdown
+## 📚 **Prerequisites**
+- @coding_standards.mdc - General coding practices
+- @api_conventions.mdc - API patterns
+
+## 📚 **Related Rules**
+- @testing_patterns.mdc - Testing conventions
+- @deployment.mdc - Deployment workflows
+```
+
+## 📈 **Measuring Rule Success**
+
+### **Success Metrics**
+- ✅ **Consistent application** across team
+- ✅ **Reduced errors** in codebase
+- ✅ **Faster onboarding** for new team members
+- ✅ **Better code quality** and maintainability
+- ✅ **Reduced repetitive questions** in conversations
+
+### **Maintenance Schedule**
+- **Weekly**: Review rule usage and effectiveness
+- **Monthly**: Update rules based on project evolution
+- **Quarterly**: Audit and consolidate related rules
+
+---
+
+**This rule provides the foundation for creating effective Cursor rules that improve team productivity and code quality.**
+
+@mcp_server_guide_troubshooting.mdc

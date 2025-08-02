@@ -1,0 +1,29 @@
+{
+  "name": "@modelcontextprotocol/server-living-truth-engine",
+  "version": "1.0.0",
+  "description": "Living Truth Engine MCP Server for survivor testimony analysis and evidence corroboration",
+  "main": "simple_mcp_server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node simple_mcp_server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "living-truth-engine",
+    "survivor-testimony-analysis",
+    "survivor-testimony"
+  ],
+  "author": "Living Truth Engine Team",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.17.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "mcp": {
+    "server": "simple_mcp_server.js"
+  }
+}

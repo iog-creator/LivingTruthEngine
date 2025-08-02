@@ -33,7 +33,7 @@
   },
   "logging": {
     "level": "INFO",
-    "file": "logs/living_truth_engine.log"
+    "file": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/logs/living_truth_engine.log"
   },
   "models": {
     "default": "qwen3-8b",

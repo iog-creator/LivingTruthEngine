@@ -1,0 +1,165 @@
+---
+description: "Development workflow optimized for AI assistance, including code generation, testing, and deployment processes"
+globs: ["**/*.py", "**/*.js", "**/*.ts", "**/*.sh", "**/*.md"]
+alwaysApply: true
+---
+
+---
+description: "Development workflow optimized for AI assistance, including code generation, testing, and deployment processes"
+globs: ["**/*.py", "**/*.js", "**/*.ts", "**/*.sh", "**/*.md"]
+alwaysApply: true
+---
+
+# AI-Assisted Development Workflow
+
+## Description
+This rule defines the development workflow optimized for AI assistance, including code generation, testing, and deployment processes.
+
+## 🎯 **AI-Assisted Development Process**
+
+### **1. Project Setup**
+```bash
+# ✅ Use AI to generate project structure
+# Reference: @how_to_make_a_cursor_rule.mdc
+
+# ✅ Create workspace-specific configurations
+# Reference: @mcp_server_guide_troubshooting.mdc
+```
+
+### **2. Code Generation**
+```bash
+# ✅ Use AI for code generation with context
+# - Reference existing patterns
+# - Follow established naming conventions
+# - Include type hints and docstrings
+```
+
+### **3. Testing and Validation**
+```bash
+# ✅ AI-assisted testing
+python -m pytest tests/ --cov=src/
+python src/mcp_servers/test_mcp_server.py
+```
+
+### **4. Documentation**
+```bash
+# ✅ AI-generated documentation
+# - Update README.md
+# - Generate API documentation
+# - Create usage examples
+```
+
+## 📋 **Development Checklist**
+
+### **Before Starting**
+- [ ] **Reference relevant rules** with `@ruleName`
+- [ ] **Check existing implementations** for patterns
+- [ ] **Understand project structure** and conventions
+- [ ] **Set up development environment** properly
+
+### **During Development**
+- [ ] **Use AI for code generation** with clear prompts
+- [ ] **Follow coding standards** from `@coding_standards.mdc`
+- [ ] **Test incrementally** as you develop
+- [ ] **Document as you go** with AI assistance
+
+### **Before Committing**
+- [ ] **Run all tests** and ensure they pass
+- [ ] **Check code quality** with linting tools
+- [ ] **Update documentation** if needed
+- [ ] **Verify MCP integration** works correctly
+
+## 🔧 **AI Integration Patterns**
+
+### **Code Generation**
+```python
+# ✅ Good - Clear, specific prompt
+"""
+Create a function to analyze evidence references in text.
+Requirements:
+- Function name: extract_evidence_references
+- Input: text (str)
+- Output: list of dicts with 'reference' and 'confidence' keys
+- Include type hints and docstring
+- Follow project naming conventions
+"""
+```
+
+### **Refactoring**
+```python
+# ✅ Good - Reference existing patterns
+"""
+Refactor this function to follow project standards:
+- Add type hints
+- Include proper docstring
+- Follow naming conventions from @coding_standards.mdc
+- Add error handling
+"""
+```
+
+### **Testing**
+```python
+# ✅ Good - AI-assisted test generation
+"""
+Generate tests for the analyze_transcript function:
+- Test with valid transcript
+- Test with invalid input
+- Test error conditions
+- Follow project testing patterns
+"""
+```
+
+## 🚀 **Workflow Automation**
+
+### **MCP Server Integration**
+```bash
+# ✅ Use MCP tools for automation
+mcp_living_truth_fastmcp_server_get_status()
+mcp_living_truth_fastmcp_server_query_langflow("Test query")
+```
+
+### **Development Scripts**
+```bash
+# ✅ Automated workflows
+./scripts/setup/start_development.sh
+./scripts/testing/run_tests.sh
+./scripts/deployment/deploy.sh
+```
+
+## 📊 **Quality Assurance**
+
+### **Code Review Process**
+1. **AI-assisted review** using Cursor AI
+2. **Automated testing** with pytest
+3. **Code quality checks** with flake8
+4. **MCP integration testing**
+5. **Documentation validation**
+
+### **Performance Monitoring**
+- **Response times** for MCP tools
+- **Code generation accuracy**
+- **Test coverage metrics**
+- **Development velocity**
+
+## 🎯 **Best Practices**
+
+### **AI Collaboration**
+- **Be specific** in prompts and requests
+- **Reference existing patterns** and rules
+- **Iterate and refine** based on AI suggestions
+- **Maintain consistency** across the codebase
+
+### **Development Efficiency**
+- **Use AI for repetitive tasks**
+- **Automate testing and deployment**
+- **Leverage MCP tools** for system integration
+- **Maintain comprehensive documentation**
+
+---
+
+**This workflow maximizes AI assistance while maintaining code quality and project consistency.**
+
+@coding_standards.mdc
+@docker_best_practices.mdc
+@system_management.mdc
+@mcp_server_integration.mdc

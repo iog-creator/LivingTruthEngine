@@ -1,0 +1,284 @@
+# Living Truth Engine - Docker Compose Configuration
+# Modern Docker Compose v2 configuration following Docker best practices
+# Focused on essential services only (no Flowise)
+
+services:
+  langflow:
+    image: langflowai/langflow:latest
+    pull_policy: always
+    container_name: living-truth-langflow
+    ports:
+      - "7860:7860"
+    volumes:
+      - langflow-data:/app/langflow
+    environment:
+      - LANGFLOW_DATABASE_URL=postgresql://langflow:langflow@postgres:5432/langflow
+      - LANGFLOW_CONFIG_DIR=app/langflow
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - living-truth-network
+
+  lm-studio:
+    image: lmstudioai/llmster-preview:latest
+    container_name: living-truth-lm-studio
+    ports:
+      - "1234:1234"
+    volumes:
+      - ../data/models:/app/models
+      - ../data/.lmstudio:/app/.lmstudio
+    environment:
+      HOST: 0.0.0.0
+      PORT: 1234
+      MODELS_PATH: /app/models
+      CONFIG_PATH: /app/.lmstudio
+      LOG_LEVEL: INFO
+      DEVICE: auto
+      THREADS: auto
+      CONTEXT_LENGTH: 4096
+      BATCH_SIZE: 512
+      GPU_LAYERS: 0
+      CPU_ONLY: false
+      VERBOSE: false
+      QUIET: false
+      HELP: false
+      VERSION: false
+      MODEL: ""
+      CONFIG: ""
+      PROMPT: ""
+      SYSTEM: ""
+      TEMPLATE: ""
+      STOP: ""
+      REPEAT_PENALTY: 1.1
+      REPEAT_PENALTY_TOKENS: 64
+      TEMPERATURE: 0.7
+      TOP_P: 0.9
+      TOP_K: 40
+      TFS_Z: 1.0
+      TYPICAL_P: 1.0
+      MIROSTAT: 0
+      MIROSTAT_TAU: 5.0
+      MIROSTAT_ETA: 0.1
+      MULTILINE_INPUT: false
+      SIMPLE_UI: false
+      COLOR: false
+      MLOCK: false
+      MMAP: true
+      NUM_PREDICT: 128
+      N_KEEP: 0
+      N_PROBS: 0
+      LOGIT_BIAS: ""
+      IGNORE_EOS: false
+      INTERACTIVE: false
+      INTERACTIVE_FIRST: false
+      INTERACTIVE_SPEC: ""
+      INVERSE_PROP: false
+      LOGDISABLE: false
+      LOGDIR: ""
+      LOGFILE: ""
+      LOG_NEWLINE: false
+      LOG_TIMESTAMP: false
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/1234' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - living-truth-network
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: living-truth-postgres
+    restart: always
+    user: postgres
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-living_truth_engine}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass}
+      POSTGRES_MULTIPLE_DATABASES: langflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../scripts/setup/init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh:ro
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - living-truth-network
+
+  # Neo4j Graph Database
+  neo4j:
+    image: neo4j:5.15.0
+    container_name: living-truth-neo4j
+    environment:
+      NEO4J_AUTH: neo4j/livingtruth123
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/var/lib/neo4j/import
+      - neo4j_plugins:/plugins
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u neo4j -p livingtruth123 'RETURN 1'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - living-truth-network
+
+  # Redis for caching
+  redis:
+    image: redis:7.2-alpine
+    container_name: living-truth-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - living-truth-network
+
+  # Living Truth Engine Application
+  living-truth-engine:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: living-truth-engine
+    environment:
+      # Database connections - Using container PostgreSQL
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: living_truth_engine
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass
+      
+      # Neo4j connection
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASSWORD: livingtruth123
+      
+      # Redis connection
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      
+      # Application settings
+      LOG_LEVEL: INFO
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-default-key-change-in-production}
+      
+      # Model Configuration
+      VISION_MODEL: google/gemma-3-4b
+      LLM_MODEL: qwen/qwen3-8b
+      LMSTUDIO_EMBEDDING_MODEL_QWEN3: text-embedding-qwen3-embedding-0.6b
+      LMSTUDIO_RERANKER_MODEL: qwen.qwen3-reranker-0.6b
+      LMSTUDIO_EMBEDDING_URL: http://host.docker.internal:1234/v1/embeddings
+      LMSTUDIO_CHAT_URL: http://host.docker.internal:1234/v1/chat/completions
+      
+      # Python settings
+      PYTHONPATH: /app
+      PYTHONUNBUFFERED: 1
+    ports:
+      - "8000:8000"  # FastAPI
+      - "8001:8001"  # Dashboard
+    volumes:
+      - ../data/sources:/app/sources
+      - ../data/outputs/logs:/app/logs
+      - ../data/outputs/visualizations:/app/data/outputs/visualizations
+      - ../.env:/app/.env:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      neo4j:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - living-truth-network
+
+  living-truth-mcp:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.mcp
+    container_name: living-truth-mcp
+    ports:
+      - "8002:8000"  # Changed port to avoid conflict
+    volumes:
+      - ../data/sources:/app/data/sources:ro
+      - ../data/outputs/logs:/app/data/outputs/logs
+      - ../data/outputs/visualizations:/app/data/outputs/visualizations
+      - ../.env:/app/.env:ro
+    environment:
+      LANGFLOW_API_ENDPOINT: http://langflow:7860
+      LM_STUDIO_ENDPOINT: http://lm-studio:1234
+      LANGFLOW_API_KEY: ${LANGFLOW_API_KEY:-}
+      PYTHONPATH: /app/src
+    depends_on:
+      lm-studio:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      langflow:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - living-truth-network
+    command: ["python", "src/mcp_servers/living_truth_fastmcp_server.py"]
+
+networks:
+  living-truth-network:
+    driver: bridge
+    name: living-truth-network
+
+volumes:
+  postgres_data:
+    driver: local
+    name: living-truth-postgres-data
+  neo4j_data:
+    driver: local
+    name: living-truth-neo4j-data
+  neo4j_logs:
+    driver: local
+    name: living-truth-neo4j-logs
+  neo4j_import:
+    driver: local
+    name: living-truth-neo4j-import
+  neo4j_plugins:
+    driver: local
+    name: living-truth-neo4j-plugins
+  redis_data:
+    driver: local
+    name: living-truth-redis-data
+  langflow-data:
+    driver: local
+    name: living-truth-langflow-data 

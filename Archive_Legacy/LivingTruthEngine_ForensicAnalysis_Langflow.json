@@ -1,0 +1,411 @@
+{
+  "description": "Living Truth Engine Forensic Analysis - Multi-Agent System for uncovering elite networks, entity relationships, and data visualization",
+  "name": "Living Truth Engine Forensic Analysis",
+  "id": "living-truth-forensic-analysis",
+  "nodes": [
+    {
+      "id": "start-node",
+      "type": "start",
+      "position": {
+        "x": -240,
+        "y": 85
+      },
+      "data": {
+        "type": "form",
+        "form": {
+          "title": "Forensic Analysis",
+          "description": "Starting point for investigative research into elite networks and entity relationships",
+          "inputs": [
+            {
+              "type": "string",
+              "label": "Query or Data Input",
+              "name": "query",
+              "required": true,
+              "placeholder": "Enter your query or data input (e.g., transcript, entity list, investigation target)"
+            },
+            {
+              "type": "boolean",
+              "label": "Anonymize",
+              "name": "anonymize",
+              "default": false,
+              "description": "Anonymize sensitive data and personal information"
+            },
+            {
+              "type": "options",
+              "label": "Output Type",
+              "name": "output_type",
+              "options": [
+                {
+                  "label": "Summary",
+                  "value": "summary"
+                },
+                {
+                  "label": "Network",
+                  "value": "network"
+                },
+                {
+                  "label": "Timeline",
+                  "value": "timeline"
+                },
+                {
+                  "label": "Audio",
+                  "value": "audio"
+                }
+              ],
+              "default": "summary"
+            }
+          ]
+        },
+        "flow_state": {
+          "subagents": [],
+          "findings": ""
+        },
+        "persist_state": true
+      }
+    },
+    {
+      "id": "chatlocalai-qwen3-8b",
+      "type": "chatlocalai",
+      "position": {
+        "x": -150,
+        "y": 200
+      },
+      "data": {
+        "label": "ChatLocalAI (Qwen3-8B)",
+        "model_name": "Qwen3-8B",
+        "api_endpoint": "http://lm-studio:1234/v1",
+        "temperature": 0.7,
+        "max_tokens": 512,
+        "top_p": 0.9,
+        "frequency_penalty": 0.0,
+        "presence_penalty": 0.0,
+        "stop": [],
+        "stream": false
+      }
+    },
+    {
+      "id": "planner-node",
+      "type": "llm",
+      "position": {
+        "x": -111,
+        "y": 83
+      },
+      "data": {
+        "label": "Planner",
+        "model": "chatlocalai-qwen3-8b",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are an expert research lead focused on high-level strategy, planning, and efficient delegation to subagents for uncovering elite networks and entity relationships. Your goal is to analyze the user's query, devise a research plan using diverse data sources, and delegate tasks to subagents. The current date is 08:30 AM PDT, Friday, August 01, 2025.\n\n<research_process>\n1. **Assess and break down the query**: Identify key entities, relationships, and required data (e.g., names, dates, affiliations). Note temporal/contextual constraints. Determine the desired output format (summary, network, timeline, audio).\n2. **Query type**: Classify as Depth-first (multi-perspective analysis), Breadth-first (independent sub-topics), or Straightforward (single investigation).\n3. **Develop a research plan**: Allocate tasks to subagents based on query type, ensuring clear boundaries and synthesis methods.\n4. **Execute**: Deploy subagents, monitor progress, and adapt based on findings, stopping when sufficient.\n</research_process>\n\n<delegation_instructions>\nDeploy subagents with clear tasks, using tools like MCP server's query_flowise, analyze_transcript, list_sources, and generate_viz. Prioritize distinct roles, avoid overlap, and synthesize results. Focus on:\n- **Entity Analysis**: Identify and research key entities and their relationships\n- **Network Mapping**: Uncover connections, affiliations, and influence patterns\n- **Timeline Construction**: Build chronological understanding of events and relationships\n- **Data Validation**: Cross-reference findings across multiple sources\n- **Pattern Recognition**: Identify recurring themes and structural patterns\n</delegation_instructions>\n\n<answer_formatting>\nReturn a JSON array of subagent tasks:\n```json\n{\n  \"subagents\": [\n    {\n      \"task\": \"Detailed description of the research task for this subagent\"\n    }\n  ]\n}\n```\n</answer_formatting>\n\n<important_guidelines>\n- Focus on uncovering elite networks and entity relationships\n- Maintain objectivity and analytical rigor\n- Consider the sensitive nature of investigative research\n- Ensure findings are actionable and well-documented\n- Use diverse data sources for comprehensive analysis\n- Respect privacy and ethical boundaries\n- Prioritize accuracy and transparency\n</important_guidelines>"
+          },
+          {
+            "role": "user",
+            "content": "Query: {{ $form.query }}\nAnonymize: {{ $form.anonymize }}\nOutput Type: {{ $form.output_type }}"
+          }
+        ],
+        "enable_memory": true,
+        "memory_type": "allMessages",
+        "return_response_as": "userMessage",
+        "json_structured_output": {
+          "key": "subagents",
+          "type": "jsonArray",
+          "json_schema": {
+            "task": {
+              "type": "string",
+              "description": "The research task for subagent"
+            }
+          },
+          "description": "A list of subagents to perform research task"
+        },
+        "update_flow_state": {
+          "key": "subagents",
+          "value": "{{ output.subagents }}"
+        }
+      }
+    },
+    {
+      "id": "iteration-node",
+      "type": "iteration",
+      "position": {
+        "x": 126,
+        "y": -5
+      },
+      "data": {
+        "label": "Spawn SubAgents",
+        "array_input": "{{ $flow.state.subagents }}"
+      }
+    },
+    {
+      "id": "subagent-node",
+      "type": "agent",
+      "position": {
+        "x": 53,
+        "y": 77
+      },
+      "data": {
+        "label": "SubAgent",
+        "model": "chatlocalai-qwen3-0.6b",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a research subagent for uncovering elite networks and entity relationships. The current date is 08:30 AM PDT, August 01, 2025. Follow this process for your task {{ $iteration.task }}:\n\n<research_process>\n1. **Plan**: Determine a research budget (2-5 tool calls based on complexity).\n2. **Tool selection**: Use BraveSearch, WebScraper, MCP tools (query_flowise, analyze_transcript, list_sources, generate_viz), or pgVectorSearch for entity data.\n3. **Research loop**: Execute an OODA loop (observe, orient, decide, act) with at least two tool calls, avoiding repetition.\n</research_process>\n\n<research_guidelines>\n- Use broad queries to capture comprehensive information\n- Focus on high-value data (significant, precise, high-quality)\n- Flag conflicting information and verify sources\n- Look for patterns in relationships and networks\n- Identify key entities and their connections\n- Document sources and evidence clearly\n- Maintain analytical objectivity\n</research_guidelines>\n\n<think_about_source_quality>\nBefore using any source:\n- Is it reliable and authoritative?\n- Does it provide relevant insights for the task?\n- Is it from a reputable source?\n- Does it contribute to understanding the network/relationships?\n- Is it appropriate for the investigative nature of the research?\n</think_about_source_quality>\n\n<use_parallel_tool_calls>\nUse multiple tools simultaneously when appropriate:\n- Combine web search with entity analysis\n- Cross-reference findings across multiple sources\n- Validate patterns with database searches\n- Corroborate evidence from different perspectives\n</use_parallel_tool_calls>\n\n<maximum_tool_call_limit>\nMaximum 5 tool calls per research task to maintain efficiency and focus.\n</maximum_tool_call_limit>\n\n<citations>\nAlways provide proper citations for:\n- Web sources (URL, title, date)\n- Database references (source, query, results)\n- MCP tool outputs (tool name, parameters, results)\n- Cross-referenced information (multiple sources)\n</citations>"
+          },
+          {
+            "role": "user",
+            "content": "Research task: {{ $iteration.task }}"
+          }
+        ],
+        "tools": [
+          {
+            "type": "brave_search",
+            "label": "Brave Search",
+            "api_key": "{{ $env.BRAVE_API_KEY }}"
+          },
+          {
+            "type": "web_scraper",
+            "label": "Web Scraper",
+            "recursive": true,
+            "max_depth": 1,
+            "max_pages": 2
+          },
+          {
+            "type": "custom",
+            "label": "MCP Tools",
+            "description": "Interact with MCP server tools for analysis",
+            "api_endpoint": "http://living-truth-mcp:8000",
+            "api_key": "{{ $env.MCP_API_KEY }}",
+            "tools": [
+              "query_flowise",
+              "analyze_transcript",
+              "list_sources",
+              "generate_viz"
+            ]
+          },
+          {
+            "type": "custom",
+            "label": "pgVectorSearch",
+            "description": "Search for entity relationships in PostgreSQL vector database using Qwen3-0.6B embeddings",
+            "vector_store": "elite_network_db",
+            "embedding_model": "Qwen3-0.6B",
+            "knowledge_name": "Entity Relationships",
+            "knowledge_description": "Contains embeddings of entity relationship data for pattern matching and network analysis",
+            "return_source_documents": true,
+            "api_endpoint": "http://living-truth-mcp:8000",
+            "api_key": "{{ $env.MCP_API_KEY }}"
+          }
+        ],
+        "enable_memory": true,
+        "memory_type": "allMessages",
+        "return_response_as": "userMessage"
+      }
+    },
+    {
+      "id": "writer-agent-node",
+      "type": "agent",
+      "position": {
+        "x": 457,
+        "y": 83
+      },
+      "data": {
+        "label": "Writer Agent",
+        "model": "chatlocalai-qwen3-8b",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Generate a high-quality Markdown report from research findings for uncovering elite networks and entity relationships. Preserve all context, maintain citation integrity, and structure with headings.\n\n<guiding_principles>\n- **Preserve Context**: Maintain the full context of investigative analysis\n- **Citation Integrity**: Ensure all sources and evidence are properly cited\n- **Structure**: Organize findings in logical, coherent structure\n- **Markdown Output**: Use proper Markdown formatting for readability\n- **Sensitivity**: Handle sensitive information with appropriate care\n</guiding_principles>\n\n<writing_guidelines>\n\n**Title**: Clear, descriptive title reflecting the investigation focus\n\n**Abstract**: Concise summary of key findings and network patterns identified\n\n**Introduction**:\n- Context of the investigation\n- Objectives and scope\n- Methodology overview\n- Research framework\n\n**Main Body**:\n- **Entity Analysis**: Detailed examination of key entities and their characteristics\n- **Network Mapping**: Analysis of connections, relationships, and influence patterns\n- **Timeline Construction**: Chronological understanding of events and relationships\n- **Pattern Recognition**: Identification of recurring themes and structural patterns\n- **Data Validation**: Cross-referenced findings and source verification\n- **Risk Assessment**: Analysis of potential implications and risks\n\n**Synthesis**:\n- Integration of all findings\n- Network structure summary\n- Relationship pattern analysis\n- Key insights and implications\n\n**Implications**:\n- Strategic recommendations\n- Risk mitigation strategies\n- Further investigation directions\n- Actionable next steps\n\n**Conclusion**:\n- Summary of key insights\n- Network understanding\n- Strategic implications\n\n</writing_guidelines>\n\n<style>\n- **In-depth**: Provide comprehensive analysis with depth\n- **Structured**: Use clear headings and logical flow\n- **Analytical**: Apply critical thinking and investigative reasoning\n- **Objective**: Maintain scholarly objectivity while being thorough\n- **Formal**: Use appropriate investigative and analytical language\n- **Sensitive**: Handle difficult topics with care and professionalism\n</style>\n\n<output_type_adaptations>\n\n**Summary**: Focus on key findings and main patterns (200-300 words)\n**Network**: Entity graph with relationship mapping and visualization\n**Timeline**: Chronological organization with event relationships\n**Audio**: Structured for spoken presentation with clear sections\n\n</output_type_adaptations>\n\n<anonymization>\nIf anonymize is true:\n- Remove or generalize personal identifiers\n- Maintain narrative integrity\n- Focus on patterns rather than specific details\n- Use general examples and case studies\n- Preserve analytical value while protecting privacy\n</anonymization>"
+          },
+          {
+            "role": "user",
+            "content": "<query>{{ $form.query }}</query>\n<existing_findings>{{ $flow.state.findings }}</existing_findings>\n<new_findings>{{ iterationAgentflow_0 }}</new_findings>\n<anonymize>{{ $form.anonymize }}</anonymize>\n<output_type>{{ $form.output_type }}</output_type>"
+          }
+        ],
+        "tools": [],
+        "enable_memory": false,
+        "return_response_as": "userMessage",
+        "update_flow_state": {
+          "key": "findings",
+          "value": "{{ output }}"
+        }
+      }
+    },
+    {
+      "id": "condition-agent-node",
+      "type": "conditionAgent",
+      "position": {
+        "x": 775,
+        "y": 79
+      },
+      "data": {
+        "label": "More SubAgents?",
+        "model": "chatlocalai-qwen3-0.6b",
+        "instructions": "Determine if more subagents are needed based on query, subagent outputs, and findings",
+        "input": "<query>{{ $form.query }}</query>\n<subagents>{{ $flow.state.subagents }}</subagents>\n<findings>{{ $flow.state.findings }}</findings>\n<anonymize>{{ $form.anonymize }}</anonymize>\n<output_type>{{ $form.output_type }}</output_type>",
+        "scenarios": [
+          "More subagents needed",
+          "Findings sufficient"
+        ],
+        "override_system_prompt": false
+      }
+    },
+    {
+      "id": "loop-node",
+      "type": "loop",
+      "position": {
+        "x": 1041,
+        "y": 20
+      },
+      "data": {
+        "label": "Back to Planner",
+        "loop_back_to": "llmAgentflow_0-Planner",
+        "max_loop_count": 5
+      }
+    },
+    {
+      "id": "output-node",
+      "type": "directReply",
+      "position": {
+        "x": 1046,
+        "y": 140
+      },
+      "data": {
+        "label": "Generate Report",
+        "message": "{{ $flow.state.findings }}"
+      }
+    },
+    {
+      "id": "sticky-note-1",
+      "type": "stickyNote",
+      "position": {
+        "x": -117,
+        "y": -24
+      },
+      "data": {
+        "content": "Planner generates subagent tasks for network analysis"
+      }
+    },
+    {
+      "id": "sticky-note-2",
+      "type": "stickyNote",
+      "position": {
+        "x": 186,
+        "y": -175
+      },
+      "data": {
+        "content": "SubAgents research using MCP tools and pgVectorSearch"
+      }
+    },
+    {
+      "id": "sticky-note-3",
+      "type": "stickyNote",
+      "position": {
+        "x": 494,
+        "y": -47
+      },
+      "data": {
+        "content": "Writer compiles findings into requested output"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-start-to-chatlocalai",
+      "source": "start-node",
+      "target": "chatlocalai-qwen3-8b",
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-chatlocalai-to-planner",
+      "source": "chatlocalai-qwen3-8b",
+      "target": "planner-node",
+      "sourceHandle": "output",
+      "targetHandle": "model"
+    },
+    {
+      "id": "edge-start-to-planner",
+      "source": "start-node",
+      "target": "planner-node",
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-planner-to-iteration",
+      "source": "planner-node",
+      "target": "iteration-node",
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-iteration-to-subagent",
+      "source": "iteration-node",
+      "target": "subagent-node",
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-subagent-to-writer",
+      "source": "subagent-node",
+      "target": "writer-agent-node",
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-writer-to-condition",
+      "source": "writer-agent-node",
+      "target": "condition-agent-node",
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-condition-to-loop",
+      "source": "condition-agent-node",
+      "target": "loop-node",
+      "sourceHandle": "output-0",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-condition-to-output",
+      "source": "condition-agent-node",
+      "target": "output-node",
+      "sourceHandle": "output-1",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-loop-to-planner",
+      "source": "loop-node",
+      "target": "planner-node",
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "created_by": "Living Truth Engine",
+    "description": "Multi-agent system for forensic analysis of elite networks and entity relationships",
+    "tags": ["forensic", "analysis", "networks", "entities", "investigation", "multi-agent"],
+    "integrations": {
+      "mcp_server": "living_truth_fastmcp_server.py",
+      "models": {
+        "qwen3-8b": "http://lm-studio:1234/v1",
+        "qwen3-0.6b": "http://lm-studio:1234/v1"
+      },
+      "database": "PostgreSQL with PGVector",
+      "tools": [
+        "query_flowise",
+        "analyze_transcript",
+        "list_sources",
+        "generate_viz",
+        "pgVectorSearch",
+        "brave_search",
+        "web_scraper"
+      ]
+    },
+    "environment_variables": {
+      "FLOWISE_API_ENDPOINT": "http://flowise:3000",
+      "LANGFLOW_API_ENDPOINT": "http://langflow:7860",
+      "LM_STUDIO_ENDPOINT": "http://lm-studio:1234",
+      "MCP_API_KEY": "required",
+      "BRAVE_API_KEY": "required"
+    }
+  }
+} 
