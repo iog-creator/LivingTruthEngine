@@ -161,8 +161,8 @@ class FunctionalTester:
             test_text = "This is a test of the audio generation system for survivor testimony analysis."
             result = self.engine.generate_audio(test_text)
             
-            if result and ("✅" in result or "successful" in result.lower() or "placeholder" in result.lower()):
-                logger.info("✅ Audio generation successful (with fallback)")
+            if result and ("✅" in result or "successful" in result.lower()):
+                logger.info("✅ Audio generation successful")
                 logger.info(f"📝 Result: {result}")
                 
                 # Test 2: Check if audio file was created
@@ -175,7 +175,7 @@ class FunctionalTester:
                         
                         # Check file size
                         file_size = latest_audio.stat().st_size
-                        if file_size > 10:  # Even placeholder files should have some content
+                        if file_size > 1000:  # Real audio files should be substantial
                             logger.info(f"✅ Audio file has content: {file_size} bytes")
                         else:
                             logger.warning(f"⚠️ Audio file seems small: {file_size} bytes")
@@ -184,8 +184,6 @@ class FunctionalTester:
                 else:
                     logger.warning("⚠️ Audio output directory not found")
                 
-                # Note about piper-tts voice models
-                logger.info("📝 Note: For full TTS functionality, piper-tts voice models need to be installed")
                 return True
             else:
                 logger.error(f"❌ Audio generation failed: {result}")

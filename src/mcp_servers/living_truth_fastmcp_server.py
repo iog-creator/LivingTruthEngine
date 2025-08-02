@@ -254,10 +254,12 @@ class LivingTruthEngine:
     def fix_flow(self, fix_request: str) -> str:
         """Request updates to the Langflow workflow."""
         try:
-            return f"✅ Langflow workflow update request received: {fix_request}\n\nThis would typically update the Langflow workflow. For now, this is a placeholder function."
+            # This should actually update the Langflow workflow
+            # For now, raise an error to indicate this needs implementation
+            raise NotImplementedError("Langflow workflow update functionality not yet implemented")
         except Exception as e:
             logger.error(f"Fix flow error: {e}")
-            return f"❌ Fix flow error: {str(e)}"
+            raise RuntimeError(f"Failed to update Langflow workflow: {str(e)}")
 
     def get_lm_studio_models(self) -> str:
         """Get list of available models in LM Studio."""
@@ -372,23 +374,11 @@ class LivingTruthEngine:
             # Use piper-tts for actual TTS generation
             from piper import PiperVoice
             
-            # Use default voice or specify a voice model
-            # For now, use a simple approach - in production you'd have voice models
-            try:
-                # Try to use piper-tts if available
-                voice = PiperVoice.load("en_US-lessac-medium.onnx")
-                voice.synthesize(text, str(output_path))
-                logger.info(f"Audio generated successfully: {output_path}")
-                return f"✅ Audio generated successfully\n📁 Output: {output_path}\n🎵 Text: {text[:100]}..."
-            except Exception as tts_error:
-                logger.warning(f"Piper TTS failed, using fallback: {tts_error}")
-                # Fallback to placeholder if piper-tts fails
-                with open(output_path, 'w') as f:
-                    f.write(f"# Audio placeholder for: {text}\n")
-                    f.write(f"# Generated: {datetime.datetime.now()}\n")
-                    f.write(f"# TTS Error: {tts_error}\n")
-                
-                return f"⚠️ TTS generation failed, created placeholder\n📁 Output: {output_path}\n❌ Error: {tts_error}"
+            # Load voice model and generate audio
+            voice = PiperVoice.load("en_US-lessac-medium.onnx")
+            voice.synthesize(text, str(output_path))
+            logger.info(f"Audio generated successfully: {output_path}")
+            return f"✅ Audio generated successfully\n📁 Output: {output_path}\n🎵 Text: {text[:100]}..."
             
         except Exception as e:
             logger.error(f"Audio generation failed: {e}")
