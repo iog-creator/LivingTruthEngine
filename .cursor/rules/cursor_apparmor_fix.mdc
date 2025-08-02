@@ -1,0 +1,104 @@
+---
+description: "Cursor AppArmor fix for Ubuntu to resolve freezing issues during AI operations"
+globs: ["**/*.sh", "**/*.py", "**/*.md"]
+alwaysApply: true
+---
+
+# Cursor AppArmor Fix for Ubuntu
+
+## Description
+This rule provides the solution for fixing "Cursor is not responding" pauses on Ubuntu caused by AppArmor security restrictions interfering with Cursor AppImage.
+
+## 🎯 **Problem**
+- **AppArmor restrictions** on AppImage execution causing freezes
+- **Sandbox errors** in Electron framework
+- **High resource usage** during AI operations leading to unresponsiveness
+- **Common on Ubuntu 22.04+** with stricter AppArmor policies
+
+## 🔧 **Solution**
+
+### **Automated Fix**
+```bash
+# Run the automated fix script
+./scripts/setup/fix_cursor_apparmor.sh
+```
+
+### **Manual Steps**
+1. **Install dependencies**: `sudo apt install libfuse2t64 -y`
+2. **Move AppImage**: Copy to `~/Applications/cursor.AppImage`
+3. **Create AppArmor profile**: `/etc/apparmor.d/cursor-appimage` with unconfined mode
+4. **Apply profile**: `sudo apparmor_parser -r /etc/apparmor.d/cursor-appimage`
+5. **Create desktop entry**: `/usr/share/applications/cursor.desktop` with `--no-sandbox`
+6. **Clean up old references**: Remove old desktop entries and launch scripts
+
+### **AppArmor Profile**
+```bash
+profile cursor /home/mccoy/Applications/cursor*.AppImage flags=(unconfined) {
+  userns,
+  include if exists <local/cursor>
+}
+```
+
+### **Desktop Entry**
+```ini
+[Desktop Entry]
+Name=Cursor
+Exec=/home/mccoy/Applications/cursor.AppImage --no-sandbox
+Icon=/home/mccoy/.local/share/cursor/cursor.png
+Type=Application
+Categories=Development;
+Comment=AI-first code editor
+```
+
+## 📋 **Verification**
+
+### **Check AppArmor Profile**
+```bash
+sudo aa-status | grep cursor
+```
+
+### **Test Cursor Launch**
+```bash
+~/Applications/cursor.AppImage --no-sandbox
+```
+
+### **Monitor Resources**
+```bash
+htop
+```
+
+## 🚨 **Troubleshooting**
+
+### **If Issues Persist**
+1. **Add GPU disable flag**: `--no-sandbox --disable-gpu`
+2. **Check for updates**: Download latest from cursor.com/downloads
+3. **Monitor resources**: Use `htop` during AI operations
+4. **Test network**: Cursor Settings > Network > Run Diagnostics
+
+### **Emergency Recovery**
+```bash
+# Restart AppArmor
+sudo systemctl restart apparmor
+
+# Remove profile if needed
+sudo rm /etc/apparmor.d/cursor-appimage
+sudo apparmor_parser -r /etc/apparmor.d/cursor-appimage
+```
+
+## 🎯 **Expected Results**
+- ✅ **No more freezing** during AI operations
+- ✅ **Smooth Cursor behavior** on Ubuntu
+- ✅ **Reliable AI assistant** functionality
+- ✅ **Better performance** during resource-intensive tasks
+
+## 📊 **System Requirements**
+- **Ubuntu 22.04+** (tested on Ubuntu 25.04)
+- **libfuse2t64** package installed
+- **8GB+ RAM** recommended for AI operations
+- **Stable internet connection** for AI features
+
+---
+
+**Follow this rule to ensure Cursor runs smoothly on Ubuntu systems without AppArmor interference.**
+
+@how_to_make_a_cursor_rule.mdc
