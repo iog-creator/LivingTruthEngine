@@ -124,6 +124,9 @@ LivingTruthEngine/
 | Meta-Tools | 15 exposed functions | src/mcp_servers/mcp_hub_server.py |
 | Proxy Logic | Dynamic execution | importlib in execute_tool() |
 | Underlying Servers | 8 servers with 63 tools | src/mcp_servers/*.py |
+| Performance Monitoring | Timing and warnings | Built into execute_tool() |
+| Backup System | Automatic backup/recovery | Built into load_registry() |
+| Registry Validation | Enhanced error reporting | Built into validate_registry() |
 
 #### **Testing Integration**
 - Run functional tests: `./scripts/testing/functional_tests.py` (aim for 100%; integrate timing checks in tests for <1s)
