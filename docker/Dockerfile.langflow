@@ -1,0 +1,53 @@
+# Custom Langflow Dockerfile using latest GitHub versions
+FROM python:3.12-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    git \
+    postgresql-client \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Clone the latest Langflow and LangChain from GitHub
+RUN git clone https://github.com/langflow-ai/langflow.git /app/langflow_source && \
+    git clone https://github.com/langchain-ai/langchain.git /app/langchain_source
+
+# Install Langflow from source
+RUN cd /app/langflow_source && \
+    pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -e .
+
+# Install LangChain from source
+RUN cd /app/langchain_source && \
+    pip install --no-cache-dir -e .
+
+# Install additional dependencies
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    psycopg2-binary \
+    psycopg \
+    redis \
+    neo4j
+
+# Set environment variables
+ENV PYTHONPATH=/app/langflow_source:/app/langchain_source
+ENV LANGFLOW_DATABASE_URL=postgresql://langflow:langflow@postgres:5432/langflow
+ENV LANGFLOW_CONFIG_DIR=/app/langflow
+
+# Create necessary directories
+RUN mkdir -p /app/langflow
+
+# Expose port
+EXPOSE 7860
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:7860/health || exit 1
+
+# Run Langflow
+CMD ["langflow", "run", "--host", "0.0.0.0", "--port", "7860"] 

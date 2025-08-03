@@ -1,9 +1,9 @@
 {
   "mcpServers": {
-    "living_truth_fastmcp_server": {
+    "mcp_hub_server": {
       "command": "python3",
       "args": [
-        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py"
+        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/mcp_hub_server.py"
       ],
       "env": {
         "LANGFLOW_API_ENDPOINT": "http://localhost:7860",
@@ -12,83 +12,7 @@
         "LM_STUDIO_ENDPOINT": "http://localhost:1234",
         "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
       },
-      "description": "Living Truth Engine FastMCP Server for survivor testimony analysis with Langflow and LM Studio integration"
-    },
-    "github_mcp_server": {
-      "command": "python3",
-      "args": [
-        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/github_mcp_server.py"
-      ],
-      "env": {
-        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
-      },
-      "description": "GitHub MCP Server for repository management and collaboration"
-    },
-    "postgresql_mcp_server": {
-      "command": "python3",
-      "args": [
-        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/postgresql_mcp_server.py"
-      ],
-      "env": {
-        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
-      },
-      "description": "PostgreSQL MCP Server for database access and querying"
-    },
-    "huggingface_mcp_server": {
-      "command": "python3",
-      "args": [
-        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/huggingface_mcp_server.py"
-      ],
-      "env": {
-        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
-      },
-      "description": "Hugging Face MCP Server for model and dataset access"
-    },
-    "langflow_mcp_server": {
-      "command": "python3",
-      "args": [
-        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/langflow_mcp_server.py"
-      ],
-      "env": {
-        "LANGFLOW_API_ENDPOINT": "http://localhost:7860",
-        "LANGFLOW_API_KEY": "${LANGFLOW_API_KEY}",
-        "LANGFLOW_PROJECT_ID": "399a0977-d08a-4d61-ba52-fd9811676762",
-        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
-      },
-      "description": "Langflow MCP Server for workflow integration using Python-based MCP server"
-    },
-    "devdocs_mcp_server": {
-      "command": "python3",
-      "args": [
-        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/devdocs_mcp_server.py"
-      ],
-      "env": {
-        "DEVDOCS_URL": "http://localhost:9126",
-        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
-      },
-      "description": "DevDocs MCP Server for document retrieval and crawling"
-    },
-    "rulego_mcp_server": {
-      "command": "python3",
-      "args": [
-        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/rulego_mcp_server.py"
-      ],
-      "env": {
-        "RULEGO_URL": "http://localhost:9127",
-        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
-      },
-      "description": "Rulego MCP Server for workflow orchestration and chain management"
-    },
-    "mcp_solver_server": {
-      "command": "python3",
-      "args": [
-        "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/mcp_solver_server.py"
-      ],
-      "env": {
-        "MCP_SOLVER_URL": "http://localhost:9128",
-        "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
-      },
-      "description": "MCP Solver Server for constraint solving and LLM routing"
+      "description": "MCP Hub Server - Consolidated tool gateway providing access to all 63 tools via 15 meta-tools, avoiding Cursor's 40-tool limit"
     }
   }
 }

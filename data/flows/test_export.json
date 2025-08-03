@@ -1,0 +1,52 @@
+{
+    "name": "JSON Export Test Workflow (5)",
+    "description": "Test workflow for JSON import/export functionality",
+    "icon": null,
+    "icon_bg_color": null,
+    "gradient": null,
+    "data": {
+        "nodes": [
+            {
+                "id": "input_node",
+                "type": "TextNode",
+                "position": {
+                    "x": 100,
+                    "y": 100
+                },
+                "data": {
+                    "node": {
+                        "template": {
+                            "text": {
+                                "type": "str",
+                                "value": "Original input text",
+                                "required": true,
+                                "show": true,
+                                "multiline": true
+                            }
+                        },
+                        "description": "Input node for testing",
+                        "base_classes": [
+                            "TextNode"
+                        ],
+                        "display_name": "Text",
+                        "documentation": "Simple text input/output"
+                    }
+                }
+            }
+        ],
+        "edges": []
+    },
+    "is_component": false,
+    "updated_at": "2025-08-03T02:19:01+00:00",
+    "webhook": false,
+    "endpoint_name": null,
+    "tags": null,
+    "locked": false,
+    "mcp_enabled": false,
+    "action_name": null,
+    "action_description": null,
+    "access_type": "PRIVATE",
+    "id": "25c71e1f-e41c-4f3f-9b90-321c619f082f",
+    "user_id": "71085c67-d99e-4af1-99b9-bd28b12c50dc",
+    "folder_id": "e4df83ca-3049-48f4-aca2-af4d700dd852"
+}

@@ -132,3 +132,5 @@ celerybeat.pid
 .dmypy.json
 dmypy.json .env
 env_config.txt
+.env
+ven.txt

@@ -4,8 +4,9 @@
 
 services:
   langflow:
-    image: langflowai/langflow:latest
-    pull_policy: always
+    build:
+      context: .
+      dockerfile: Dockerfile.langflow
     container_name: living-truth-langflow
     ports:
       - "7860:7860"
@@ -13,7 +14,8 @@ services:
       - langflow-data:/app/langflow
     environment:
       - LANGFLOW_DATABASE_URL=postgresql://langflow:langflow@postgres:5432/langflow
-      - LANGFLOW_CONFIG_DIR=app/langflow
+      - LANGFLOW_CONFIG_DIR=/app/langflow
+      - PYTHONPATH=/app/langflow_source:/app/langchain_source
     depends_on:
       - postgres
     restart: unless-stopped
@@ -101,7 +103,7 @@ services:
     restart: always
     user: postgres
     ports:
-      - "5432:5432"
+      - "5434:5432"
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-living_truth_engine}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}

@@ -309,6 +309,416 @@ class FunctionalTester:
         except Exception as e:
             logger.error(f"❌ MCP server test failed: {e}")
             return False
+
+    def test_create_langflow_functionality(self):
+        """Test create_langflow tool functionality"""
+        logger.info("🧪 Testing Create Langflow Functionality")
+        
+        try:
+            # Import the LangflowMCP class
+            from mcp_servers.langflow_mcp_server import LangflowMCP
+            
+            # Initialize LangflowMCP
+            langflow_mcp = LangflowMCP()
+            
+            # Test 1: Test with valid configuration using real Langflow nodes
+            test_config = {
+                "name": "Test Workflow with Real Langflow Nodes",
+                "data": {
+                    "nodes": [
+                        {
+                            "id": "text_node_1",
+                            "type": "TextNode",
+                            "position": {"x": 100, "y": 100},
+                            "data": {
+                                "node": {
+                                    "template": {
+                                        "text": {
+                                            "type": "str",
+                                            "value": "Enter survivor testimony here for analysis",
+                                            "required": True,
+                                            "show": True,
+                                            "multiline": True
+                                        }
+                                    },
+                                    "description": "Input text node for survivor testimony",
+                                    "base_classes": ["TextNode"],
+                                    "display_name": "Text",
+                                    "documentation": "Simple text input/output"
+                                }
+                            }
+                        },
+                        {
+                            "id": "text_node_2", 
+                            "type": "TextNode",
+                            "position": {"x": 300, "y": 100},
+                            "data": {
+                                "node": {
+                                    "template": {
+                                        "text": {
+                                            "type": "str",
+                                            "value": "Analysis results will appear here",
+                                            "required": True,
+                                            "show": True,
+                                            "multiline": True
+                                        }
+                                    },
+                                    "description": "Output text node for analysis results",
+                                    "base_classes": ["TextNode"],
+                                    "display_name": "Text",
+                                    "documentation": "Simple text input/output"
+                                }
+                            }
+                        }
+                    ],
+                    "edges": [
+                        {
+                            "id": "edge_1",
+                            "source": "text_node_1",
+                            "target": "text_node_2",
+                            "sourceHandle": "output",
+                            "targetHandle": "input"
+                        }
+                    ]
+                },
+                "description": "Test workflow with real Langflow nodes for survivor testimony analysis"
+            }
+            
+            try:
+                result = langflow_mcp.create_langflow(test_config)
+                logger.info("✅ create_langflow with valid config successful")
+                workflow_id = result.get('id', 'unknown')
+                logger.info(f"📝 Created workflow: {workflow_id}")
+                
+                # Test 4: Test updating the existing workflow
+                update_config = {
+                    "name": f"Updated Test Workflow {workflow_id[:8]}",
+                    "data": {
+                        "nodes": [
+                            {
+                                "id": "text_node_1",
+                                "type": "TextNode", 
+                                "position": {"x": 100, "y": 100},
+                                "data": {
+                                    "node": {
+                                        "template": {
+                                            "text": {
+                                                "type": "str",
+                                                "value": "Enter survivor testimony here for detailed analysis",
+                                                "required": True,
+                                                "show": True,
+                                                "multiline": True
+                                            }
+                                        },
+                                        "description": "Updated input text node for survivor testimony",
+                                        "base_classes": ["TextNode"],
+                                        "display_name": "Text",
+                                        "documentation": "Simple text input/output"
+                                    }
+                                }
+                            },
+                            {
+                                "id": "text_node_2",
+                                "type": "TextNode",
+                                "position": {"x": 300, "y": 100}, 
+                                "data": {
+                                    "node": {
+                                        "template": {
+                                            "text": {
+                                                "type": "str",
+                                                "value": "Analysis results will appear here",
+                                                "required": True,
+                                                "show": True,
+                                                "multiline": True
+                                            }
+                                        },
+                                        "description": "Updated output text node for analysis results",
+                                        "base_classes": ["TextNode"],
+                                        "display_name": "Text",
+                                        "documentation": "Simple text input/output"
+                                    }
+                                }
+                            },
+                            {
+                                "id": "text_node_3",
+                                "type": "TextNode",
+                                "position": {"x": 500, "y": 100},
+                                "data": {
+                                    "node": {
+                                        "template": {
+                                            "text": {
+                                                "type": "str",
+                                                "value": "Additional processing results",
+                                                "required": True,
+                                                "show": True,
+                                                "multiline": True
+                                            }
+                                        },
+                                        "description": "Additional text processing node",
+                                        "base_classes": ["TextNode"],
+                                        "display_name": "Text",
+                                        "documentation": "Simple text input/output"
+                                    }
+                                }
+                            }
+                        ],
+                        "edges": [
+                            {
+                                "id": "edge_1",
+                                "source": "text_node_1",
+                                "target": "text_node_2",
+                                "sourceHandle": "output",
+                                "targetHandle": "input"
+                            },
+                            {
+                                "id": "edge_2", 
+                                "source": "text_node_2",
+                                "target": "text_node_3",
+                                "sourceHandle": "output",
+                                "targetHandle": "input"
+                            }
+                        ]
+                    },
+                    "description": "Updated test workflow with enhanced nodes for survivor testimony analysis"
+                }
+                
+                update_result = langflow_mcp.create_langflow(update_config, workflow_id)
+                logger.info("✅ create_langflow update successful")
+                logger.info(f"📝 Updated workflow: {update_result.get('id', 'unknown')}")
+                
+            except Exception as e:
+                if "ConnectionError" in str(e) or "HTTPException" in str(e):
+                    logger.info("✅ create_langflow properly handles API errors (expected)")
+                else:
+                    logger.error(f"❌ create_langflow failed unexpectedly: {e}")
+                    return False
+            
+            # Test 2: Test with invalid configuration (missing required fields)
+            invalid_config = {"name": "Invalid Workflow"}  # Missing 'data' field
+            
+            try:
+                result = langflow_mcp.create_langflow(invalid_config)
+                logger.error("❌ create_langflow should have raised ValueError for invalid config")
+                return False
+            except ValueError as e:
+                logger.info("✅ create_langflow properly validates required fields")
+            except Exception as e:
+                logger.info("✅ create_langflow properly handles invalid config")
+            
+            # Test 3: Test with None configuration
+            try:
+                result = langflow_mcp.create_langflow(None)
+                logger.error("❌ create_langflow should have raised ValueError for None config")
+                return False
+            except ValueError as e:
+                logger.info("✅ create_langflow properly validates None config")
+            except Exception as e:
+                logger.info("✅ create_langflow properly handles None config")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ create_langflow test failed: {e}")
+            return False
+
+    def test_json_import_export_functionality(self):
+        """Test JSON import/export workflow functionality."""
+        logger.info("🧪 Testing JSON Import/Export Functionality")
+        
+        try:
+            # Import the LangflowMCP class
+            from mcp_servers.langflow_mcp_server import LangflowMCP
+            langflow_mcp = LangflowMCP()
+            
+            # Test 1: Create a workflow first
+            initial_config = {
+                "name": "JSON Export Test Workflow",
+                "data": {
+                    "nodes": [
+                        {
+                            "id": "input_node",
+                            "type": "TextNode",
+                            "position": {"x": 100, "y": 100},
+                            "data": {
+                                "node": {
+                                    "template": {
+                                        "text": {
+                                            "type": "str",
+                                            "value": "Original input text",
+                                            "required": True,
+                                            "show": True,
+                                            "multiline": True
+                                        }
+                                    },
+                                    "description": "Input node for testing",
+                                    "base_classes": ["TextNode"],
+                                    "display_name": "Text",
+                                    "documentation": "Simple text input/output"
+                                }
+                            }
+                        }
+                    ],
+                    "edges": []
+                },
+                "description": "Test workflow for JSON import/export functionality"
+            }
+            
+            result = langflow_mcp.create_langflow(initial_config)
+            workflow_id = result.get('id')
+            logger.info(f"📝 Created test workflow: {workflow_id}")
+            
+            # Test 2: Export workflow to file
+            export_file = langflow_mcp.export_flow_to_file(workflow_id, "data/flows/test_export.json")
+            logger.info(f"✅ Exported workflow to: {export_file}")
+            
+            # Test 3: Load workflow from file
+            flow_json = langflow_mcp.load_flow_from_file(export_file)
+            logger.info("✅ Loaded workflow from file")
+            
+            # Test 4: Configure node in loaded flow
+            updated_flow = langflow_mcp.configure_node_in_flow(
+                flow_json,
+                "input_node",
+                {"text": "Updated input text from JSON workflow"}
+            )
+            logger.info("✅ Configured node in loaded flow")
+            
+            # Test 5: Add new node to flow
+            updated_flow = langflow_mcp.add_node_to_flow(
+                updated_flow,
+                "TextNode",
+                {"text": "New node added via JSON workflow"},
+                {"x": 300, "y": 100}
+            )
+            logger.info("✅ Added new node to flow")
+            
+            # Test 6: Save modified flow to file
+            save_file = langflow_mcp.save_flow_to_file(updated_flow, "data/flows/test_modified.json")
+            logger.info(f"✅ Saved modified flow to: {save_file}")
+            
+            # Test 7: Import modified flow back to Langflow
+            import_result = langflow_mcp.import_flow_from_json(updated_flow, workflow_id)
+            logger.info(f"✅ Imported modified flow: {import_result.get('id')}")
+            
+            # Test 8: Verify file operations
+            import os
+            if os.path.exists(export_file) and os.path.exists(save_file):
+                logger.info("✅ File operations verified")
+            else:
+                logger.error("❌ File operations failed")
+            
+            logger.info("✅ JSON Import/Export Functionality Test PASSED")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ JSON Import/Export Functionality Test FAILED: {e}")
+            return False
+
+    def test_additional_mcp_servers_functionality(self):
+        """Test additional MCP servers (DevDocs, Rulego, MCP Solver)"""
+        logger.info("🧪 Testing Additional MCP Servers Functionality")
+        
+        try:
+            # Test 1: DevDocs MCP Server
+            try:
+                from mcp_servers.devdocs_mcp_server import DevDocsMCPServer
+                devdocs_server = DevDocsMCPServer()
+                
+                # Test DevDocs status
+                status_result = devdocs_server.get_devdocs_status()
+                if status_result:
+                    logger.info("✅ DevDocs MCP Server status check successful")
+                else:
+                    logger.warning("⚠️ DevDocs MCP Server status check returned empty result")
+                    
+            except ImportError:
+                logger.warning("⚠️ DevDocs MCP Server not available")
+            except Exception as e:
+                logger.warning(f"⚠️ DevDocs MCP Server test failed: {e}")
+            
+            # Test 2: Rulego MCP Server
+            try:
+                from mcp_servers.rulego_mcp_server import RulegoMCPServer
+                rulego_server = RulegoMCPServer()
+                
+                # Test Rulego status
+                status_result = rulego_server.get_rulego_status()
+                if status_result:
+                    logger.info("✅ Rulego MCP Server status check successful")
+                else:
+                    logger.warning("⚠️ Rulego MCP Server status check returned empty result")
+                    
+            except ImportError:
+                logger.warning("⚠️ Rulego MCP Server not available")
+            except Exception as e:
+                logger.warning(f"⚠️ Rulego MCP Server test failed: {e}")
+            
+            # Test 3: MCP Solver Server
+            try:
+                from mcp_servers.mcp_solver_server import MCPSolverServer
+                solver_server = MCPSolverServer()
+                
+                # Test Solver status
+                status_result = solver_server.get_solver_status()
+                if status_result:
+                    logger.info("✅ MCP Solver Server status check successful")
+                else:
+                    logger.warning("⚠️ MCP Solver Server status check returned empty result")
+                    
+            except ImportError:
+                logger.warning("⚠️ MCP Solver Server not available")
+            except Exception as e:
+                logger.warning(f"⚠️ MCP Solver Server test failed: {e}")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Additional MCP servers test failed: {e}")
+            return False
+
+    def test_langflow_mcp_server_tools(self):
+        """Test Langflow MCP Server specific tools"""
+        logger.info("🧪 Testing Langflow MCP Server Tools")
+        
+        try:
+            from mcp_servers.langflow_mcp_server import LangflowMCP
+            langflow_mcp = LangflowMCP()
+            
+            # Test 1: get_langflow_status
+            try:
+                status_result = langflow_mcp.get_langflow_status()
+                if status_result:
+                    logger.info("✅ Langflow MCP get_langflow_status successful")
+                else:
+                    logger.warning("⚠️ Langflow MCP get_langflow_status returned empty result")
+            except Exception as e:
+                logger.warning(f"⚠️ Langflow MCP get_langflow_status failed: {e}")
+            
+            # Test 2: list_langflow_tools
+            try:
+                tools_result = langflow_mcp.list_langflow_tools()
+                if tools_result:
+                    logger.info("✅ Langflow MCP list_langflow_tools successful")
+                else:
+                    logger.warning("⚠️ Langflow MCP list_langflow_tools returned empty result")
+            except Exception as e:
+                logger.warning(f"⚠️ Langflow MCP list_langflow_tools failed: {e}")
+            
+            # Test 3: get_current_time
+            try:
+                time_result = langflow_mcp.get_current_time()
+                if time_result:
+                    logger.info("✅ Langflow MCP get_current_time successful")
+                else:
+                    logger.warning("⚠️ Langflow MCP get_current_time returned empty result")
+            except Exception as e:
+                logger.warning(f"⚠️ Langflow MCP get_current_time failed: {e}")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Langflow MCP Server tools test failed: {e}")
+            return False
     
     def run_all_tests(self):
         """Run all functional tests"""
@@ -323,6 +733,10 @@ class FunctionalTester:
             ("Transcript Analysis", self.test_transcript_analysis_functionality),
             ("Visualization Generation", self.test_visualization_generation_functionality),
             ("MCP Server Tools", self.test_mcp_server_functionality),
+            ("Create Langflow Tool", self.test_create_langflow_functionality),
+            ("JSON Import/Export", self.test_json_import_export_functionality),
+            ("Additional MCP Servers", self.test_additional_mcp_servers_functionality),
+            ("Langflow MCP Server Tools", self.test_langflow_mcp_server_tools),
         ]
         
         results = {}

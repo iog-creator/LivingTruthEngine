@@ -100,7 +100,108 @@ tools = mcp_langflow_mcp_server_list_langflow_tools()
 time = mcp_langflow_mcp_server_get_current_time()
 ```
 
-### 6. `test_tool`
+### 6. `export_flow_to_file`
+
+**Purpose**: Export flow to JSON file for editing.
+
+**Parameters**:
+- `flow_id` (str): ID of the flow to export
+- `file_path` (str, optional): Path to save the exported JSON (default: "data/flows/exported_flow.json")
+
+**Returns**: File path where the flow was saved
+
+**Example**:
+```python
+file_path = mcp_langflow_mcp_server_export_flow_to_file("flow-id-123", "data/flows/my_flow.json")
+```
+
+### 7. `load_flow_from_file`
+
+**Purpose**: Load flow JSON from file for configuration.
+
+**Parameters**:
+- `file_path` (str): Path to the JSON file to load
+
+**Returns**: Dict containing the flow JSON data
+
+**Example**:
+```python
+flow_json = mcp_langflow_mcp_server_load_flow_from_file("data/flows/my_flow.json")
+```
+
+### 8. `configure_node_in_flow`
+
+**Purpose**: Configure node in loaded flow JSON.
+
+**Parameters**:
+- `flow_json` (Dict[str, Any]): The flow JSON data
+- `node_id` (str): ID of the node to configure
+- `config_params` (Dict[str, Any]): Parameters to configure in the node
+
+**Returns**: Updated flow JSON with configured node
+
+**Example**:
+```python
+updated_flow = mcp_langflow_mcp_server_configure_node_in_flow(
+    flow_json,
+    "node-id-123",
+    {"text": "New input text", "required": True}
+)
+```
+
+### 9. `add_node_to_flow`
+
+**Purpose**: Add new node to flow JSON using schema template.
+
+**Parameters**:
+- `flow_json` (Dict[str, Any]): The flow JSON data
+- `template_type` (str): Type of node template (e.g., "TextNode", "ChatInput", "ChatOutput")
+- `config_params` (Dict[str, Any]): Parameters to configure in the new node
+- `position` (Dict[str, float]): Position coordinates {"x": float, "y": float}
+
+**Returns**: Updated flow JSON with new node added
+
+**Example**:
+```python
+updated_flow = mcp_langflow_mcp_server_add_node_to_flow(
+    flow_json,
+    "TextNode",
+    {"text": "Enter survivor testimony here"},
+    {"x": 100, "y": 200}
+)
+```
+
+### 10. `import_flow_from_json`
+
+**Purpose**: Import JSON to Langflow via API (create/update).
+
+**Parameters**:
+- `flow_json` (Dict[str, Any]): The flow JSON data to import
+- `flow_id` (str, optional): ID of existing flow to update
+
+**Returns**: Dict with the imported/updated flow details
+
+**Example**:
+```python
+result = mcp_langflow_mcp_server_import_flow_from_json(flow_json, "existing-flow-id")
+```
+
+### 11. `save_flow_to_file`
+
+**Purpose**: Save modified flow to file for track/verification.
+
+**Parameters**:
+- `flow_json` (Dict[str, Any]): The flow JSON data to save
+- `file_path` (str, optional): Path to save the flow (default: "data/flows/updated_flow.json")
+
+**Returns**: File path where the flow was saved
+
+**Example**:
+```python
+file_path = mcp_langflow_mcp_server_save_flow_to_file(flow_json, "data/flows/verified_flow.json")
+```
+
+### 12. `test_tool`
 
 **Purpose**: A simple test tool for Cursor detection.
 
@@ -156,7 +257,73 @@ All errors include detailed logging and appropriate exception types for proper e
 
 ## Usage Examples
 
-### Creating a New Workflow
+### Export → Modify → Import Workflow
+
+```python
+# 1. Export existing flow to JSON file
+file_path = mcp_langflow_mcp_server_export_flow_to_file("existing-flow-id", "data/flows/exported_flow.json")
+
+# 2. Load flow for editing
+flow_json = mcp_langflow_mcp_server_load_flow_from_file("data/flows/exported_flow.json")
+
+# 3. Configure existing node
+flow_json = mcp_langflow_mcp_server_configure_node_in_flow(
+    flow_json, 
+    "node-id-123", 
+    {"text": "Updated survivor testimony input"}
+)
+
+# 4. Add new node
+flow_json = mcp_langflow_mcp_server_add_node_to_flow(
+    flow_json,
+    "TextNode",
+    {"text": "Additional analysis step"},
+    {"x": 300, "y": 200}
+)
+
+# 5. Save for verification
+mcp_langflow_mcp_server_save_flow_to_file(flow_json, "data/flows/modified_flow.json")
+
+# 6. Import back to Langflow
+result = mcp_langflow_mcp_server_import_flow_from_json(flow_json, "existing-flow-id")
+print(f"Updated workflow: {result['name']}")
+```
+
+### Create New Flow Workflow
+
+```python
+# 1. Start with empty flow structure
+flow_json = {
+    "name": "New Survivor Analysis Flow",
+    "data": {
+        "nodes": [],
+        "edges": []
+    },
+    "description": "New flow for survivor testimony analysis"
+}
+
+# 2. Add nodes using templates
+flow_json = mcp_langflow_mcp_server_add_node_to_flow(
+    flow_json,
+    "ChatInput",
+    {"message": "Enter survivor testimony here"},
+    {"x": 100, "y": 100}
+)
+
+flow_json = mcp_langflow_mcp_server_add_node_to_flow(
+    flow_json,
+    "ChatOutput", 
+    {"message": "Analysis results will appear here"},
+    {"x": 300, "y": 100}
+)
+
+# 3. Save and import
+mcp_langflow_mcp_server_save_flow_to_file(flow_json, "data/flows/new_flow.json")
+result = mcp_langflow_mcp_server_import_flow_from_json(flow_json)
+print(f"Created new workflow: {result['id']}")
+```
+
+### Creating a New Workflow (Legacy Method)
 
 ```python
 # Create a simple workflow for transcript analysis

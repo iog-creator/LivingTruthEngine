@@ -1,0 +1,27 @@
+{
+  "type": "network",
+  "nodes": [
+    {
+      "id": "source1",
+      "label": "Source 1"
+    },
+    {
+      "id": "source2",
+      "label": "Source 2"
+    },
+    {
+      "id": "analysis",
+      "label": "Analysis"
+    }
+  ],
+  "edges": [
+    {
+      "from": "source1",
+      "to": "analysis"
+    },
+    {
+      "from": "source2",
+      "to": "analysis"
+    }
+  ]
+}

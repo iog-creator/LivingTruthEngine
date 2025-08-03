@@ -10,6 +10,7 @@ import json
 import logging
 import requests
 import time
+import uuid
 from typing import Dict, Any, List, Optional
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
@@ -141,6 +142,10 @@ class LangflowMCP:
             logger.error(f"List tools error: {e}")
             return f"❌ List tools error: {str(e)}"
 
+    def get_current_time(self) -> str:
+        """Get current time as test tool."""
+        return f"Current time: {time.strftime('%Y-%m-%d %H:%M:%S')}"
+
     def create_langflow(self, flow_config: Dict[str, Any], flow_id: Optional[str] = None) -> Dict[str, Any]:
         """Create or update a Langflow workflow via API.
 
@@ -176,6 +181,7 @@ class LangflowMCP:
                 url += f"/{flow_id}"
                 method = "PATCH"  # Verified update method
             else:
+                url += "/"  # Add trailing slash for POST requests
                 method = "POST"  # Verified create method
 
             logger.debug("Sending %s request to %s with config: %s", method, url, flow_config)
@@ -195,6 +201,183 @@ class LangflowMCP:
         except Exception as e:
             logger.error("Unexpected error creating/updating workflow: %s", e)
             raise ConnectionError(f"Error processing workflow: {e}")
+
+    def export_flow_to_file(self, flow_id: str, file_path: str = "data/flows/exported_flow.json") -> str:
+        """Export flow to JSON file for editing."""
+        try:
+            headers = {
+                "x-api-key": self.langflow_api_key,
+                "Content-Type": "application/json",
+                "accept": "application/json"
+            }
+            
+            # Ensure directory exists
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            
+            response = requests.get(f"{self.langflow_api_endpoint}/api/v1/flows/{flow_id}", headers=headers, timeout=10)
+            response.raise_for_status()
+            flow_json = response.json()
+            
+            with open(file_path, 'w') as f:
+                json.dump(flow_json, f, indent=4)
+            
+            logger.info(f"Exported flow {flow_id} to {file_path}")
+            return file_path
+            
+        except Exception as e:
+            logger.error(f"Export flow error: {e}")
+            raise ConnectionError(f"Failed to export flow: {e}")
+
+    def load_flow_from_file(self, file_path: str) -> Dict[str, Any]:
+        """Load flow JSON from file for configuration."""
+        try:
+            with open(file_path, 'r') as f:
+                flow_json = json.load(f)
+            logger.info(f"Loaded flow from {file_path}")
+            return flow_json
+        except Exception as e:
+            logger.error(f"Load flow error: {e}")
+            raise ValueError(f"Failed to load flow from {file_path}: {e}")
+
+    def configure_node_in_flow(self, flow_json: Dict[str, Any], node_id: str, config_params: Dict[str, Any]) -> Dict[str, Any]:
+        """Configure node in loaded flow JSON."""
+        try:
+            for node in flow_json['data']['nodes']:
+                if node['id'] == node_id:
+                    for key, value in config_params.items():
+                        if key in node['data']['node']['template']:
+                            param = node['data']['node']['template'][key]
+                            if param.get('required', False) and not value:
+                                raise ValueError(f"Required param {key} cannot be empty")
+                            param['value'] = value
+                    logger.info(f"Configured node {node_id} with params: {config_params}")
+                    break
+            else:
+                raise ValueError(f"Node {node_id} not found in flow")
+            
+            return flow_json
+        except Exception as e:
+            logger.error(f"Configure node error: {e}")
+            raise ValueError(f"Failed to configure node: {e}")
+
+    def add_node_to_flow(self, flow_json: Dict[str, Any], template_type: str, config_params: Dict[str, Any], position: Dict[str, float]) -> Dict[str, Any]:
+        """Add new node to flow JSON using schema template."""
+        try:
+            # Get template from hard-coded examples or load from file
+            template = self.get_component_template(template_type)
+            if not template:
+                raise ValueError(f"Template type {template_type} not found")
+            
+            node = template.copy()
+            node['id'] = str(uuid.uuid4())
+            node['position'] = position
+            
+            # Configure the node with provided parameters
+            for key, value in config_params.items():
+                if key in node['data']['node']['template']:
+                    node['data']['node']['template'][key]['value'] = value
+            
+            flow_json['data']['nodes'].append(node)
+            logger.info(f"Added {template_type} node to flow")
+            return flow_json
+            
+        except Exception as e:
+            logger.error(f"Add node error: {e}")
+            raise ValueError(f"Failed to add node: {e}")
+
+    def get_component_template(self, template_type: str) -> Optional[Dict[str, Any]]:
+        """Get component template by type."""
+        # Hard-coded templates based on Langflow node types
+        templates = {
+            "TextNode": {
+                "id": "placeholder",
+                "type": "TextNode",
+                "position": {"x": 0, "y": 0},
+                "data": {
+                    "node": {
+                        "template": {
+                            "text": {
+                                "type": "str",
+                                "value": "",
+                                "required": True,
+                                "show": True,
+                                "multiline": True
+                            }
+                        },
+                        "description": "Text input/output node",
+                        "base_classes": ["TextNode"],
+                        "display_name": "Text",
+                        "documentation": "Simple text input/output"
+                    }
+                }
+            },
+            "ChatInput": {
+                "id": "placeholder",
+                "type": "ChatInput",
+                "position": {"x": 0, "y": 0},
+                "data": {
+                    "node": {
+                        "template": {
+                            "message": {
+                                "type": "str",
+                                "value": "",
+                                "required": True,
+                                "show": True,
+                                "multiline": True
+                            }
+                        },
+                        "description": "Chat input node",
+                        "base_classes": ["ChatInput"],
+                        "display_name": "Chat Input",
+                        "documentation": "Chat input component"
+                    }
+                }
+            },
+            "ChatOutput": {
+                "id": "placeholder",
+                "type": "ChatOutput",
+                "position": {"x": 0, "y": 0},
+                "data": {
+                    "node": {
+                        "template": {
+                            "message": {
+                                "type": "str",
+                                "value": "",
+                                "required": True,
+                                "show": True,
+                                "multiline": True
+                            }
+                        },
+                        "description": "Chat output node",
+                        "base_classes": ["ChatOutput"],
+                        "display_name": "Chat Output",
+                        "documentation": "Chat output component"
+                    }
+                }
+            }
+        }
+        
+        return templates.get(template_type)
+
+    def import_flow_from_json(self, flow_json: Dict[str, Any], flow_id: Optional[str] = None) -> Dict[str, Any]:
+        """Import JSON to Langflow via API (create/update)."""
+        return self.create_langflow(flow_json, flow_id)
+
+    def save_flow_to_file(self, flow_json: Dict[str, Any], file_path: str = "data/flows/updated_flow.json") -> str:
+        """Save modified flow to file for track/verification."""
+        try:
+            # Ensure directory exists
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            
+            with open(file_path, 'w') as f:
+                json.dump(flow_json, f, indent=4)
+            
+            logger.info(f"Saved flow to {file_path}")
+            return file_path
+            
+        except Exception as e:
+            logger.error(f"Save flow error: {e}")
+            raise ValueError(f"Failed to save flow to {file_path}: {e}")
 
 # Create Langflow instance
 langflow = LangflowMCP()
@@ -231,6 +414,36 @@ def test_tool(message: str) -> str:
 def create_langflow(flow_config: Dict[str, Any], flow_id: Optional[str] = None) -> Dict[str, Any]:
     """Create or update a Langflow workflow (MCP tool)."""
     return langflow.create_langflow(flow_config, flow_id)
+
+@mcp.tool()
+def export_flow_to_file(flow_id: str, file_path: str = "data/flows/exported_flow.json") -> str:
+    """Export flow to JSON file for editing."""
+    return langflow.export_flow_to_file(flow_id, file_path)
+
+@mcp.tool()
+def load_flow_from_file(file_path: str) -> Dict[str, Any]:
+    """Load flow JSON from file for configuration."""
+    return langflow.load_flow_from_file(file_path)
+
+@mcp.tool()
+def configure_node_in_flow(flow_json: Dict[str, Any], node_id: str, config_params: Dict[str, Any]) -> Dict[str, Any]:
+    """Configure node in loaded flow JSON."""
+    return langflow.configure_node_in_flow(flow_json, node_id, config_params)
+
+@mcp.tool()
+def add_node_to_flow(flow_json: Dict[str, Any], template_type: str, config_params: Dict[str, Any], position: Dict[str, float]) -> Dict[str, Any]:
+    """Add new node to flow JSON using schema template."""
+    return langflow.add_node_to_flow(flow_json, template_type, config_params, position)
+
+@mcp.tool()
+def import_flow_from_json(flow_json: Dict[str, Any], flow_id: Optional[str] = None) -> Dict[str, Any]:
+    """Import JSON to Langflow via API (create/update)."""
+    return langflow.import_flow_from_json(flow_json, flow_id)
+
+@mcp.tool()
+def save_flow_to_file(flow_json: Dict[str, Any], file_path: str = "data/flows/updated_flow.json") -> str:
+    """Save modified flow to file for track/verification."""
+    return langflow.save_flow_to_file(flow_json, file_path)
 
 if __name__ == "__main__":
     logger.info("Langflow MCP Server starting...")

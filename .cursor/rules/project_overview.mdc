@@ -20,7 +20,7 @@ The Living Truth Engine is an AI-powered system for survivor testimony corrobora
 - **Neo4j**: Graph database for relationship analysis
 - **Redis**: Caching and session management
 - **Dash Dashboard**: Interactive visualizations for survivor testimony analysis
-- **MCP Server**: Model Context Protocol server for tool integration
+- **MCP Hub Server**: Consolidated tool gateway providing access to all 63 tools via 15 meta-tools
 - **Python Backend**: Core analysis and processing logic
 - **Docker**: Containerized deployment and development
 
@@ -28,25 +28,34 @@ The Living Truth Engine is an AI-powered system for survivor testimony corrobora
 
 ### **Service Architecture**
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Langflow      │    │   PostgreSQL    │    │   MCP Server    │
-│   (Port 7860)   │    │   (Port 5432)   │    │   (Local)       │
-│                 │    │                 │    │                 │
-│ • Multi-Agent   │    │ • Data Storage  │    │ • Tool Server   │
-│ • Python Native │    │ • Langflow DB   │    │ • API Endpoints │
-│ • Workflow UI   │    │ • Analysis Data │    │ • Integration   │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         └───────────────────────┼───────────────────────┘
-                                 │
-                    ┌─────────────────┐    ┌─────────────────┐
-                    │   Neo4j         │    │   Dash Dashboard│
-                    │   (Port 7474)   │    │   (Port 8050)   │
-                    │                 │    │                 │
-                    │ • Graph DB      │    │ • Visualizations│
-                    │ • Relationships │    │ • Interactive UI│
-                    │ • Network Data  │    │ • Real-time Data│
-                    └─────────────────┘    └─────────────────┘
+┌─────────────────┐
+│ Cursor AI       │
+└─────────────────┘
+        │ (15 meta-tools)
+        ▼
+┌─────────────────┐
+│ MCP Hub Server  │
+│ (Registry: 63+  │
+│  tools)         │
+└─────────────────┘
+        │ (Proxy calls)
+        ▼
+┌─────────────────┬─────────────────┬─────────────────┐
+│ Living Truth   │ Langflow MCP    │ Other Servers   │
+│ FastMCP Server │ Server          │ (GitHub, DB,    │
+│ (22 tools)     │ (12 tools)      │ HF, DevDocs,    │
+│                │                 │ Rulego, Solver) │
+└─────────────────┴─────────────────┴─────────────────┘
+        │                       │
+        ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐
+│   Langflow      │    │   PostgreSQL    │
+│   (Port 7860)   │    │   (Port 5432)   │
+│                 │    │                 │
+│ • Multi-Agent   │    │ • Data Storage  │
+│ • Python Native │    │ • Langflow DB   │
+│ • Workflow UI   │    │ • Analysis Data │
+└─────────────────┘    └─────────────────┘
 ```
 
 ### **Data Flow**
@@ -76,11 +85,12 @@ LivingTruthEngine/
 │   ├── outputs/              # Analysis outputs
 │   └── logs/                 # Application logs
 ├── config/                   # Configuration files
+│   └── tool_registry.json   # MCP Hub Server tool registry
 ├── tests/                    # Test suite
 ├── docs/                     # Documentation
 └── .cursor/                  # Cursor IDE configuration
     ├── rules/                # Development rules
-    └── mcp.json             # MCP server configuration
+    └── mcp.json             # MCP Hub Server configuration
 ```
 
 ## 🔧 **Technology Stack**
@@ -98,8 +108,28 @@ LivingTruthEngine/
 - **Hugging Face**: Model hosting and inference
 - **OpenAI**: Language model API
 - **SpaCy**: Natural language processing
+
+### **MCP Integration**
+- **MCP Hub Server**: Consolidated tool gateway with 15 meta-tools
+- **Tool Registry**: Central registry of 63 tools across 8 servers
+- **FastMCP**: Framework for MCP server implementation
+- **Dynamic Loading**: On-demand tool loading for efficiency
 - **Piper TTS**: Text-to-speech synthesis
 - **Dash/Plotly**: Interactive data visualizations
+
+#### **MCP Hub Server Components Table**
+| Component | Description | Location |
+|-----------|-------------|----------|
+| Tool Registry | JSON for all tools | config/tool_registry.json |
+| Meta-Tools | 15 exposed functions | src/mcp_servers/mcp_hub_server.py |
+| Proxy Logic | Dynamic execution | importlib in execute_tool() |
+| Underlying Servers | 8 servers with 63 tools | src/mcp_servers/*.py |
+
+#### **Testing Integration**
+- Run functional tests: `./scripts/testing/functional_tests.py` (aim for 100% pass; fix audio with piper-tts)
+- Test MCP Hub Server: `python3 src/mcp_servers/mcp_hub_server.py`
+- Validate registry: Use `validate_registry()` function from @mcp_server_integration.mdc
+- Performance monitoring: Use `measure_tool_performance()` for response time tracking
 
 ### **Development Tools**
 - **Cursor IDE**: AI-assisted development environment
@@ -220,8 +250,11 @@ LivingTruthEngine/
 
 **This overview provides the foundation for understanding and working with the Living Truth Engine project.**
 
-@coding_standards.mdc
-@development_workflow.mdc
-@docker_best_practices.mdc
-@system_management.mdc
-@mcp_server_integration.mdc
+## 📚 **Related Rules**
+- **@mcp_hub_server.mdc** - Detailed MCP Hub Server architecture and usage
+- **@mcp_server_integration.mdc** - MCP server integration patterns and best practices
+- **@current_working_state.mdc** - Current system status and operational details
+- **@coding_standards.mdc** - Code quality and development standards
+- **@development_workflow.mdc** - Development workflow and best practices
+- **@docker_best_practices.mdc** - Docker configuration and deployment
+- **@system_management.mdc** - System management and automation
