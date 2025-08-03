@@ -207,6 +207,38 @@ except Exception as e:
 
 **Registry Backup**: Copy to `.bak` on load for corruption recovery.
 
+### **Tool Management**
+```python
+# Build new tool
+mcp_mcp_hub_server_build_tool({
+    "name": "new_tool", 
+    "description": "Test tool", 
+    "server": "living_truth_fastmcp_server", 
+    "module": "src.mcp_servers.living_truth_fastmcp_server", 
+    "function": "new_function",
+    "params_schema": {"param1": {"type": "string", "required": True}}
+})
+
+# Update existing tool
+mcp_mcp_hub_server_update_tool("existing_tool", {"description": "Updated description"})
+
+# Delete tool
+mcp_mcp_hub_server_delete_tool("old_tool")
+```
+
+### **Performance Monitoring**
+```python
+import time
+
+def measure_tool_performance(tool_name: str, params: Dict) -> Tuple[Any, float]:
+    start = time.time()
+    result = mcp_mcp_hub_server_execute_tool(tool_name, params)
+    duration = time.time() - start
+    if duration > 1:
+        logger.warning(f"Slow execution: {duration}s for {tool_name}")
+    return result, duration
+```
+
 ### **Integration Patterns**
 
 #### **Adding New Tools to Hub Server**
