@@ -1,61 +1,45 @@
 {
   "version": "1.0.0",
-  "last_updated": "2025-08-02",
-  "total_tools": 40,
+  "last_updated": "2025-08-03",
+  "total_tools": 63,
   "servers": {
     "living_truth_fastmcp_server": {
-      "description": "Living Truth Engine FastMCP Server for survivor testimony analysis",
+      "description": "Living Truth Fastmcp Server MCP Server",
       "tools": [
         {
           "name": "query_langflow",
-          "description": "Query the Langflow workflow for survivor testimony analysis",
+          "description": "Query the Langflow workflow for survivor testimony analysis using multi-agent system.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "query_langflow",
           "params_schema": {
-            "query": {
+            "param": {
               "type": "string",
               "required": true
-            },
-            "output_type": {
-              "type": "string",
-              "default": "summary"
-            },
-            "anonymize": {
-              "type": "boolean",
-              "default": false
             }
           }
         },
         {
           "name": "query_flowise",
-          "description": "Query the Flowise chatflow for pattern recognition and data analysis",
+          "description": "Query the Flowise chatflow for survivor testimony analysis (DEPRECATED - use query_langflow).",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "query_flowise",
           "params_schema": {
-            "query": {
+            "param": {
               "type": "string",
               "required": true
-            },
-            "anonymize": {
-              "type": "boolean",
-              "default": false
-            },
-            "output_type": {
-              "type": "string",
-              "default": "summary"
             }
           }
         },
         {
           "name": "get_status",
-          "description": "Get Living Truth Engine system status and health",
+          "description": "Get Living Truth Engine system status (chatflows, sources, confidence metrics, dashboard link).",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "get_status",
           "params_schema": {
-            "random_string": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -63,12 +47,12 @@
         },
         {
           "name": "list_sources",
-          "description": "List all available sources in the system",
+          "description": "List all available sources in the system.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "list_sources",
           "params_schema": {
-            "random_string": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -76,12 +60,12 @@
         },
         {
           "name": "analyze_transcript",
-          "description": "Analyze a specific transcript or data file for patterns",
+          "description": "Analyze a specific transcript or data file for patterns.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "analyze_transcript",
           "params_schema": {
-            "transcript_name": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -89,25 +73,25 @@
         },
         {
           "name": "generate_viz",
-          "description": "Generate visualizations and pattern maps",
+          "description": "Generate visualizations and pattern maps (network, timeline, etc.).",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "generate_viz",
           "params_schema": {
-            "viz_type": {
+            "param": {
               "type": "string",
-              "default": "network"
+              "required": true
             }
           }
         },
         {
           "name": "fix_flow",
-          "description": "Request updates to the Langflow workflow",
+          "description": "Request updates to the Langflow workflow.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "fix_flow",
           "params_schema": {
-            "fix_request": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -115,12 +99,25 @@
         },
         {
           "name": "get_current_time",
-          "description": "Get the current time as a test tool",
+          "description": "Get the current time as a test tool.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "get_current_time",
           "params_schema": {
-            "random_string": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "test_tool",
+          "description": "A simple test tool for Cursor detection.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "test_tool",
+          "params_schema": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -128,12 +125,12 @@
         },
         {
           "name": "batch_system_operations",
-          "description": "Batch system operations: get status, list sources, and check health",
+          "description": "Batch system operations: get status, list sources, and check health in one call.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "batch_system_operations",
           "params_schema": {
-            "random_string": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -141,33 +138,25 @@
         },
         {
           "name": "batch_analysis_operations",
-          "description": "Batch analysis operations: query Langflow, analyze transcript, and generate visualization",
+          "description": "Batch analysis operations: query Langflow, analyze transcript, and generate visualization.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "batch_analysis_operations",
           "params_schema": {
-            "query": {
+            "param": {
               "type": "string",
               "required": true
-            },
-            "transcript_name": {
-              "type": "string",
-              "default": null
-            },
-            "viz_type": {
-              "type": "string",
-              "default": "network"
             }
           }
         },
         {
           "name": "get_project_info",
-          "description": "Get comprehensive project information and available tools",
+          "description": "Get comprehensive project information and available tools.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "get_project_info",
           "params_schema": {
-            "random_string": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -175,12 +164,12 @@
         },
         {
           "name": "get_lm_studio_models",
-          "description": "Get list of available models in LM Studio",
+          "description": "Get list of available models in LM Studio.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "get_lm_studio_models",
           "params_schema": {
-            "random_string": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -188,41 +177,25 @@
         },
         {
           "name": "generate_lm_studio_text",
-          "description": "Generate text using LM Studio models",
+          "description": "Generate text using LM Studio models.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "generate_lm_studio_text",
           "params_schema": {
-            "prompt": {
+            "param": {
               "type": "string",
               "required": true
-            },
-            "model": {
-              "type": "string",
-              "default": ""
-            },
-            "max_tokens": {
-              "type": "integer",
-              "default": 1000
-            },
-            "temperature": {
-              "type": "number",
-              "default": 0.7
-            },
-            "system_prompt": {
-              "type": "string",
-              "default": ""
             }
           }
         },
         {
           "name": "test_lm_studio_connection",
-          "description": "Test connection to LM Studio",
+          "description": "Test connection to LM Studio.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "test_lm_studio_connection",
           "params_schema": {
-            "random_string": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -230,12 +203,12 @@
         },
         {
           "name": "get_lm_studio_status",
-          "description": "Get LM Studio server status and health",
+          "description": "Get LM Studio server status and health.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "get_lm_studio_status",
           "params_schema": {
-            "random_string": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -243,12 +216,12 @@
         },
         {
           "name": "generate_audio",
-          "description": "Generate audio from text using TTS model",
+          "description": "Generate audio from text using TTS model.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "generate_audio",
           "params_schema": {
-            "text": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -256,12 +229,12 @@
         },
         {
           "name": "auto_detect_and_add_tools",
-          "description": "Automatically detect development needs and add tools",
+          "description": "Automatically detect development needs and add tools.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "auto_detect_and_add_tools",
           "params_schema": {
-            "random_string": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -269,12 +242,12 @@
         },
         {
           "name": "auto_update_all_documentation",
-          "description": "Automatically update all project documentation",
+          "description": "Automatically update all documentation based on current state.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "auto_update_all_documentation",
           "params_schema": {
-            "random_string": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -282,12 +255,12 @@
         },
         {
           "name": "auto_update_cursor_rules",
-          "description": "Automatically update cursor rules based on current patterns",
+          "description": "Automatically update cursor rules based on current patterns.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "auto_update_cursor_rules",
           "params_schema": {
-            "random_string": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -295,12 +268,12 @@
         },
         {
           "name": "auto_validate_system_state",
-          "description": "Automatically validate and report system state",
+          "description": "Automatically validate and report system state.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "auto_validate_system_state",
           "params_schema": {
-            "random_string": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -308,12 +281,12 @@
         },
         {
           "name": "comprehensive_health_check",
-          "description": "Perform comprehensive health check of all system components",
+          "description": "Perform comprehensive health check of all system components.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "comprehensive_health_check",
           "params_schema": {
-            "random_string": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -322,71 +295,16 @@
       ]
     },
     "langflow_mcp_server": {
-      "description": "Langflow MCP Server for workflow integration",
+      "description": "Langflow Mcp Server MCP Server",
       "tools": [
         {
           "name": "query_langflow",
-          "description": "Query the Langflow workflow for survivor testimony analysis",
+          "description": "Query the Langflow workflow for survivor testimony analysis using multi-agent system.",
           "server": "langflow_mcp_server",
           "module": "src.mcp_servers.langflow_mcp_server",
           "function": "query_langflow",
           "params_schema": {
-            "query": {
-              "type": "string",
-              "required": true
-            },
-            "anonymize": {
-              "type": "boolean",
-              "default": false
-            },
-            "output_type": {
-              "type": "string",
-              "default": "summary"
-            }
-          }
-        },
-        {
-          "name": "create_langflow",
-          "description": "Create or update a Langflow workflow",
-          "server": "langflow_mcp_server",
-          "module": "src.mcp_servers.langflow_mcp_server",
-          "function": "create_langflow",
-          "params_schema": {
-            "flow_config": {
-              "type": "object",
-              "required": true
-            },
-            "flow_id": {
-              "type": "string",
-              "default": null
-            }
-          }
-        },
-        {
-          "name": "export_flow_to_file",
-          "description": "Export flow to JSON file for editing",
-          "server": "langflow_mcp_server",
-          "module": "src.mcp_servers.langflow_mcp_server",
-          "function": "export_flow_to_file",
-          "params_schema": {
-            "flow_id": {
-              "type": "string",
-              "required": true
-            },
-            "file_path": {
-              "type": "string",
-              "default": "data/flows/exported_flow.json"
-            }
-          }
-        },
-        {
-          "name": "load_flow_from_file",
-          "description": "Load flow JSON from file for configuration",
-          "server": "langflow_mcp_server",
-          "module": "src.mcp_servers.langflow_mcp_server",
-          "function": "load_flow_from_file",
-          "params_schema": {
-            "file_path": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -394,73 +312,160 @@
         },
         {
           "name": "get_langflow_status",
-          "description": "Get Langflow system status and connection information",
+          "description": "Get Langflow system status and connection information.",
           "server": "langflow_mcp_server",
           "module": "src.mcp_servers.langflow_mcp_server",
           "function": "get_langflow_status",
           "params_schema": {
-            "random_string": {
-              "type": "string",
-              "required": true
-            }
-          }
-        }
-      ]
-    },
-    "github_mcp_server": {
-      "description": "GitHub MCP Server for repository management",
-      "tools": [
-        {
-          "name": "list_repositories",
-          "description": "List GitHub repositories for the configured user",
-          "server": "github_mcp_server",
-          "module": "src.mcp_servers.github_mcp_server",
-          "function": "list_repositories",
-          "params_schema": {
-            "random_string": {
+            "param": {
               "type": "string",
               "required": true
             }
           }
         },
         {
-          "name": "create_issue",
-          "description": "Create a GitHub issue in the specified repository",
-          "server": "github_mcp_server",
-          "module": "src.mcp_servers.github_mcp_server",
-          "function": "create_issue",
+          "name": "list_langflow_tools",
+          "description": "List available tools in Langflow.",
+          "server": "langflow_mcp_server",
+          "module": "src.mcp_servers.langflow_mcp_server",
+          "function": "list_langflow_tools",
           "params_schema": {
-            "repo": {
+            "param": {
               "type": "string",
               "required": true
-            },
-            "title": {
+            }
+          }
+        },
+        {
+          "name": "get_current_time",
+          "description": "Get the current time as a test tool.",
+          "server": "langflow_mcp_server",
+          "module": "src.mcp_servers.langflow_mcp_server",
+          "function": "get_current_time",
+          "params_schema": {
+            "param": {
               "type": "string",
               "required": true
-            },
-            "body": {
+            }
+          }
+        },
+        {
+          "name": "test_tool",
+          "description": "A simple test tool for Cursor detection.",
+          "server": "langflow_mcp_server",
+          "module": "src.mcp_servers.langflow_mcp_server",
+          "function": "test_tool",
+          "params_schema": {
+            "param": {
               "type": "string",
               "required": true
-            },
-            "labels": {
+            }
+          }
+        },
+        {
+          "name": "create_langflow",
+          "description": "Create or update a Langflow workflow (MCP tool).",
+          "server": "langflow_mcp_server",
+          "module": "src.mcp_servers.langflow_mcp_server",
+          "function": "create_langflow",
+          "params_schema": {
+            "param": {
               "type": "string",
-              "default": ""
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "export_flow_to_file",
+          "description": "Export flow to JSON file for editing.",
+          "server": "langflow_mcp_server",
+          "module": "src.mcp_servers.langflow_mcp_server",
+          "function": "export_flow_to_file",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "load_flow_from_file",
+          "description": "Load flow JSON from file for configuration.",
+          "server": "langflow_mcp_server",
+          "module": "src.mcp_servers.langflow_mcp_server",
+          "function": "load_flow_from_file",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "configure_node_in_flow",
+          "description": "Configure node in loaded flow JSON.",
+          "server": "langflow_mcp_server",
+          "module": "src.mcp_servers.langflow_mcp_server",
+          "function": "configure_node_in_flow",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "add_node_to_flow",
+          "description": "Add new node to flow JSON using schema template.",
+          "server": "langflow_mcp_server",
+          "module": "src.mcp_servers.langflow_mcp_server",
+          "function": "add_node_to_flow",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "import_flow_from_json",
+          "description": "Import JSON to Langflow via API (create/update).",
+          "server": "langflow_mcp_server",
+          "module": "src.mcp_servers.langflow_mcp_server",
+          "function": "import_flow_from_json",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "save_flow_to_file",
+          "description": "Save modified flow to file for track/verification.",
+          "server": "langflow_mcp_server",
+          "module": "src.mcp_servers.langflow_mcp_server",
+          "function": "save_flow_to_file",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
             }
           }
         }
       ]
     },
     "postgresql_mcp_server": {
-      "description": "PostgreSQL MCP Server for database operations",
+      "description": "Postgresql Mcp Server MCP Server",
       "tools": [
         {
           "name": "test_connection",
-          "description": "Test PostgreSQL database connection",
+          "description": "Test PostgreSQL database connection.",
           "server": "postgresql_mcp_server",
           "module": "src.mcp_servers.postgresql_mcp_server",
           "function": "test_connection",
           "params_schema": {
-            "random_string": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -468,12 +473,25 @@
         },
         {
           "name": "list_tables",
-          "description": "List all tables in the database",
+          "description": "List all tables in the database.",
           "server": "postgresql_mcp_server",
           "module": "src.mcp_servers.postgresql_mcp_server",
           "function": "list_tables",
           "params_schema": {
-            "random_string": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "describe_table",
+          "description": "Describe the structure of a specific table.",
+          "server": "postgresql_mcp_server",
+          "module": "src.mcp_servers.postgresql_mcp_server",
+          "function": "describe_table",
+          "params_schema": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -481,51 +499,108 @@
         },
         {
           "name": "execute_query",
-          "description": "Execute a SELECT query on the database",
+          "description": "Execute a SELECT query on the database (read-only for security).",
           "server": "postgresql_mcp_server",
           "module": "src.mcp_servers.postgresql_mcp_server",
           "function": "execute_query",
           "params_schema": {
-            "query": {
+            "param": {
               "type": "string",
               "required": true
-            },
-            "limit": {
-              "type": "integer",
-              "default": 10
+            }
+          }
+        },
+        {
+          "name": "get_table_count",
+          "description": "Get the number of rows in a specific table.",
+          "server": "postgresql_mcp_server",
+          "module": "src.mcp_servers.postgresql_mcp_server",
+          "function": "get_table_count",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "get_database_status",
+          "description": "Get database connection status and configuration.",
+          "server": "postgresql_mcp_server",
+          "module": "src.mcp_servers.postgresql_mcp_server",
+          "function": "get_database_status",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
             }
           }
         }
       ]
     },
     "huggingface_mcp_server": {
-      "description": "Hugging Face MCP Server for model access",
+      "description": "Huggingface Mcp Server MCP Server",
       "tools": [
         {
           "name": "search_models",
-          "description": "Search for models on Hugging Face Hub",
+          "description": "Search for models on Hugging Face Hub.",
           "server": "huggingface_mcp_server",
           "module": "src.mcp_servers.huggingface_mcp_server",
           "function": "search_models",
           "params_schema": {
-            "query": {
+            "param": {
               "type": "string",
               "required": true
-            },
-            "limit": {
-              "type": "integer",
-              "default": 10
             }
           }
         },
         {
           "name": "get_model_info",
-          "description": "Get detailed information about a specific Hugging Face model",
+          "description": "Get detailed information about a specific Hugging Face model.",
           "server": "huggingface_mcp_server",
           "module": "src.mcp_servers.huggingface_mcp_server",
           "function": "get_model_info",
           "params_schema": {
-            "model_id": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "search_datasets",
+          "description": "Search for datasets on Hugging Face Hub.",
+          "server": "huggingface_mcp_server",
+          "module": "src.mcp_servers.huggingface_mcp_server",
+          "function": "search_datasets",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "get_recommended_models",
+          "description": "Get recommended models for a specific task.",
+          "server": "huggingface_mcp_server",
+          "module": "src.mcp_servers.huggingface_mcp_server",
+          "function": "get_recommended_models",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "get_huggingface_status",
+          "description": "Get Hugging Face integration status and configuration.",
+          "server": "huggingface_mcp_server",
+          "module": "src.mcp_servers.huggingface_mcp_server",
+          "function": "get_huggingface_status",
+          "params_schema": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -534,29 +609,55 @@
       ]
     },
     "devdocs_mcp_server": {
-      "description": "DevDocs MCP Server for document retrieval",
+      "description": "Devdocs Mcp Server MCP Server",
       "tools": [
         {
           "name": "crawl_docs",
-          "description": "Crawl documentation from DevDocs",
+          "description": "Crawl documentation from DevDocs.",
           "server": "devdocs_mcp_server",
           "module": "src.mcp_servers.devdocs_mcp_server",
           "function": "crawl_docs",
           "params_schema": {
-            "depth": {
-              "type": "integer",
-              "default": 3
+            "param": {
+              "type": "string",
+              "required": true
             }
           }
         },
         {
           "name": "retrieve_docs",
-          "description": "Retrieve documents from DevDocs",
+          "description": "Retrieve documents from DevDocs.",
           "server": "devdocs_mcp_server",
           "module": "src.mcp_servers.devdocs_mcp_server",
           "function": "retrieve_docs",
           "params_schema": {
-            "query": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "get_devdocs_status",
+          "description": "Get DevDocs server status.",
+          "server": "devdocs_mcp_server",
+          "module": "src.mcp_servers.devdocs_mcp_server",
+          "function": "get_devdocs_status",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "get_devdocs_info",
+          "description": "Get DevDocs project information.",
+          "server": "devdocs_mcp_server",
+          "module": "src.mcp_servers.devdocs_mcp_server",
+          "function": "get_devdocs_info",
+          "params_schema": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -565,33 +666,68 @@
       ]
     },
     "rulego_mcp_server": {
-      "description": "Rulego MCP Server for workflow orchestration",
+      "description": "Rulego Mcp Server MCP Server",
       "tools": [
         {
           "name": "query_rulego_chain",
-          "description": "Query a Rulego workflow chain",
+          "description": "Query a Rulego workflow chain.",
           "server": "rulego_mcp_server",
           "module": "src.mcp_servers.rulego_mcp_server",
           "function": "query_rulego_chain",
           "params_schema": {
-            "query": {
+            "param": {
               "type": "string",
               "required": true
-            },
-            "chain_name": {
+            }
+          }
+        },
+        {
+          "name": "get_rulego_status",
+          "description": "Get Rulego server status.",
+          "server": "rulego_mcp_server",
+          "module": "src.mcp_servers.rulego_mcp_server",
+          "function": "get_rulego_status",
+          "params_schema": {
+            "param": {
               "type": "string",
-              "default": "default"
+              "required": true
             }
           }
         },
         {
           "name": "list_rulego_chains",
-          "description": "List available Rulego workflow chains",
+          "description": "List available Rulego workflow chains.",
           "server": "rulego_mcp_server",
           "module": "src.mcp_servers.rulego_mcp_server",
           "function": "list_rulego_chains",
           "params_schema": {
-            "random_string": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "create_rulego_chain",
+          "description": "Create a new Rulego workflow chain.",
+          "server": "rulego_mcp_server",
+          "module": "src.mcp_servers.rulego_mcp_server",
+          "function": "create_rulego_chain",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "get_rulego_info",
+          "description": "Get Rulego project information.",
+          "server": "rulego_mcp_server",
+          "module": "src.mcp_servers.rulego_mcp_server",
+          "function": "get_rulego_info",
+          "params_schema": {
+            "param": {
               "type": "string",
               "required": true
             }
@@ -600,55 +736,127 @@
       ]
     },
     "mcp_solver_server": {
-      "description": "MCP Solver Server for constraint solving",
+      "description": "Mcp Solver Server MCP Server",
       "tools": [
         {
           "name": "solve_constraint",
-          "description": "Solve a constraint using SAT/SMT solver",
+          "description": "Solve a constraint using SAT/SMT solver.",
           "server": "mcp_solver_server",
           "module": "src.mcp_servers.mcp_solver_server",
           "function": "solve_constraint",
           "params_schema": {
-            "constraint": {
+            "param": {
               "type": "string",
               "required": true
-            },
-            "variables": {
-              "type": "string",
-              "default": "{}"
             }
           }
         },
         {
           "name": "route_llm",
-          "description": "Route query to appropriate LLM model",
+          "description": "Route query to appropriate LLM model.",
           "server": "mcp_solver_server",
           "module": "src.mcp_servers.mcp_solver_server",
           "function": "route_llm",
           "params_schema": {
-            "query": {
+            "param": {
               "type": "string",
               "required": true
-            },
-            "models": {
+            }
+          }
+        },
+        {
+          "name": "get_solver_status",
+          "description": "Get MCP Solver server status.",
+          "server": "mcp_solver_server",
+          "module": "src.mcp_servers.mcp_solver_server",
+          "function": "get_solver_status",
+          "params_schema": {
+            "param": {
               "type": "string",
-              "default": "[]"
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "list_solver_capabilities",
+          "description": "List available solver capabilities.",
+          "server": "mcp_solver_server",
+          "module": "src.mcp_servers.mcp_solver_server",
+          "function": "list_solver_capabilities",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "get_solver_info",
+          "description": "Get MCP Solver project information.",
+          "server": "mcp_solver_server",
+          "module": "src.mcp_servers.mcp_solver_server",
+          "function": "get_solver_info",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
             }
           }
         }
       ]
     },
-    "test_server": {
+    "github_mcp_server": {
+      "description": "Github Mcp Server MCP Server",
       "tools": [
         {
-          "name": "test_tool",
-          "description": "Test tool",
-          "server": "test_server",
-          "module": "test.module",
-          "function": "test_function",
+          "name": "list_repositories",
+          "description": "List GitHub repositories for the configured user.",
+          "server": "github_mcp_server",
+          "module": "src.mcp_servers.github_mcp_server",
+          "function": "list_repositories",
           "params_schema": {
-            "param1": {
-              "type": "string"
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "create_issue",
+          "description": "Create a GitHub issue in the specified repository.",
+          "server": "github_mcp_server",
+          "module": "src.mcp_servers.github_mcp_server",
+          "function": "create_issue",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "search_repositories",
+          "description": "Search GitHub repositories by query and optional language filter.",
+          "server": "github_mcp_server",
+          "module": "src.mcp_servers.github_mcp_server",
+          "function": "search_repositories",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "get_github_status",
+          "description": "Get GitHub integration status and configuration.",
+          "server": "github_mcp_server",
+          "module": "src.mcp_servers.github_mcp_server",
+          "function": "get_github_status",
+          "params_schema": {
+            "param": {
+              "type": "string",
+              "required": true
             }
           }
         }

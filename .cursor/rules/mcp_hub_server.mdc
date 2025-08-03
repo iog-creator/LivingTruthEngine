@@ -39,10 +39,11 @@ This rule defines the MCP Hub Server architecture and usage patterns for the Liv
 ```
 
 ### **Tool Registry**
-- **File**: `config/tool_registry.json`
+- **File**: `config/tool_registry.json` (63 tools across 8 servers)
 - **Purpose**: Central registry of all 63 tools across 8 servers
 - **Structure**: Organized by server with tool definitions, schemas, and metadata
 - **Dynamic**: Can be updated without restarting hub server
+- **Validation**: Automatic backup and recovery with performance monitoring
 
 ## 📋 **Available Meta-Tools (15 total)**
 
