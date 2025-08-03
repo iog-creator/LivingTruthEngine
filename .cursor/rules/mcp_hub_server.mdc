@@ -83,6 +83,8 @@ except ValueError as e:
 #### **Edge Cases**
 - **Registry Overflow**: If >100 tools, paginate `list_tools(page: int = 1, size: int = 20)`
 - **Dynamic Build Failure**: If `build_tool()` fails (invalid code), log and return error details
+- **Registry Corruption**: Load from `.bak` backup; log error and notify
+- **Slow Execution**: Monitor with timing in `execute_tool`; threshold >1s warns
 - **Tool Not Found**: Search registry first (`search_tools(tool_name)`); if missing, build with `build_tool()`
 - **Performance Issues**: If >1s, check logs (`tail -f data/logs/hub.log`); optimize with batch tools
 

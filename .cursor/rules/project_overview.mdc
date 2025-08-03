@@ -120,13 +120,13 @@ LivingTruthEngine/
 #### **MCP Hub Server Components Table**
 | Component | Description | Location |
 |-----------|-------------|----------|
-| Tool Registry | JSON for all tools | config/tool_registry.json |
+| Tool Registry | JSON for all tools | config/tool_registry.json (.bak for backup) |
 | Meta-Tools | 15 exposed functions | src/mcp_servers/mcp_hub_server.py |
 | Proxy Logic | Dynamic execution | importlib in execute_tool() |
 | Underlying Servers | 8 servers with 63 tools | src/mcp_servers/*.py |
 
 #### **Testing Integration**
-- Run functional tests: `./scripts/testing/functional_tests.py` (aim for 100% pass; fix audio with piper-tts)
+- Run functional tests: `./scripts/testing/functional_tests.py` (aim for 100%; integrate timing checks in tests for <1s)
 - Test MCP Hub Server: `python3 src/mcp_servers/mcp_hub_server.py`
 - Validate registry: Use `validate_registry()` function from @mcp_server_integration.mdc
 - Performance monitoring: Use `measure_tool_performance()` for response time tracking

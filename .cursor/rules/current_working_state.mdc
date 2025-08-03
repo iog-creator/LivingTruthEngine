@@ -106,12 +106,13 @@ All services are running successfully in the `LivingTruthEngine` project:
     }
   }
   ```
+  **Note**: Automatic backup created on load (`config/tool_registry.json.bak` for recovery)
 
 #### **Test Details Table**
 | Test Name | Status | Notes |
 |-----------|--------|-------|
 | JSON Import/Export | ✅ Passed | Verified schema accuracy |
-| Audio Generation | ❌ Failed | Missing piper-tts models; run `pip install piper-tts` and download models |
+| Audio Generation | ❌ Failed | Missing piper-tts models; run `pip install piper-tts && ./scripts/setup/download_piper_models.sh` |
 | Langflow Integration | ✅ Passed | API endpoints working, flow creation successful |
 | MCP Hub Server | ✅ Passed | 15 meta-tools operational, 63 underlying tools accessible |
 | Database Operations | ✅ Passed | PostgreSQL connectivity verified |

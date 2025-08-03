@@ -119,6 +119,16 @@ mcp_mcp_hub_server_execute_category_tools("analysis", tools_list)
 result = mcp_mcp_hub_server_execute_tool(tool_name="query_langflow", params={"query": "Analyze patterns"})
 result = mcp_mcp_hub_server_execute_tool(tool_name="analyze_transcript", params={"transcript_name": "test", "anonymize": True})
 
+#### **Performance Monitoring**
+```python
+import time
+start = time.time()
+result = mcp_mcp_hub_server_execute_tool("query_langflow", {"query": "test"})
+duration = time.time() - start
+if duration > 1:
+    print("Warning: Slow tool execution")
+```
+
 ### **Tool Management**
 ```python
 # ✅ Build new tool
@@ -194,7 +204,8 @@ try:
     print("✅ Registry validation passed")
 except Exception as e:
     print(f"❌ Registry validation failed: {e}")
-```
+
+**Registry Backup**: Copy to `.bak` on load for corruption recovery.
 
 ### **Integration Patterns**
 

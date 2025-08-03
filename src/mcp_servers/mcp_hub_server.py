@@ -52,9 +52,16 @@ class MCPHubServer:
         logger.info(f"MCP Hub Server initialized with {self.registry.get('total_tools', 0)} tools")
     
     def load_registry(self) -> Dict[str, Any]:
-        """Load the tool registry from JSON file."""
+        """Load the tool registry from JSON file with automatic backup."""
+        backup_path = self.registry_path.with_suffix('.json.bak')
+        
         try:
             if self.registry_path.exists():
+                # Create backup before loading
+                import shutil
+                shutil.copy2(self.registry_path, backup_path)
+                logger.debug(f"Created backup: {backup_path}")
+                
                 with open(self.registry_path, 'r') as f:
                     registry = json.load(f)
                 
@@ -68,6 +75,18 @@ class MCPHubServer:
                 return {"version": "1.0.0", "total_tools": 0, "servers": {}}
         except Exception as e:
             logger.error(f"Error loading registry: {e}")
+            
+            # Try to load from backup
+            if backup_path.exists():
+                try:
+                    logger.info(f"Attempting to load from backup: {backup_path}")
+                    with open(backup_path, 'r') as f:
+                        backup_registry = json.load(f)
+                    logger.info("Successfully loaded registry from backup")
+                    return backup_registry
+                except Exception as backup_error:
+                    logger.error(f"Failed to load backup registry: {backup_error}")
+            
             return {"version": "1.0.0", "total_tools": 0, "servers": {}}
 
     def validate_registry(self, registry: Dict[str, Any]) -> bool:
@@ -80,42 +99,56 @@ class MCPHubServer:
         Returns:
             True if valid, raises ValueError if invalid
         """
+        validation_errors = []
+        
         if not isinstance(registry, dict):
-            raise ValueError("Registry must be a dictionary")
+            validation_errors.append("Registry must be a dictionary")
         
         if 'servers' not in registry:
-            raise ValueError("Registry missing 'servers' key")
+            validation_errors.append("Registry missing 'servers' key")
+        
+        if validation_errors:
+            raise ValueError(f"Registry validation failed: {'; '.join(validation_errors)}")
         
         required_tool_fields = ['name', 'description', 'server', 'module', 'function']
         
         for server_name, server_data in registry['servers'].items():
             if not isinstance(server_data, dict):
-                raise ValueError(f"Server '{server_name}' data must be a dictionary")
+                validation_errors.append(f"Server '{server_name}' data must be a dictionary")
+                continue
             
             if 'tools' not in server_data:
-                raise ValueError(f"Server '{server_name}' missing 'tools' key")
+                validation_errors.append(f"Server '{server_name}' missing 'tools' key")
+                continue
             
             for tool in server_data['tools']:
                 if not isinstance(tool, dict):
-                    raise ValueError(f"Tool in server '{server_name}' must be a dictionary")
+                    validation_errors.append(f"Tool in server '{server_name}' must be a dictionary")
+                    continue
                 
                 # Check required fields
                 for field in required_tool_fields:
                     if field not in tool:
-                        raise ValueError(f"Tool '{tool.get('name', 'unknown')}' missing required field: {field}")
+                        validation_errors.append(f"Tool '{tool.get('name', 'unknown')}' missing required field: {field}")
                 
                 # Validate params_schema if present
                 if 'params_schema' in tool:
                     if not isinstance(tool['params_schema'], dict):
-                        raise ValueError(f"Tool '{tool['name']}' params_schema must be a dictionary")
-                    
-                    for param_name, param_def in tool['params_schema'].items():
-                        if not isinstance(param_def, dict):
-                            raise ValueError(f"Tool '{tool['name']}' parameter '{param_name}' definition must be a dictionary")
-                        
-                        if 'type' not in param_def:
-                            raise ValueError(f"Tool '{tool['name']}' parameter '{param_name}' missing 'type' field")
+                        validation_errors.append(f"Tool '{tool['name']}' params_schema must be a dictionary")
+                    else:
+                        for param_name, param_def in tool['params_schema'].items():
+                            if not isinstance(param_def, dict):
+                                validation_errors.append(f"Tool '{tool['name']}' parameter '{param_name}' definition must be a dictionary")
+                            elif 'type' not in param_def:
+                                validation_errors.append(f"Tool '{tool['name']}' parameter '{param_name}' missing 'type' field")
         
+        if validation_errors:
+            error_msg = f"Registry validation failed with {len(validation_errors)} errors: {'; '.join(validation_errors[:5])}"
+            if len(validation_errors) > 5:
+                error_msg += f" (and {len(validation_errors) - 5} more)"
+            raise ValueError(error_msg)
+        
+        logger.info(f"Registry validation passed for {sum(len(server.get('tools', [])) for server in registry['servers'].values())} tools")
         return True
     
     def reload_registry(self) -> Dict[str, Any]:
@@ -144,10 +177,14 @@ class MCPHubServer:
     
     def _execute_tool_internal(self, tool_name: str, params: Dict[str, Any]) -> Any:
         """Execute a tool by name with parameters."""
+        import time
+        
         tool_def = self.get_tool_by_name(tool_name)
         if not tool_def:
             raise ValueError(f"Tool '{tool_name}' not found in registry")
 
+        start_time = time.time()
+        
         try:
             module_name = tool_def["module"]
             function_name = tool_def["function"]
@@ -165,10 +202,19 @@ class MCPHubServer:
             # Execute the function
             logger.info(f"Executing tool: {tool_name} with params: {params}")
             result = func(**params)
+            
+            # Performance monitoring
+            duration = time.time() - start_time
+            logger.info(f"Executed {tool_name} in {duration:.2f}s")
+            
+            if duration > 1.0:
+                logger.warning(f"Slow execution for {tool_name}: {duration:.2f}s")
+            
             return result
 
         except Exception as e:
-            logger.error(f"Error executing tool '{tool_name}': {e}")
+            duration = time.time() - start_time
+            logger.error(f"Error executing tool '{tool_name}' after {duration:.2f}s: {e}")
             logger.error(traceback.format_exc())
             raise
     
@@ -300,6 +346,9 @@ class MCPHubServer:
         Returns:
             List of results from each tool execution
         """
+        import time
+        
+        start_time = time.time()
         results = []
         
         for i, tool_request in enumerate(tools):
@@ -331,7 +380,14 @@ class MCPHubServer:
                     "error": str(e)
                 })
         
-        logger.info(f"Batch executed {len(tools)} tools, {len([r for r in results if r['success']])} successful")
+        total_duration = time.time() - start_time
+        successful_count = len([r for r in results if r['success']])
+        
+        logger.info(f"Batch executed {len(tools)} tools in {total_duration:.2f}s, {successful_count} successful")
+        
+        if total_duration > 5.0:
+            logger.warning(f"Slow batch execution: {total_duration:.2f}s for {len(tools)} tools")
+        
         return results
     
     @tool()
