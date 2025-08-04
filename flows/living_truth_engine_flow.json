@@ -1,0 +1,258 @@
+{
+  "name": "Living Truth Engine Flow",
+  "description": "Multi-agent system for investigative research, uncovering elite networks with MCP Hub Server tools",
+  "data": {
+    "nodes": [
+      {
+        "id": "start-node",
+        "type": "Input",
+        "data": {
+          "label": "Start",
+          "node": {
+            "template": {
+              "query": {
+                "type": "str",
+                "required": true,
+                "placeholder": "Enter query (e.g., transcript, entity list)"
+              },
+              "anonymize": {
+                "type": "bool",
+                "required": false,
+                "default": false
+              },
+              "output_type": {
+                "type": "str",
+                "required": false,
+                "default": "summary",
+                "options": ["summary", "network", "timeline", "audio"]
+              }
+            },
+            "display_name": "Input"
+          }
+        },
+        "position": {"x": -240, "y": 85}
+      },
+      {
+        "id": "chatlocalai-node",
+        "type": "LLM",
+        "data": {
+          "label": "ChatLocalAI (Qwen3-8B)",
+          "node": {
+            "template": {
+              "model_name": {"type": "str", "required": true, "value": "Qwen3-8B"},
+              "api_endpoint": {"type": "str", "required": true, "value": "http://localhost:1234/v1"},
+              "temperature": {"type": "float", "required": false, "value": 0.7},
+              "max_tokens": {"type": "int", "required": false, "value": 512}
+            },
+            "display_name": "ChatLocalAI"
+          }
+        },
+        "position": {"x": -150, "y": 200}
+      },
+      {
+        "id": "planner-node",
+        "type": "Agent",
+        "data": {
+          "label": "Planner",
+          "node": {
+            "template": {
+              "model": {"type": "str", "required": true, "value": "Qwen3-8B"},
+              "system_prompt": {
+                "type": "str",
+                "required": true,
+                "value": "You are an expert research lead focused on high-level strategy, planning, and efficient delegation to subagents for uncovering elite networks and entity relationships. Current date: 08/03/2025. <research_process>1. Assess query: Identify key entities, relationships, required data. Note output_type. 2. Classify query: Depth-first, Breadth-first, or Straightforward. 3. Plan: Allocate tasks to subagents, define boundaries, synthesis methods. 4. Execute: Deploy subagents via MCP tools, monitor, adapt.</research_process><delegation_instructions>Use mcp_hub_server_execute_tool for tools like query_langflow. Avoid overlap, synthesize results.</delegation_instructions><answer_formatting>Output JSON array of subagent tasks in Markdown.</answer_formatting>"
+              },
+              "user_prompt": {
+                "type": "str",
+                "required": true,
+                "value": "Query: {{ query }}\nAnonymize: {{ anonymize }}\nOutput Type: {{ output_type }}"
+              }
+            },
+            "display_name": "Planner Agent"
+          }
+        },
+        "position": {"x": -111, "y": 83}
+      },
+      {
+        "id": "iteration-node",
+        "type": "Iteration",
+        "data": {
+          "label": "Spawn SubAgents",
+          "node": {
+            "template": {
+              "input": {"type": "str", "required": true, "value": "{{ planner.output }}"}
+            },
+            "display_name": "Iteration"
+          }
+        },
+        "position": {"x": 126, "y": -5}
+      },
+      {
+        "id": "subagent-node",
+        "type": "Agent",
+        "data": {
+          "label": "SubAgent",
+          "node": {
+            "template": {
+              "model": {"type": "str", "required": true, "value": "Qwen3-0.6B"},
+              "system_prompt": {
+                "type": "str",
+                "required": true,
+                "value": "You are a research subagent for uncovering elite networks. Date: 08/03/2025. Task: {{ iteration.task }}. <research_process>1. Plan: Budget 2-5 tool calls. 2. Tools: Use mcp_hub_server_execute_tool (query_langflow, analyze_transcript, list_sources, generate_viz), BraveSearch, WebScraper, pgVectorSearch (elite_network_db, Qwen3-0.6B). 3. OODA loop: Execute at least two tool calls.</research_process><research_guidelines>Focus on high-value data, flag conflicts.</research_guidelines>"
+              },
+              "tools": [
+                {"type": "BraveSearch"},
+                {"type": "WebScraper", "maxDepth": 1, "maxPages": 2},
+                {
+                  "type": "Custom",
+                  "name": "MCPTool",
+                  "code": "import requests\ndef mcp_tool(tool_name: str, params: dict) -> str:\n    response = requests.post('http://localhost:7860/execute', json={'tool': tool_name, 'params': params}, headers={'x-api-key': '${LANGFLOW_API_KEY}'})\n    return response.text"
+                },
+                {
+                  "type": "VectorStore",
+                  "vectorStore": "elite_network_db",
+                  "embeddingModel": "Qwen3-0.6B",
+                  "knowledgeName": "Entity Relationships",
+                  "returnSourceDocuments": true
+                }
+              ]
+            },
+            "display_name": "SubAgent"
+          }
+        },
+        "position": {"x": 53, "y": 77}
+      },
+      {
+        "id": "writer-node",
+        "type": "Agent",
+        "data": {
+          "label": "Writer Agent",
+          "node": {
+            "template": {
+              "model": {"type": "str", "required": true, "value": "Qwen3-8B"},
+              "system_prompt": {
+                "type": "str",
+                "required": true,
+                "value": "Generate a high-quality Markdown report from research findings for uncovering elite networks. Preserve context, structure with headings, match output_type (summary, network, timeline, audio). Anonymize if requested. Style: analytical, objective."
+              },
+              "user_prompt": {
+                "type": "str",
+                "required": true,
+                "value": "<query>{{ query }}</query><findings>{{ subagent_outputs }}</findings><anonymize>{{ anonymize }}</anonymize><output_type>{{ output_type }}</output_type>"
+              }
+            },
+            "display_name": "Writer Agent"
+          }
+        },
+        "position": {"x": 457, "y": 83}
+      },
+      {
+        "id": "condition-node",
+        "type": "Condition",
+        "data": {
+          "label": "More SubAgents?",
+          "node": {
+            "template": {
+              "model": {"type": "str", "required": true, "value": "Qwen3-0.6B"},
+              "instruction": {
+                "type": "str",
+                "required": true,
+                "value": "Determine if more subagents are needed based on query, subagent outputs, and findings"
+              },
+              "input": {
+                "type": "str",
+                "required": true,
+                "value": "<query>{{ query }}</query><subagents>{{ planner.output }}</subagents><findings>{{ writer.output }}</findings><anonymize>{{ anonymize }}</anonymize><output_type>{{ output_type }}</output_type>"
+              },
+              "conditions": ["More subagents needed", "Findings sufficient"]
+            },
+            "display_name": "Condition Agent"
+          }
+        },
+        "position": {"x": 775, "y": 79}
+      },
+      {
+        "id": "loop-node",
+        "type": "Loop",
+        "data": {
+          "label": "Back to Planner",
+          "node": {
+            "template": {
+              "target": {"type": "str", "required": true, "value": "planner-node"},
+              "max_iterations": {"type": "int", "required": false, "value": 5}
+            },
+            "display_name": "Loop"
+          }
+        },
+        "position": {"x": 1041, "y": 20}
+      },
+      {
+        "id": "output-node",
+        "type": "Output",
+        "data": {
+          "label": "Generate Report",
+          "node": {
+            "template": {
+              "input": {"type": "str", "required": true, "value": "{{ writer.output }}"}
+            },
+            "display_name": "Output"
+          }
+        },
+        "position": {"x": 1046, "y": 140}
+      },
+      {
+        "id": "note-planner",
+        "type": "StickyNote",
+        "data": {
+          "label": "Planner generates subagent tasks for network analysis",
+          "node": {
+            "template": {
+              "text": {"type": "str", "required": true, "value": "Planner generates subagent tasks for network analysis"}
+            },
+            "display_name": "Sticky Note"
+          }
+        },
+        "position": {"x": -117, "y": -24}
+      },
+      {
+        "id": "note-subagents",
+        "type": "StickyNote",
+        "data": {
+          "label": "SubAgents research using MCP tools and pgVectorSearch",
+          "node": {
+            "template": {
+              "text": {"type": "str", "required": true, "value": "SubAgents research using MCP tools and pgVectorSearch"}
+            },
+            "display_name": "Sticky Note"
+          }
+        },
+        "position": {"x": 186, "y": -175}
+      },
+      {
+        "id": "note-writer",
+        "type": "StickyNote",
+        "data": {
+          "label": "Writer compiles findings into requested output",
+          "node": {
+            "template": {
+              "text": {"type": "str", "required": true, "value": "Writer compiles findings into requested output"}
+            },
+            "display_name": "Sticky Note"
+          }
+        },
+        "position": {"x": 494, "y": -47}
+      }
+    ],
+    "edges": [
+      {"id": "e1", "source": "start-node", "target": "chatlocalai-node", "sourceHandle": "output", "targetHandle": "input"},
+      {"id": "e2", "source": "chatlocalai-node", "target": "planner-node", "sourceHandle": "output", "targetHandle": "model"},
+      {"id": "e3", "source": "start-node", "target": "planner-node", "sourceHandle": "output", "targetHandle": "input"},
+      {"id": "e4", "source": "planner-node", "target": "iteration-node", "sourceHandle": "output", "targetHandle": "input"},
+      {"id": "e5", "source": "iteration-node", "target": "writer-node", "sourceHandle": "output", "targetHandle": "input"},
+      {"id": "e6", "source": "writer-node", "target": "condition-node", "sourceHandle": "output", "targetHandle": "input"},
+      {"id": "e7", "source": "condition-node", "target": "loop-node", "sourceHandle": "More subagents needed", "targetHandle": "input"},
+      {"id": "e8", "source": "condition-node", "target": "output-node", "sourceHandle": "Findings sufficient", "targetHandle": "input"},
+      {"id": "e9", "source": "loop-node", "target": "planner-node", "sourceHandle": "output", "targetHandle": "input"}
+    ]
+  }
+} 

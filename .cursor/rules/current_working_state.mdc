@@ -35,6 +35,8 @@ All services are running successfully in the `LivingTruthEngine` project:
    - Web interface: http://localhost:7860
    - Health check: `{"status":"ok"}`
    - Admin login: admin/admin
+   - **✅ Living Truth Engine Flow**: Imported successfully (ID: 9c9ab89b-96ee-44cb-9a4f-9124649ad757)
+   - **✅ Flow Access**: http://localhost:7860/flows/9c9ab89b-96ee-44cb-9a4f-9124649ad757
 
 5. **✅ LM Studio**: `living-truth-lm-studio` - port 1234 (healthy)
    - Local model hosting with proper health checks
@@ -96,6 +98,15 @@ All services are running successfully in the `LivingTruthEngine` project:
 8. **MCP Solver Server**: 5 tools (Constraint solving)
 
 **Benefits**: Unlimited tool development behind scenes, controlled exposure to Cursor, optimal performance
+
+#### **Langflow Flow Integration**
+- **✅ Living Truth Engine Flow**: Multi-agent system for investigative research
+- **✅ Flow Components**: Planner, SubAgents, Writer, Condition, Loop nodes
+- **✅ MCP Integration**: Uses MCP Hub Server tools (query_langflow, analyze_transcript, list_sources, generate_viz)
+- **✅ Model Integration**: Qwen3-8B and Qwen3-0.6B via LM Studio (port 1234)
+- **✅ Vector Search**: pgVectorSearch with PostgreSQL (port 5432)
+- **✅ Flow Access**: http://localhost:7860/flows/9c9ab89b-96ee-44cb-9a4f-9124649ad757
+- **✅ Test Query**: "Investigate Entity A connections, output as network"
 
 #### **MCP Hub Server Status**
 - **✅ Working**: Hub exposes 15 meta-tools, proxies to 63 underlying tools

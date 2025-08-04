@@ -487,6 +487,10 @@ mcp_langflow_mcp_server_create_langflow(
     }
 )
 
+# ✅ Living Truth Engine Flow
+# Access: http://localhost:7860/flows/9c9ab89b-96ee-44cb-9a4f-9124649ad757
+# Test: "Investigate Entity A connections, output as network"
+
 # ✅ Langflow operations
 mcp_langflow_mcp_server_list_langflow_tools()
 ```
