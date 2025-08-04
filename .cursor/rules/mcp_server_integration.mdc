@@ -491,6 +491,7 @@ mcp_langflow_mcp_server_create_langflow(
 # Access: http://localhost:7860/flows/90d0cc9d-d590-4734-813e-5664c95f907a
 # Test: "Investigate Entity A connections, output as network"
 # Schema-based generation: Uses `config/langflow_schemas.json` from local Langflow code
+# Direct MCP: Use `mcp_lf-cursor_*` tools for direct Langflow operations
 
 # ✅ Langflow operations
 mcp_langflow_mcp_server_list_langflow_tools()

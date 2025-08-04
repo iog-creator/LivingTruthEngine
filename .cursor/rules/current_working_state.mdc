@@ -102,11 +102,12 @@ All services are running successfully in the `LivingTruthEngine` project:
 #### **Langflow Flow Integration**
 - **✅ Living Truth Engine Flow**: Multi-agent system for investigative research
 - **✅ Flow Components**: Planner, SubAgents, Writer, Condition, Loop nodes
-- **✅ MCP Integration**: Uses MCP Hub Server tools (query_langflow, analyze_transcript, list_sources, generate_viz)
+- **✅ MCP Integration**: Direct Langflow MCP server (`lf-cursor`) + MCP Hub Server tools
 - **✅ Model Integration**: Qwen3-8B and Qwen3-0.6B via LM Studio (port 1234)
 - **✅ Vector Search**: pgVectorSearch with PostgreSQL (port 5432)
 - **✅ Schema Extraction**: `scripts/setup/extract_langflow_schemas_simple.py` generates `config/langflow_schemas.json` from local Langflow code
 - **✅ Flow Generation**: `scripts/setup/generate_langflow_flow.py` creates flow using predefined component schemas
+- **✅ Langflow MCP Server**: Direct connection via `mcp_lf-cursor_*` tools in Cursor
 - **✅ Flow Access**: http://localhost:7860/flows/90d0cc9d-d590-4734-813e-5664c95f907a
 - **✅ Test Query**: "Investigate Entity A connections, output as network"
 
