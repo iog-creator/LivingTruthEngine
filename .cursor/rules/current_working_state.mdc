@@ -59,7 +59,7 @@ All services are running successfully in the `LivingTruthEngine` project:
 - **Registry**: `config/tool_registry.json` with complete tool definitions
 - **Deployment**: Running locally (not in Docker) for stability
 
-**Meta-Tools Available (15 total)**:
+**Meta-Tools Available (16 total)**:
 1. `list_tools` - List available tools with filtering
 2. `get_tool_details` - Get detailed tool information  
 3. `execute_tool` - Execute any tool by name
@@ -75,12 +75,15 @@ All services are running successfully in the `LivingTruthEngine` project:
 13. `build_tool` - Build and add new tool to registry
 14. `update_tool` - Update existing tool in registry
 15. `delete_tool` - Delete tool from registry
+16. `test_registry_recovery` - Test registry backup and recovery
 
 **Registry Features**:
 - **Automatic Backup**: Creates `.bak` file on load for corruption recovery
 - **Enhanced Validation**: Validates structure and param types with detailed error reporting
-- **Performance Monitoring**: Tracks execution times with warnings for slow operations
+- **Performance Monitoring**: Tracks execution times with warnings for slow operations (>1s) and alerts (>2s)
 - **Tool Management**: Full CRUD operations for tool registry management
+- **Registry Size Monitoring**: Warns if registry exceeds 200 tools
+- **Recovery Testing**: Test registry backup and recovery functionality
 
 **Underlying Servers (63 tools total)**:
 1. **Living Truth FastMCP Server**: 22 tools (LM Studio, Core, Batch, Utility, Automation)
@@ -136,6 +139,9 @@ All services are running successfully in the `LivingTruthEngine` project:
 | System Health Checks | ✅ Passed | All services responding under 2s |
 | Performance Monitoring | ✅ Passed | Response times within acceptable limits |
 | Registry Validation | ✅ Passed | 63 tools validated with enhanced error reporting |
+| Registry Recovery | ✅ Passed | Simulate corruption and load backup |
+| Performance Alerts | ✅ Passed | Warn on >2s executions |
+| Registry Size Monitoring | ✅ Passed | Warn if >200 tools |
 | Backup System | ✅ Passed | Automatic backup creation and recovery working |
 
 **Troubleshooting**: See @mcp_hub_server.mdc#troubleshooting for detailed resolution steps

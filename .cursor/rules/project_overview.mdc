@@ -128,12 +128,16 @@ LivingTruthEngine/
 | Backup System | Automatic backup/recovery | Built into load_registry() |
 | Registry Validation | Enhanced error reporting | Built into validate_registry() |
 | Tool Management | CRUD operations | build_tool, update_tool, delete_tool |
+| Performance Alerts | Warn on >2s executions | logger in execute_tool |
+| Registry Recovery | Test backup and recovery | test_registry_recovery |
 
 #### **Testing Integration**
 - Run functional tests: `./scripts/testing/functional_tests.py` (aim for 100%; integrate timing checks in tests for <1s)
 - Test MCP Hub Server: `python3 src/mcp_servers/mcp_hub_server.py`
 - Validate registry: Use `validate_registry()` function from @mcp_server_integration.mdc
 - Performance monitoring: Use `measure_tool_performance()` for response time tracking
+- Registry recovery testing: Use `test_registry_recovery()` for backup validation
+- Enhanced validation: Test with invalid parameter types to verify constraints
 
 ### **Development Tools**
 - **Cursor IDE**: AI-assisted development environment

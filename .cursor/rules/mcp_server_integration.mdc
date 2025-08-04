@@ -236,8 +236,16 @@ def measure_tool_performance(tool_name: str, params: Dict) -> Tuple[Any, float]:
     duration = time.time() - start
     if duration > 1:
         logger.warning(f"Slow execution: {duration}s for {tool_name}")
+    if duration > 2:
+        logger.error(f"Alert: Execution exceeded 2s for {tool_name}")
+        # Optional: send_alert("slow_execution", tool_name, duration)
     return result, duration
 ```
+
+### **Tool Registry Schema**
+- **Valid Types**: 'string', 'int', 'float', 'bool', 'list', 'dict', 'any'—enforced in validation
+- **Registry Size**: Maximum 200 tools with automatic warnings
+- **Recovery Testing**: Test backup and recovery functionality
 
 ### **Integration Patterns**
 

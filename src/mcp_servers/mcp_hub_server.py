@@ -38,6 +38,9 @@ tool = mcp.tool
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Define valid parameter types for validation
+VALID_TYPES = ['string', 'int', 'float', 'bool', 'list', 'dict', 'any']
+
 
 class MCPHubServer:
     """MCP Hub Server for consolidated tool management."""
@@ -52,7 +55,12 @@ class MCPHubServer:
         logger.info(f"MCP Hub Server initialized with {self.registry.get('total_tools', 0)} tools")
     
     def load_registry(self) -> Dict[str, Any]:
-        """Load the tool registry from JSON file with automatic backup."""
+        """
+        Load the tool registry from JSON file with automatic backup.
+        
+        Returns:
+            Registry dictionary
+        """
         backup_path = self.registry_path.with_suffix('.json.bak')
         
         try:
@@ -82,10 +90,12 @@ class MCPHubServer:
                     logger.info(f"Attempting to load from backup: {backup_path}")
                     with open(backup_path, 'r') as f:
                         backup_registry = json.load(f)
+                    self.validate_registry(backup_registry)
                     logger.info("Successfully loaded registry from backup")
                     return backup_registry
                 except Exception as backup_error:
                     logger.error(f"Failed to load backup registry: {backup_error}")
+                    raise ValueError("Backup recovery failed")
             
             return {"version": "1.0.0", "total_tools": 0, "servers": {}}
 
@@ -141,6 +151,13 @@ class MCPHubServer:
                                 validation_errors.append(f"Tool '{tool['name']}' parameter '{param_name}' definition must be a dictionary")
                             elif 'type' not in param_def:
                                 validation_errors.append(f"Tool '{tool['name']}' parameter '{param_name}' missing 'type' field")
+                            elif param_def['type'] not in VALID_TYPES:
+                                validation_errors.append(f"Tool '{tool['name']}' parameter '{param_name}' has invalid type '{param_def['type']}'. Valid types: {VALID_TYPES}")
+        
+        # Check registry size limits
+        total_tools = sum(len(server.get('tools', [])) for server in registry['servers'].values())
+        if total_tools > 200:
+            validation_errors.append(f"Registry too large: {total_tools} tools (max 200)")
         
         if validation_errors:
             error_msg = f"Registry validation failed with {len(validation_errors)} errors: {'; '.join(validation_errors[:5])}"
@@ -209,6 +226,10 @@ class MCPHubServer:
             
             if duration > 1.0:
                 logger.warning(f"Slow execution for {tool_name}: {duration:.2f}s")
+            
+            if duration > 2.0:
+                logger.error(f"Alert: Execution exceeded 2s for {tool_name}: {duration:.2f}s")
+                # Optional: send_alert("slow_execution", tool_name, duration)
             
             return result
 
@@ -439,6 +460,36 @@ class MCPHubServer:
             
         except Exception as e:
             return f"Error reloading registry: {e}"
+
+    @tool()
+    def test_registry_recovery(self) -> str:
+        """
+        Test registry recovery by simulating corruption and loading from backup.
+        
+        Returns:
+            Test results message
+        """
+        try:
+            logger.info("Starting registry recovery test...")
+            
+            # Test backup creation
+            backup_path = self.registry_path.with_suffix('.json.bak')
+            import shutil
+            shutil.copy2(self.registry_path, backup_path)
+            
+            # Test backup loading
+            with open(backup_path, 'r') as f:
+                backup_data = json.load(f)
+            
+            # Validate backup data
+            self.validate_registry(backup_data)
+            
+            logger.info("Registry recovery test completed successfully")
+            return f"✅ Registry recovery test PASSED. Total tools: {backup_data.get('total_tools', 0)}"
+            
+        except Exception as e:
+            logger.error(f"Registry recovery test failed: {e}")
+            return f"❌ Registry recovery test FAILED: {e}"
     
     @tool()
     def execute_analysis_tool(self, tool_name: str, params: Dict[str, Any]) -> Any:
@@ -596,6 +647,8 @@ class MCPHubServer:
         for param_name, param_def in tool_def['params_schema'].items():
             if 'type' not in param_def:
                 raise ValueError(f"Parameter '{param_name}' missing type definition")
+            elif param_def['type'] not in VALID_TYPES:
+                raise ValueError(f"Parameter '{param_name}' has invalid type '{param_def['type']}'. Valid types: {VALID_TYPES}")
         
         # Add to registry
         if 'servers' not in self.registry:
