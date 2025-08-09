@@ -1,0 +1,8 @@
+redis==5.0.7
+requests==2.32.3
+pydantic==2.7.4
+numpy==1.26.4
+youtube-transcript-api==0.6.2
+yt-dlp==2024.07.16
+structlog==24.2.0
+
