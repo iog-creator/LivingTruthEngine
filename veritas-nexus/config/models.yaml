@@ -1,0 +1,43 @@
+hardware:
+  gpu_vram_gb: 16
+  ram_gb: 64
+
+limits:
+  max_model_file_gb: 10
+  max_active_models: 2
+  idle_evict_seconds: 900
+
+burst:
+  hf_enabled: false
+  hf_base_url: https://api.endpoints.huggingface.cloud
+  triggers:
+    context_tokens_over: 12000
+    gpu_busy_percent_over: 90
+    deadline_ms_under: 1500
+  hf_models:
+    reranker: Qwen/Qwen3-Reranker-4B
+    embedder: Alibaba-NLP/gte-Qwen2-1.5B-instruct
+
+local_models:
+  embeddings:
+    - name: e5-small-v2
+      backend: cpu
+      size_gb: 0.3
+
+  reranker:
+    - name: bge-reranker-base
+      backend: cpu
+      size_gb: 0.5
+      preferred: true
+
+  validator:
+    - name: rwkv-3b-q4
+      backend: lm_studio
+      size_gb: 3
+      preferred: true
+
+  generator:
+    - name: qwen2.5-7b-instruct-q4
+      backend: lm_studio
+      size_gb: 6
+      optional: true

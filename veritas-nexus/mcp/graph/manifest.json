@@ -1,0 +1,8 @@
+{
+  "name": "mcp-graph",
+  "description": "Stub graph ops (Phase 1)",
+  "tools": [
+    {"name":"write_claims","input_schema":{"type":"object","properties":{"claims":{"type":"array"}},"required":["claims"]},
+     "output_schema":{"type":"object","properties":{"ok":{"type":"boolean"}}}}
+  ]
+}
