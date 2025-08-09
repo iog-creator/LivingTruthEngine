@@ -243,10 +243,11 @@ services:
     working_dir: /app
     command: >
       sh -c "
-        git clone https://github.com/flowiseai/devdocs.git /app &&
-        cd /app &&
-        npm install &&
-        npm run build &&
+        apk add --no-cache git && \
+        if [ ! -d /app/devdocs ]; then git clone https://github.com/flowiseai/devdocs.git /app/devdocs; fi && \
+        cd /app/devdocs && \
+        npm ci && \
+        npm run build && \
         npm start
       "
     healthcheck:
@@ -273,9 +274,10 @@ services:
     working_dir: /app
     command: >
       sh -c "
-        git clone https://github.com/rulego/rulego.git /app/rulego &&
-        cd /app/rulego &&
-        go build -tags with_extend cmd/server &&
+        apk add --no-cache git && \
+        if [ ! -d /app/rulego ]; then git clone https://github.com/rulego/rulego.git /app/rulego; fi && \
+        cd /app/rulego && \
+        go build -tags with_extend cmd/server && \
         ./server -c=/app/config/rulego.conf
       "
     healthcheck:
@@ -303,9 +305,10 @@ services:
     working_dir: /app
     command: >
       sh -c "
-        git clone https://github.com/szeider/mcp-solver.git /app/solver &&
-        cd /app/solver &&
-        pip install -r requirements.txt &&
+        apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/* && \
+        if [ ! -d /app/solver ]; then git clone https://github.com/szeider/mcp-solver.git /app/solver; fi && \
+        cd /app/solver && \
+        pip install -r requirements.txt && \
         python -m mcp_solver.server
       "
     healthcheck:
@@ -328,6 +331,7 @@ services:
       - "8050:8050"
     volumes:
       - ../data/outputs/visualizations:/app/visualizations
+      - ../data:/app/data
     environment:
       - PYTHONPATH=/app/src
     healthcheck:
