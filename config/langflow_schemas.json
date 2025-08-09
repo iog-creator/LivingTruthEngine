@@ -1,0 +1,122 @@
+{
+  "ChatInput": {
+    "display_name": "Chat Input",
+    "description": "Get chat inputs from the Playground.",
+    "icon": "MessagesSquare",
+    "template": {},
+    "inputs": []
+  },
+  "ChatOutput": {
+    "display_name": "Chat Input",
+    "description": "Get chat inputs from the Playground.",
+    "icon": "MessagesSquare",
+    "template": {},
+    "inputs": []
+  },
+  "Agent": {
+    "display_name": "Model Provider",
+    "description": "",
+    "icon": "bot",
+    "template": {},
+    "inputs": []
+  },
+  "LLM": {
+    "display_name": "OpenAI",
+    "description": "Generates text using OpenAI LLMs.",
+    "icon": "OpenAI",
+    "template": {
+      "max_tokens": {
+        "type": "str",
+        "required": false,
+        "default": "",
+        "placeholder": "The maximum number of tokens to generate. Set to 0 for unlimited tokens."
+      },
+      "model_kwargs": {
+        "type": "str",
+        "required": false,
+        "default": "",
+        "placeholder": "Additional keyword arguments to pass to the model."
+      },
+      "json_mode": {
+        "type": "str",
+        "required": false,
+        "default": "",
+        "placeholder": "If True, it will output JSON regardless of passing a schema."
+      }
+    },
+    "inputs": [
+      {
+        "type": "IntInput",
+        "name": "max_tokens",
+        "display_name": "Max Tokens",
+        "value": "",
+        "info": "The maximum number of tokens to generate. Set to 0 for unlimited tokens."
+      },
+      {
+        "type": "DictInput",
+        "name": "model_kwargs",
+        "display_name": "Model Kwargs",
+        "value": "",
+        "info": "Additional keyword arguments to pass to the model."
+      },
+      {
+        "type": "BoolInput",
+        "name": "json_mode",
+        "display_name": "JSON Mode",
+        "value": "",
+        "info": "If True, it will output JSON regardless of passing a schema."
+      }
+    ]
+  },
+  "Loop": {
+    "display_name": "Loop",
+    "description": "",
+    "icon": "infinity",
+    "template": {},
+    "inputs": []
+  },
+  "Condition": {
+    "display_name": "If-Else",
+    "description": "Routes an input message to a corresponding output based on text comparison.",
+    "icon": "split",
+    "template": {
+      "input_text": {
+        "type": "str",
+        "required": false,
+        "default": "",
+        "placeholder": "The primary text input for the operation."
+      }
+    },
+    "inputs": [
+      {
+        "type": "MessageTextInput",
+        "name": "input_text",
+        "display_name": "Text Input",
+        "value": "",
+        "info": "The primary text input for the operation."
+      }
+    ]
+  },
+  "MCPComponent": {
+    "display_name": "MCP Tools",
+    "description": "Connect to an MCP server to use its tools.",
+    "icon": "Mcp",
+    "template": {
+      "mcp_server": {
+        "type": "str",
+        "required": false,
+        "default": "",
+        "placeholder": "Select the MCP Server that will be used by this component"
+      }
+    },
+    "inputs": [
+      {
+        "type": "McpInput",
+        "name": "mcp_server",
+        "display_name": "MCP Server",
+        "value": "",
+        "info": "Select the MCP Server that will be used by this component"
+      }
+    ]
+  }
+}

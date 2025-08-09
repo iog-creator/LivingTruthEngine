@@ -13,6 +13,14 @@
         "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
       },
       "description": "MCP Hub Server - Consolidated tool gateway providing access to all 63 tools via 15 meta-tools, avoiding Cursor's 40-tool limit"
+    },
+    "lf-cursor": {
+      "command": "uvx",
+      "args": [
+        "mcp-proxy",
+        "http://localhost:7860/api/v1/mcp/project/3bd92a44-057b-4378-a674-80910d570986/sse"
+      ],
+      "description": "Langflow MCP Server - Direct connection to Langflow instance for flow operations"
     }
   }
 }

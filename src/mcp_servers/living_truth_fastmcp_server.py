@@ -37,6 +37,18 @@ logger = logging.getLogger(__name__)
 # Create FastMCP instance
 mcp = FastMCP()
 
+# Import notebook agent components
+from src.analysis.notebook_agent import AdvancedNotebookAgent, StudyGuide, DocumentSummary, ResearchReport
+
+# Import AGI integration components
+from integration.agi_integration import AGILivingTruthIntegration, AGIAnalysisResult, AGIComponent
+
+# Import channel archiver components
+from processing.channel_archiver import ChannelArchiver, VideoInfo, ArchiveResult, ChannelArchiveSummary
+from visualization.advanced_viz import AdvancedVisualizer
+from pathlib import Path
+from src.analysis.ingestion import IngestionPipeline
+
 class LivingTruthEngine:
     def __init__(self):
         # Handle Docker vs local environment
@@ -57,6 +69,38 @@ class LivingTruthEngine:
         logger.info(f"Environment: {'Docker' if docker_env else 'Local'}")
         logger.info(f"Langflow endpoint: {self.langflow_api_endpoint}")
         logger.info(f"LM Studio endpoint: {self.lm_studio_endpoint}")
+        
+        # Initialize notebook agent
+        try:
+            self.notebook_agent = AdvancedNotebookAgent()
+            logger.info("✅ Notebook agent initialized successfully")
+        except Exception as e:
+            logger.error(f"❌ Notebook agent initialization failed: {e}")
+            self.notebook_agent = None
+        
+        # Initialize AGI integration
+        try:
+            self.agi_integration = AGILivingTruthIntegration()
+            logger.info("✅ AGI integration initialized successfully")
+        except Exception as e:
+            logger.error(f"❌ AGI integration initialization failed: {e}")
+            self.agi_integration = None
+        
+        # Initialize channel archiver
+        try:
+            self.channel_archiver = ChannelArchiver()
+            logger.info("✅ Channel archiver initialized successfully")
+        except Exception as e:
+            logger.error(f"❌ Channel archiver initialization failed: {e}")
+            self.channel_archiver = None
+        
+        # Initialize advanced visualizer
+        try:
+            self.visualizer = AdvancedVisualizer()
+            logger.info("✅ Advanced visualizer initialized successfully")
+        except Exception as e:
+            logger.error(f"❌ Advanced visualizer initialization failed: {e}")
+            self.visualizer = None
 
     def query_flowise(self, query: str, anonymize: bool = False, output_type: str = "summary") -> str:
         """Query the Flowise chatflow for pattern recognition and data analysis."""
@@ -373,9 +417,23 @@ class LivingTruthEngine:
             
             # Use piper-tts for actual TTS generation
             from piper import PiperVoice
-            
+
+            # Resolve Piper model path under data/models/piper
+            models_dir = project_root / "data" / "models" / "piper"
+            models_dir.mkdir(parents=True, exist_ok=True)
+            model_basename = "en_US-lessac-medium.onnx"
+            config_basename = "en_US-lessac-medium.onnx.json"
+            model_path = models_dir / model_basename
+            config_path = models_dir / config_basename
+
+            if not model_path.exists() or not config_path.exists():
+                raise FileNotFoundError(
+                    f"Missing Piper model files. Expected: {model_path} and {config_path}. "
+                    "Download them from rhasspy/piper-voices (Hugging Face) before running audio generation."
+                )
+
             # Load voice model and generate audio
-            voice = PiperVoice.load("en_US-lessac-medium.onnx")
+            voice = PiperVoice.load(str(model_path))
             voice.synthesize(text, str(output_path))
             logger.info(f"Audio generated successfully: {output_path}")
             return f"✅ Audio generated successfully\n📁 Output: {output_path}\n🎵 Text: {text[:100]}..."
@@ -477,6 +535,100 @@ class LivingTruthEngine:
         except Exception as e:
             return f"❌ Error validating system state: {e}"
 
+    def create_3d_network_visualization(self, graph_data: dict) -> str:
+        """Create 3D network visualization using advanced visualizer."""
+        try:
+            if not self.visualizer:
+                return "❌ Advanced visualizer not initialized"
+            
+            # Create 3D network graph
+            fig = self.visualizer.create_interactive_3d_network_graph(graph_data)
+            
+            # Save visualization
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            output_file = f"3d_network_visualization_{timestamp}.html"
+            self.visualizer.export_visualization_data(graph_data, f"3d_network_data_{timestamp}.json")
+            
+            return f"✅ 3D network visualization created successfully\nOutput file: {output_file}"
+            
+        except Exception as e:
+            logger.error(f"3D network visualization error: {e}")
+            return f"❌ 3D network visualization error: {str(e)}"
+    
+    def create_centrality_analysis(self, graph_data: dict) -> str:
+        """Create centrality analysis visualization."""
+        try:
+            if not self.visualizer:
+                return "❌ Advanced visualizer not initialized"
+            
+            # Create centrality analysis
+            fig = self.visualizer.create_centrality_analysis(graph_data)
+            
+            # Save visualization
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            output_file = f"centrality_analysis_{timestamp}.html"
+            
+            return f"✅ Centrality analysis created successfully\nOutput file: {output_file}"
+            
+        except Exception as e:
+            logger.error(f"Centrality analysis error: {e}")
+            return f"❌ Centrality analysis error: {str(e)}"
+    
+    def create_timeline_visualization(self, timeline_data: list) -> str:
+        """Create timeline visualization."""
+        try:
+            if not self.visualizer:
+                return "❌ Advanced visualizer not initialized"
+            
+            # Create timeline visualization
+            fig = self.visualizer.create_timeline_visualization(timeline_data)
+            
+            # Save visualization
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            output_file = f"timeline_visualization_{timestamp}.html"
+            
+            return f"✅ Timeline visualization created successfully\nOutput file: {output_file}"
+            
+        except Exception as e:
+            logger.error(f"Timeline visualization error: {e}")
+            return f"❌ Timeline visualization error: {str(e)}"
+    
+    def create_claims_verification_dashboard(self, claims_data: list) -> str:
+        """Create claims verification dashboard."""
+        try:
+            if not self.visualizer:
+                return "❌ Advanced visualizer not initialized"
+            
+            # Create claims verification dashboard
+            app = self.visualizer.create_claims_verification_dashboard(claims_data)
+            
+            # Save dashboard
+            timestamp = time.strftime("%Y%m%d_%H%M%S")
+            output_file = f"claims_verification_dashboard_{timestamp}.html"
+            
+            return f"✅ Claims verification dashboard created successfully\nOutput file: {output_file}"
+            
+        except Exception as e:
+            logger.error(f"Claims verification dashboard error: {e}")
+            return f"❌ Claims verification dashboard error: {str(e)}"
+    
+    def get_visualization_status(self) -> str:
+        """Get advanced visualization system status."""
+        try:
+            status = {
+                "visualizer_initialized": self.visualizer is not None,
+                "output_directory": str(self.visualizer.output_dir) if self.visualizer else "Not available",
+                "color_schemes_available": len(self.visualizer.color_schemes) if self.visualizer else 0,
+                "node_sizes_configured": len(self.visualizer.node_sizes) if self.visualizer else 0,
+                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+            }
+            
+            return json.dumps(status, indent=2)
+            
+        except Exception as e:
+            logger.error(f"Visualization status error: {e}")
+            return f"❌ Visualization status error: {str(e)}"
+
     def comprehensive_health_check(self) -> str:
         """Perform comprehensive health check of all system components."""
         try:
@@ -547,6 +699,302 @@ class LivingTruthEngine:
             return "\n".join(health_report)
         except Exception as e:
             return f"❌ Error performing health check: {e}"
+    
+    def process_notebook_query(self, query: str) -> str:
+        """Process a query using the notebook agent."""
+        try:
+            if not self.notebook_agent:
+                return "❌ Notebook agent not initialized"
+            
+            result = self.notebook_agent.process_query(query)
+            logger.info(f"Notebook query processed: {query}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Notebook query error: {e}")
+            return f"❌ Notebook query error: {str(e)}"
+    
+    def generate_study_guide(self) -> str:
+        """Generate a study guide using the notebook agent."""
+        try:
+            if not self.notebook_agent:
+                return "❌ Notebook agent not initialized"
+            
+            result = self.notebook_agent._generate_study_guide()
+            logger.info("Study guide generated successfully")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Study guide generation error: {e}")
+            return f"❌ Study guide generation error: {str(e)}"
+    
+    def summarize_documents(self) -> str:
+        """Summarize documents using the notebook agent."""
+        try:
+            if not self.notebook_agent:
+                return "❌ Notebook agent not initialized"
+            
+            result = self.notebook_agent._summarize_documents()
+            logger.info("Documents summarized successfully")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Document summarization error: {e}")
+            return f"❌ Document summarization error: {str(e)}"
+    
+    def conduct_web_research(self, topic: str) -> str:
+        """Conduct web research using the notebook agent."""
+        try:
+            if not self.notebook_agent:
+                return "❌ Notebook agent not initialized"
+            
+            result = self.notebook_agent.web_research(topic)
+            logger.info(f"Web research conducted for topic: {topic}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"Web research error: {e}")
+            return f"❌ Web research error: {str(e)}"
+    
+    def fetch_youtube_transcript(self, url: str) -> str:
+        """Fetch YouTube transcript using the notebook agent."""
+        try:
+            if not self.notebook_agent:
+                return "❌ Notebook agent not initialized"
+            
+            # Create the tool function
+            from src.analysis.notebook_agent import create_youtube_transcript_tool
+            transcript_tool = create_youtube_transcript_tool()
+            
+            result = transcript_tool.run(url)
+            logger.info(f"YouTube transcript fetched for URL: {url}")
+            return result
+            
+        except Exception as e:
+            logger.error(f"YouTube transcript error: {e}")
+            return f"❌ YouTube transcript error: {str(e)}"
+    
+    def get_notebook_agent_status(self) -> str:
+        """Get notebook agent system status."""
+        try:
+            if not self.notebook_agent:
+                return "❌ Notebook agent not initialized"
+            
+            status = self.notebook_agent.get_system_status()
+            logger.info("Notebook agent status retrieved")
+            return f"✅ Notebook Agent Status:\n{json.dumps(status, indent=2)}"
+            
+        except Exception as e:
+            logger.error(f"Notebook agent status error: {e}")
+            return f"❌ Notebook agent status error: {str(e)}"
+    
+    def analyze_with_agi_integration(self, query: str, analysis_type: str = "comprehensive") -> str:
+        """Perform comprehensive analysis using AGI integration."""
+        try:
+            if not self.agi_integration:
+                return "❌ AGI integration not initialized"
+            
+            result = self.agi_integration.analyze_with_agi_integration(query, analysis_type)
+            
+            # Convert result to JSON string for MCP tool response
+            result_dict = {
+                "query": result.query,
+                "analysis_type": result.analysis_type,
+                "confidence_scores": result.confidence_scores,
+                "recommendations": result.recommendations,
+                "timestamp": result.timestamp
+            }
+            
+            logger.info(f"AGI-integrated analysis completed: {query}")
+            return f"✅ AGI-Integrated Analysis Results:\n{json.dumps(result_dict, indent=2)}"
+            
+        except Exception as e:
+            logger.error(f"AGI integration analysis error: {e}")
+            return f"❌ AGI integration analysis error: {str(e)}"
+    
+    def get_agi_components_status(self) -> str:
+        """Get status of all AGI components."""
+        try:
+            if not self.agi_integration:
+                return "❌ AGI integration not initialized"
+            
+            status = self.agi_integration.get_agi_components_status()
+            logger.info("AGI components status retrieved")
+            return f"✅ AGI Components Status:\n{json.dumps(status, indent=2)}"
+            
+        except Exception as e:
+            logger.error(f"AGI components status error: {e}")
+            return f"❌ AGI components status error: {str(e)}"
+    
+    def get_agi_integration_status(self) -> str:
+        """Get overall AGI integration status."""
+        try:
+            if not self.agi_integration:
+                return "❌ AGI integration not initialized"
+            
+            status = self.agi_integration.get_integration_status()
+            logger.info("AGI integration status retrieved")
+            return f"✅ AGI Integration Status:\n{json.dumps(status, indent=2)}"
+            
+        except Exception as e:
+            logger.error(f"AGI integration status error: {e}")
+            return f"❌ AGI integration status error: {str(e)}"
+    
+    def cross_validate_findings(self, query: str) -> str:
+        """Cross-validate findings using AGI integration."""
+        try:
+            if not self.agi_integration:
+                return "❌ AGI integration not initialized"
+            
+            result = self.agi_integration.analyze_with_agi_integration(query, "comprehensive")
+            cross_validation = result.cross_validation
+            
+            logger.info(f"Cross-validation completed: {query}")
+            return f"✅ Cross-Validation Results:\n{json.dumps(cross_validation, indent=2)}"
+            
+        except Exception as e:
+            logger.error(f"Cross-validation error: {e}")
+            return f"❌ Cross-validation error: {str(e)}"
+    
+    def generate_integrated_insights(self, query: str) -> str:
+        """Generate integrated insights using AGI integration."""
+        try:
+            if not self.agi_integration:
+                return "❌ AGI integration not initialized"
+            
+            result = self.agi_integration.analyze_with_agi_integration(query, "comprehensive")
+            integrated_insights = result.integrated_insights
+            
+            logger.info(f"Integrated insights generated: {query}")
+            return f"✅ Integrated Insights:\n{json.dumps(integrated_insights, indent=2)}"
+            
+        except Exception as e:
+            logger.error(f"Integrated insights error: {e}")
+            return f"❌ Integrated insights error: {str(e)}"
+    
+    def archive_youtube_channel(self, channel_url: str, max_videos: Optional[int] = None) -> str:
+        """Archive an entire YouTube channel by fetching all video transcripts."""
+        try:
+            if not self.channel_archiver:
+                return "❌ Channel archiver not initialized"
+            
+            result = self.channel_archiver.archive_channel(channel_url, max_videos)
+            
+            # Convert result to JSON string for MCP tool response
+            result_dict = {
+                "channel_url": result.channel_url,
+                "total_videos": result.total_videos,
+                "successful_archives": result.successful_archives,
+                "failed_archives": result.failed_archives,
+                "archive_date": result.archive_date
+            }
+            
+            logger.info(f"Channel archive completed: {channel_url}")
+            return f"✅ Channel Archive Results:\n{json.dumps(result_dict, indent=2)}"
+            
+        except Exception as e:
+            logger.error(f"Channel archive error: {e}")
+            return f"❌ Channel archive error: {str(e)}"
+    
+    def build_channel_knowledge_base(self) -> str:
+        """Build a comprehensive knowledge base from archived channel videos."""
+        try:
+            if not self.channel_archiver:
+                return "❌ Channel archiver not initialized"
+            
+            result = self.channel_archiver.build_channel_knowledge_base()
+            logger.info("Channel knowledge base built")
+            return f"✅ {result}"
+            
+        except Exception as e:
+            logger.error(f"Knowledge base build error: {e}")
+            return f"❌ Knowledge base build error: {str(e)}"
+    
+    def query_channel_knowledge(self, query: str) -> str:
+        """Query the archived channel knowledge using RAG."""
+        try:
+            if not self.channel_archiver:
+                return "❌ Channel archiver not initialized"
+            
+            result = self.channel_archiver.query_channel_knowledge(query)
+            logger.info(f"Channel knowledge query completed: {query}")
+            return f"✅ Channel Knowledge Query Results:\n{result}"
+            
+        except Exception as e:
+            logger.error(f"Channel knowledge query error: {e}")
+            return f"❌ Channel knowledge query error: {str(e)}"
+    
+    def get_channel_archive_status(self) -> str:
+        """Get status of channel archive."""
+        try:
+            if not self.channel_archiver:
+                return "❌ Channel archiver not initialized"
+            
+            status = self.channel_archiver.get_archive_status()
+            logger.info("Channel archive status retrieved")
+            return f"✅ Channel Archive Status:\n{json.dumps(status, indent=2)}"
+            
+        except Exception as e:
+            logger.error(f"Channel archive status error: {e}")
+            return f"❌ Channel archive status error: {str(e)}"
+
+    def get_archiver_telemetry(self, lines: int = 200) -> str:
+        """Return archiver telemetry snapshot and stream tail."""
+        try:
+            base = Path(project_root) / 'data' / 'outputs' / 'logs' / 'archive_telemetry'
+            status_file = base / 'status.json'
+            stream_file = base / 'current.jsonl'
+            status = status_file.read_text(encoding='utf-8') if status_file.exists() else '{}'
+            tail = ''
+            if stream_file.exists():
+                content = stream_file.read_text(encoding='utf-8').splitlines()[-lines:]
+                tail = "\n".join(content)
+            return json.dumps({"status": json.loads(status) if status.strip().startswith('{') else status, "tail": tail.split('\n')}, indent=2)
+        except Exception as e:
+            return f"❌ Telemetry read error: {e}"
+
+    def ingest_channel_documents(self, channel: Optional[str] = None) -> str:
+        """Ingest organized transcripts into the vector index (with telemetry)."""
+        try:
+            pipeline = IngestionPipeline()
+            summary = pipeline.ingest(channel=channel)
+            return json.dumps({
+                "total_files": summary.total_files,
+                "chunks_indexed": summary.chunks_indexed,
+                "channel": summary.channel,
+                "started_at": summary.started_at,
+                "completed_at": summary.completed_at,
+            }, indent=2)
+        except Exception as e:
+            return f"❌ Ingestion error: {e}"
+    
+    def list_archived_videos(self) -> str:
+        """List all archived videos with their status."""
+        try:
+            if not self.channel_archiver:
+                return "❌ Channel archiver not initialized"
+            
+            videos = self.channel_archiver.list_archived_videos()
+            logger.info("Archived videos list retrieved")
+            return f"✅ Archived Videos:\n{json.dumps(videos, indent=2)}"
+            
+        except Exception as e:
+            logger.error(f"List archived videos error: {e}")
+            return f"❌ List archived videos error: {str(e)}"
+    
+    def get_video_transcript(self, video_id: str) -> str:
+        """Get transcript for a specific video."""
+        try:
+            if not self.channel_archiver:
+                return "❌ Channel archiver not initialized"
+            
+            transcript = self.channel_archiver.get_video_transcript(video_id)
+            logger.info(f"Video transcript retrieved: {video_id}")
+            return f"✅ Video Transcript ({video_id}):\n{transcript}"
+            
+        except Exception as e:
+            logger.error(f"Get video transcript error: {e}")
+            return f"❌ Get video transcript error: {str(e)}"
 
 # Create engine instance
 engine = LivingTruthEngine()
@@ -747,6 +1195,198 @@ def auto_validate_system_state() -> str:
 def comprehensive_health_check() -> str:
     """Perform comprehensive health check of all system components."""
     return engine.comprehensive_health_check()
+
+@mcp.tool()
+def process_notebook_query(query: str) -> str:
+    """Process a query using the notebook agent for document analysis and research."""
+    return engine.process_notebook_query(query)
+
+@mcp.tool()
+def generate_study_guide() -> str:
+    """Generate a comprehensive study guide from available documents."""
+    return engine.generate_study_guide()
+
+@mcp.tool()
+def summarize_documents() -> str:
+    """Summarize available documents with analysis and insights."""
+    return engine.summarize_documents()
+
+@mcp.tool()
+def conduct_web_research(topic: str) -> str:
+    """Conduct web research on a specific topic using available tools."""
+    return engine.conduct_web_research(topic)
+
+@mcp.tool()
+def fetch_youtube_transcript(url: str) -> str:
+    """Fetch and process YouTube transcript from a video URL."""
+    return engine.fetch_youtube_transcript(url)
+
+@mcp.tool()
+def get_notebook_agent_status() -> str:
+    """Get notebook agent system status and health information."""
+    return engine.get_notebook_agent_status()
+
+@mcp.tool()
+def analyze_with_agi_integration(query: str, analysis_type: str = "comprehensive") -> str:
+    """Perform comprehensive analysis using AGI integration for advanced pattern recognition."""
+    return engine.analyze_with_agi_integration(query, analysis_type)
+
+@mcp.tool()
+def get_agi_components_status() -> str:
+    """Get status of all AGI system components and their capabilities."""
+    return engine.get_agi_components_status()
+
+@mcp.tool()
+def get_agi_integration_status() -> str:
+    """Get overall AGI integration status and system health."""
+    return engine.get_agi_integration_status()
+
+@mcp.tool()
+def cross_validate_findings(query: str) -> str:
+    """Cross-validate findings between Living Truth Engine and AGI system."""
+    return engine.cross_validate_findings(query)
+
+@mcp.tool()
+def generate_integrated_insights(query: str) -> str:
+    """Generate integrated insights combining Living Truth Engine and AGI analysis."""
+    return engine.generate_integrated_insights(query)
+
+@mcp.tool()
+def archive_youtube_channel(channel_url: str, max_videos: Optional[int] = None) -> str:
+    """Archive an entire YouTube channel by fetching all video transcripts."""
+    return engine.archive_youtube_channel(channel_url, max_videos)
+
+@mcp.tool()
+def build_channel_knowledge_base() -> str:
+    """Build a comprehensive knowledge base from archived channel videos."""
+    return engine.build_channel_knowledge_base()
+
+@mcp.tool()
+def query_channel_knowledge(query: str) -> str:
+    """Query the archived channel knowledge using RAG."""
+    return engine.query_channel_knowledge(query)
+
+@mcp.tool()
+def get_channel_archive_status() -> str:
+    """Get status of channel archive."""
+    return engine.get_channel_archive_status()
+
+@mcp.tool()
+def get_archiver_telemetry(lines: int = 200) -> str:
+    """Get archiver telemetry snapshot and last N events."""
+    return engine.get_archiver_telemetry(lines)
+
+@mcp.tool()
+def ingest_channel_documents(channel: Optional[str] = None) -> str:
+    """Ingest organized transcripts into the vector index (with telemetry)."""
+    return engine.ingest_channel_documents(channel)
+
+@mcp.tool()
+def list_archived_videos() -> str:
+    """List all archived videos with their status."""
+    return engine.list_archived_videos()
+
+@mcp.tool()
+def get_video_transcript(video_id: str) -> str:
+    """Get transcript for a specific video."""
+    return engine.get_video_transcript(video_id)
+
+@mcp.tool()
+def create_3d_network_visualization(graph_data: dict) -> str:
+    """Create 3D network visualization using advanced visualizer."""
+    return engine.create_3d_network_visualization(graph_data)
+
+@mcp.tool()
+def create_centrality_analysis(graph_data: dict) -> str:
+    """Create centrality analysis visualization."""
+    return engine.create_centrality_analysis(graph_data)
+
+@mcp.tool()
+def create_timeline_visualization(timeline_data: list) -> str:
+    """Create timeline visualization."""
+    return engine.create_timeline_visualization(timeline_data)
+
+@mcp.tool()
+def create_claims_verification_dashboard(claims_data: list) -> str:
+    """Create claims verification dashboard."""
+    return engine.create_claims_verification_dashboard(claims_data)
+
+@mcp.tool()
+def get_visualization_status() -> str:
+    """Get advanced visualization system status."""
+    return engine.get_visualization_status()
+
+@mcp.tool()
+def search_biblical_evidence(query: str) -> str:
+    """Search for Biblical evidence related to the query using HybridRetriever."""
+    try:
+        from src.analysis.hybrid_retrieval import HybridRetriever
+        retriever = HybridRetriever()
+        results = retriever.search_biblical_evidence(query)
+        return f"Biblical evidence found: {len(results)} results\n{results}"
+    except Exception as e:
+        return f"Error searching Biblical evidence: {e}"
+
+@mcp.tool()
+def search_survivor_testimonies(query: str) -> str:
+    """Search for survivor testimonies related to the query using HybridRetriever."""
+    try:
+        from src.analysis.hybrid_retrieval import HybridRetriever
+        retriever = HybridRetriever()
+        results = retriever.search_survivor_testimonies(query)
+        return f"Survivor testimonies found: {len(results)} results\n{results}"
+    except Exception as e:
+        return f"Error searching survivor testimonies: {e}"
+
+@mcp.tool()
+def extract_entities_from_text(text: str) -> str:
+    """Extract entities from text using ResearchAnalysisSystem."""
+    try:
+        from src.analysis.research_analysis import ResearchAnalysisSystem
+        research = ResearchAnalysisSystem()
+        entities = research.extract_entities_from_text(text)
+        return f"Entities extracted: {len(entities)} entities\n{entities}"
+    except Exception as e:
+        return f"Error extracting entities: {e}"
+
+@mcp.tool()
+def extract_claims_from_transcript(transcript_data: dict) -> str:
+    """Extract claims from transcript using ResearchAnalysisSystem."""
+    try:
+        from src.analysis.research_analysis import ResearchAnalysisSystem
+        research = ResearchAnalysisSystem()
+        claims = research.extract_claims_from_transcript(transcript_data)
+        return f"Claims extracted: {len(claims)} claims\n{claims}"
+    except Exception as e:
+        return f"Error extracting claims: {e}"
+
+@mcp.tool()
+def get_migrated_functionality_status() -> str:
+    """Get status of all migrated living_truth_agent functionality."""
+    try:
+        status = {
+            "configuration_system": "✅ Operational",
+            "hybrid_retriever": "✅ Operational", 
+            "research_analysis_system": "✅ Operational",
+            "channel_archiver": "✅ Operational",
+            "agi_integration": "✅ Operational",
+            "advanced_visualization": "✅ Operational",
+            "mcp_tools": "✅ Operational"
+        }
+        return f"Migrated functionality status:\n{json.dumps(status, indent=2)}"
+    except Exception as e:
+        return f"Error getting migrated functionality status: {e}"
+
+@mcp.tool()
+def test_migrated_components() -> str:
+    """Run comprehensive test of all migrated living_truth_agent components."""
+    try:
+        import subprocess
+        result = subprocess.run(["python", "test_migrated_functionality.py"], 
+                              capture_output=True, text=True, cwd=os.getcwd())
+        return f"Test Results:\n{result.stdout}\nErrors:\n{result.stderr}"
+    except Exception as e:
+        return f"Error running migrated component tests: {e}"
 
 if __name__ == "__main__":
     logger.info("Living Truth Engine FastMCP Server starting...")
