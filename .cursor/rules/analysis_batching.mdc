@@ -1,0 +1,25 @@
+---
+description: "Analysis scripts location and MCP-first batching usage"
+globs: ["**/*.py", "**/*.md", "**/*.sh"]
+alwaysApply: true
+---
+
+# Analysis Scripts and MCP-First Batching
+
+## Analysis scripts location
+```text
+- All analysis/archive scripts are in `scripts/analyze/`
+  - Examples: `scripts/analyze/analyze_imagination_podcast_*.py`, `scripts/analyze/archive_imagination_podcast*.py`
+- Prefer MCP Hub meta-tools with batching instead of invoking scripts directly.
+```
+
+## MCP-first batching usage
+```text
+- Analysis: use `batch_execute_tools` or `execute_category_tools('analysis', ...)` for grouped operations
+- GitHub via Hub: use `execute_github_tool` or `execute_category_tools('github', ...)`
+  - Allowed GitHub tools: list_repositories, search_repositories, create_issue, get_github_status
+```
+
+## Checklist additions
+- Trigger analysis through MCP when possible (batching preferred)
+- Verify script paths under `scripts/analyze/` in docs/tests
