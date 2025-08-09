@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pydantic
+redis
+requests
+trafilatura
+modelcontextprotocol
+sentence-transformers
+pymupdf

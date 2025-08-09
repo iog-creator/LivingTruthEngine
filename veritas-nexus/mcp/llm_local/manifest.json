@@ -1,0 +1,19 @@
+{
+  "name": "mcp-llm-local",
+  "description": "Proxy to LM Studio OpenAI-compatible API",
+  "tools": [
+    {
+      "name": "complete",
+      "input_schema": {
+        "type":"object",
+        "properties": {
+          "model":{"type":"string"},
+          "prompt":{"type":"string"},
+          "temperature":{"type":"number"}
+        },
+        "required":["model","prompt"]
+      },
+      "output_schema": {"type":"object","properties":{"text":{"type":"string"}}}
+    }
+  ]
+}

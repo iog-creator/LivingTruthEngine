@@ -1,0 +1,47 @@
+version: '3.8'
+services:
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  api:
+    build: ./api
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATA_ROOT=/app/data
+      - RUNS_ROOT=/app/runs
+      - CONFIG_PATH=/app/config
+      - MCP_REGISTRY=/app/mcp
+    volumes:
+      - ./config:/app/config
+      - ./runs:/app/runs
+      - ./data:/app/data
+      - ./mcp:/app/mcp
+    ports: ["8080:8080"]
+    depends_on: [redis]
+
+  worker:
+    build: ./worker
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATA_ROOT=/app/data
+      - RUNS_ROOT=/app/runs
+      - CONFIG_PATH=/app/config
+      - MCP_REGISTRY=/app/mcp
+    volumes:
+      - ./config:/app/config
+      - ./runs:/app/runs
+      - ./data:/app/data
+      - ./mcp:/app/mcp
+    depends_on: [api, redis]
+
+  console:
+    build: ./console
+    environment:
+      - API_BASE=http://api:8080
+    ports: ["8501:8501"]
+    depends_on: [api]
+    volumes:
+      - ./runs:/app/runs
+
+  # MCP servers run as child processes from API/Worker; no separate containers in Phase 1.

@@ -1,0 +1,8 @@
+redis
+requests
+pydantic
+numpy
+sentence-transformers
+pymupdf
+modelcontextprotocol
+youtube-transcript-api
