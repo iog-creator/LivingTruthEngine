@@ -1,0 +1,85 @@
+{
+  "name": "Phase 8 Real Data Ingestion Pipeline",
+  "description": "Process YouTube channel ingestion with depth-limited expansion and verifiable bundles",
+  "data": {
+    "nodes": [
+      {
+        "id": "input_node",
+        "type": "InputNode",
+        "data": {
+          "node": {
+            "template": {
+              "type": "str",
+              "required": true,
+              "show": true,
+              "name": "text",
+              "display_name": "YouTube Channel URL",
+              "value": "https://www.youtube.com/@imaginationpodcastofficial"
+            }
+          }
+        },
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      {
+        "id": "llm_chain",
+        "type": "LLMChain",
+        "data": {
+          "node": {
+            "template": {
+              "name": "llm_chain",
+              "display_name": "Phase 8 Pipeline Processor",
+              "description": "Process YouTube channel ingestion pipeline",
+              "llm": {
+                "type": "OpenAI",
+                "model": "gpt-3.5-turbo",
+                "temperature": 0.7
+              },
+              "prompt": {
+                "type": "PromptTemplate",
+                "template": "You are a Phase 8 Real Data Ingestion Pipeline processor.\n\nInput: {text}\n\nProcess this YouTube channel URL through the Phase 8 pipeline:\n\n1. YouTube Channel Discovery: Discover videos using yt-dlp\n2. Transcript Extraction: Extract transcripts with YouTube Transcript API + autosubs fallback\n3. URL Extraction: Extract URLs from transcripts using regex patterns\n4. Depth-Limited Expansion: Expand external links up to configurable depth\n5. Content Fetching: Fetch web content and PDFs with optional OCR/JS rendering\n6. Canonicalization: Convert to standardized JSONL format\n7. Provenance Generation: Generate SHA-256 proofs and Merkle tree\n8. Bundle Creation: Create .veritasrun bundle with manifest, corpus, proofs, merkle, metrics\n\nOutput a detailed summary of what would be processed and the expected bundle structure.\n\nChannel URL: {text}\nMax Videos: 5 (default)\nCrawl Depth: 2 (default)\nOCR Required: false (default)\nJS Render: false (default)"
+              }
+            }
+          }
+        },
+        "position": {
+          "x": 300,
+          "y": 100
+        }
+      },
+      {
+        "id": "chat_output",
+        "type": "ChatOutput",
+        "data": {
+          "node": {
+            "template": {
+              "name": "chat_output",
+              "display_name": "Phase 8 Pipeline Results",
+              "description": "Output the Phase 8 pipeline processing results"
+            }
+          }
+        },
+        "position": {
+          "x": 500,
+          "y": 100
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "input_node",
+        "target": "llm_chain",
+        "sourceHandle": "text",
+        "targetHandle": "input"
+      },
+      {
+        "source": "llm_chain",
+        "target": "chat_output",
+        "sourceHandle": "output",
+        "targetHandle": "input"
+      }
+    ]
+  }
+}

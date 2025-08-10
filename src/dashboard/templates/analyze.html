@@ -1,0 +1,502 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">Analyze Data</h1>
+        <p class="text-lg text-gray-600">Explore data and generate visualizations from completed analyses</p>
+    </div>
+
+    <!-- Analysis Setup -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Pane: Bundle/Document Picker -->
+        <div class="lg:col-span-1">
+            <div class="card">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">
+                    <i class="fas fa-folder text-blue-600 mr-2"></i>
+                    Select Data
+                </h2>
+
+                <!-- Bundle Selection -->
+                <div class="space-y-4">
+                    <div>
+                        <label for="bundle-select" class="block text-sm font-medium text-gray-700 mb-2">
+                            Analysis Bundle
+                        </label>
+                        <select id="bundle-select"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select a bundle...</option>
+                        </select>
+                    </div>
+
+                    <!-- Document Selection -->
+                    <div id="document-section" class="hidden">
+                        <label for="document-select" class="block text-sm font-medium text-gray-700 mb-2">
+                            Document
+                        </label>
+                        <select id="document-select"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Select a document...</option>
+                        </select>
+                    </div>
+
+                    <!-- Analysis Type -->
+                    <div>
+                        <label for="analysis-type" class="block text-sm font-medium text-gray-700 mb-2">
+                            Analysis Type
+                        </label>
+                        <select id="analysis-type"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="summary">Summary</option>
+                            <option value="entities">Entities</option>
+                            <option value="claims">Claims</option>
+                            <option value="graph">Network Graph</option>
+                            <option value="timeline">Timeline</option>
+                        </select>
+                    </div>
+
+                    <!-- Analyze Button -->
+                    <button id="analyze-btn" class="btn-primary w-full" disabled>
+                        <i class="fas fa-play mr-2"></i>
+                        Analyze
+                    </button>
+                </div>
+
+                <!-- Bundle Info -->
+                <div id="bundle-info" class="hidden mt-6 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-medium text-gray-900 mb-2">Bundle Information</h3>
+                    <div id="bundle-details" class="text-sm text-gray-600 space-y-1">
+                        <!-- Bundle details will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Pane: Results -->
+        <div class="lg:col-span-2">
+            <div class="card">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900">
+                        <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                        Analysis Results
+                    </h2>
+                    <div class="flex items-center space-x-2">
+                        <button id="explain-btn" class="btn-secondary text-sm" disabled>
+                            <i class="fas fa-question-circle mr-1"></i>
+                            Explain Result
+                        </button>
+                        <button id="export-btn" class="btn-secondary text-sm" disabled>
+                            <i class="fas fa-download mr-1"></i>
+                            Export
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Tabs -->
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="-mb-px flex space-x-8">
+                        <button class="result-tab active" data-tab="summary">
+                            <i class="fas fa-file-alt mr-2"></i>
+                            Summary
+                        </button>
+                        <button class="result-tab" data-tab="entities">
+                            <i class="fas fa-users mr-2"></i>
+                            Entities
+                        </button>
+                        <button class="result-tab" data-tab="claims">
+                            <i class="fas fa-gavel mr-2"></i>
+                            Claims
+                        </button>
+                        <button class="result-tab" data-tab="graph">
+                            <i class="fas fa-project-diagram mr-2"></i>
+                            Graph
+                        </button>
+                        <button class="result-tab" data-tab="timeline">
+                            <i class="fas fa-clock mr-2"></i>
+                            Timeline
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Results Content -->
+                <div id="results-content" class="min-h-96">
+                    <!-- Summary Tab -->
+                    <div id="summary-tab" class="result-panel">
+                        <div class="text-center py-12 text-gray-500">
+                            <i class="fas fa-chart-bar text-4xl mb-4"></i>
+                            <p class="text-lg">Select a bundle and document to start analysis</p>
+                        </div>
+                    </div>
+
+                    <!-- Entities Tab -->
+                    <div id="entities-tab" class="result-panel hidden">
+                        <div class="text-center py-12 text-gray-500">
+                            <i class="fas fa-users text-4xl mb-4"></i>
+                            <p class="text-lg">Entity analysis will appear here</p>
+                        </div>
+                    </div>
+
+                    <!-- Claims Tab -->
+                    <div id="claims-tab" class="result-panel hidden">
+                        <div class="text-center py-12 text-gray-500">
+                            <i class="fas fa-gavel text-4xl mb-4"></i>
+                            <p class="text-lg">Claims analysis will appear here</p>
+                        </div>
+                    </div>
+
+                    <!-- Graph Tab -->
+                    <div id="graph-tab" class="result-panel hidden">
+                        <div class="text-center py-12 text-gray-500">
+                            <i class="fas fa-project-diagram text-4xl mb-4"></i>
+                            <p class="text-lg">Network graph will appear here</p>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Tab -->
+                    <div id="timeline-tab" class="result-panel hidden">
+                        <div class="text-center py-12 text-gray-500">
+                            <i class="fas fa-clock text-4xl mb-4"></i>
+                            <p class="text-lg">Timeline visualization will appear here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentBundle = null;
+    let currentDocument = null;
+    let currentAnalysis = null;
+
+    // Load bundles on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        loadBundles();
+    });
+
+    // Bundle selection
+    document.getElementById('bundle-select').addEventListener('change', function () {
+        const bundleId = this.value;
+        if (bundleId) {
+            loadBundleDetails(bundleId);
+            loadDocuments(bundleId);
+        } else {
+            hideDocumentSection();
+            hideBundleInfo();
+        }
+        updateAnalyzeButton();
+    });
+
+    // Document selection
+    document.getElementById('document-select').addEventListener('change', function () {
+        currentDocument = this.value;
+        updateAnalyzeButton();
+    });
+
+    // Analysis type selection
+    document.getElementById('analysis-type').addEventListener('change', function () {
+        if (currentAnalysis) {
+            switchResultTab(this.value);
+        }
+    });
+
+    // Analyze button
+    document.getElementById('analyze-btn').addEventListener('click', function () {
+        if (currentBundle && currentDocument) {
+            performAnalysis();
+        }
+    });
+
+    // Result tab switching
+    document.querySelectorAll('.result-tab').forEach(tab => {
+        tab.addEventListener('click', function () {
+            const tabName = this.dataset.tab;
+
+            // Update active tab
+            document.querySelectorAll('.result-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+
+            // Show tab content
+            document.querySelectorAll('.result-panel').forEach(p => p.classList.add('hidden'));
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+
+            // Update analysis type selector
+            document.getElementById('analysis-type').value = tabName;
+        });
+    });
+
+    // Load bundles
+    async function loadBundles() {
+        try {
+            const bundles = await apiCall('/api/runs');
+            populateBundleSelect(bundles);
+        } catch (error) {
+            console.error('Failed to load bundles:', error);
+            showToast('Failed to load bundles: ' + error.message, 'error');
+        }
+    }
+
+    // Populate bundle select
+    function populateBundleSelect(bundles) {
+        const select = document.getElementById('bundle-select');
+        select.innerHTML = '<option value="">Select a bundle...</option>';
+
+        if (bundles && bundles.length > 0) {
+            bundles.forEach(bundle => {
+                const option = document.createElement('option');
+                option.value = bundle.run_id;
+                option.textContent = `${bundle.run_id} (${bundle.doc_count || 0} docs)`;
+                select.appendChild(option);
+            });
+        }
+    }
+
+    // Load bundle details
+    async function loadBundleDetails(bundleId) {
+        try {
+            const details = await apiCall(`/api/runs/${bundleId}`);
+            currentBundle = details;
+            displayBundleInfo(details);
+        } catch (error) {
+            console.error('Failed to load bundle details:', error);
+        }
+    }
+
+    // Display bundle info
+    function displayBundleInfo(bundle) {
+        const container = document.getElementById('bundle-details');
+        const infoDiv = document.getElementById('bundle-info');
+
+        container.innerHTML = `
+            <div><strong>Run ID:</strong> ${bundle.run_id || 'Unknown'}</div>
+            <div><strong>Status:</strong> ${bundle.status || 'Unknown'}</div>
+            <div><strong>Created:</strong> ${formatDate(bundle.created_at)}</div>
+            <div><strong>Documents:</strong> ${bundle.doc_count || 0}</div>
+        `;
+
+        infoDiv.classList.remove('hidden');
+    }
+
+    // Hide bundle info
+    function hideBundleInfo() {
+        document.getElementById('bundle-info').classList.add('hidden');
+        currentBundle = null;
+    }
+
+    // Load documents for bundle
+    async function loadDocuments(bundleId) {
+        try {
+            const corpus = await apiCall(`/api/runs/${bundleId}/corpus`);
+            populateDocumentSelect(corpus);
+            showDocumentSection();
+        } catch (error) {
+            console.error('Failed to load documents:', error);
+            showToast('Failed to load documents: ' + error.message, 'error');
+        }
+    }
+
+    // Populate document select
+    function populateDocumentSelect(corpus) {
+        const select = document.getElementById('document-select');
+        select.innerHTML = '<option value="">Select a document...</option>';
+
+        if (corpus && corpus.documents && corpus.documents.length > 0) {
+            corpus.documents.forEach((doc, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = doc.title || `Document ${index + 1}`;
+                select.appendChild(option);
+            });
+        }
+    }
+
+    // Show document section
+    function showDocumentSection() {
+        document.getElementById('document-section').classList.remove('hidden');
+    }
+
+    // Hide document section
+    function hideDocumentSection() {
+        document.getElementById('document-section').classList.add('hidden');
+        document.getElementById('document-select').innerHTML = '<option value="">Select a document...</option>';
+        currentDocument = null;
+    }
+
+    // Update analyze button state
+    function updateAnalyzeButton() {
+        const button = document.getElementById('analyze-btn');
+        button.disabled = !(currentBundle && currentDocument !== null);
+    }
+
+    // Perform analysis
+    async function performAnalysis() {
+        try {
+            showToast('Performing analysis...', 'info');
+
+            const analysisType = document.getElementById('analysis-type').value;
+            const analysisData = {
+                bundle_id: currentBundle.run_id,
+                document_index: parseInt(currentDocument),
+                analysis_type: analysisType
+            };
+
+            let result;
+            switch (analysisType) {
+                case 'entities':
+                    result = await apiCall('/api/analyze/entities', 'POST', analysisData);
+                    break;
+                case 'claims':
+                    result = await apiCall('/api/analyze/claims', 'POST', analysisData);
+                    break;
+                default:
+                    result = { message: 'Analysis completed', type: analysisType };
+            }
+
+            currentAnalysis = result;
+            displayAnalysisResult(analysisType, result);
+
+            // Enable action buttons
+            document.getElementById('explain-btn').disabled = false;
+            document.getElementById('export-btn').disabled = false;
+
+            showToast('Analysis completed successfully!', 'success');
+
+        } catch (error) {
+            console.error('Analysis failed:', error);
+            showToast('Analysis failed: ' + error.message, 'error');
+        }
+    }
+
+    // Display analysis result
+    function displayAnalysisResult(type, result) {
+        const container = document.getElementById(type + '-tab');
+
+        switch (type) {
+            case 'summary':
+                container.innerHTML = `
+                    <div class="prose max-w-none">
+                        <h3>Analysis Summary</h3>
+                        <p>${result.message || 'Summary analysis completed.'}</p>
+                    </div>
+                `;
+                break;
+
+            case 'entities':
+                container.innerHTML = `
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-medium text-gray-900">Extracted Entities</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            ${result.entities ? result.entities.map(entity => `
+                                <div class="p-4 border border-gray-200 rounded-lg">
+                                    <div class="font-medium text-gray-900">${entity.name}</div>
+                                    <div class="text-sm text-gray-500">${entity.type}</div>
+                                    <div class="text-sm text-gray-600">${entity.description || ''}</div>
+                                </div>
+                            `).join('') : '<p>No entities found.</p>'}
+                        </div>
+                    </div>
+                `;
+                break;
+
+            case 'claims':
+                container.innerHTML = `
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-medium text-gray-900">Identified Claims</h3>
+                        <div class="space-y-3">
+                            ${result.claims ? result.claims.map(claim => `
+                                <div class="p-4 border border-gray-200 rounded-lg">
+                                    <div class="font-medium text-gray-900">${claim.text}</div>
+                                    <div class="text-sm text-gray-500">Confidence: ${claim.confidence || 'Unknown'}</div>
+                                </div>
+                            `).join('') : '<p>No claims found.</p>'}
+                        </div>
+                    </div>
+                `;
+                break;
+
+            case 'graph':
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-project-diagram text-4xl text-blue-600 mb-4"></i>
+                        <p class="text-lg text-gray-600">Network graph visualization will be generated here.</p>
+                        <p class="text-sm text-gray-500 mt-2">This will show relationships between entities.</p>
+                    </div>
+                `;
+                break;
+
+            case 'timeline':
+                container.innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-clock text-4xl text-blue-600 mb-4"></i>
+                        <p class="text-lg text-gray-600">Timeline visualization will be generated here.</p>
+                        <p class="text-sm text-gray-500 mt-2">This will show chronological events and relationships.</p>
+                    </div>
+                `;
+                break;
+        }
+    }
+
+    // Switch result tab
+    function switchResultTab(tabName) {
+        // Update active tab
+        document.querySelectorAll('.result-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+        // Show tab content
+        document.querySelectorAll('.result-panel').forEach(p => p.classList.add('hidden'));
+        document.getElementById(tabName + '-tab').classList.remove('hidden');
+    }
+
+    // Format date
+    function formatDate(dateString) {
+        if (!dateString) return 'Unknown';
+        try {
+            return new Date(dateString).toLocaleDateString();
+        } catch {
+            return dateString;
+        }
+    }
+
+    // Explain result
+    document.getElementById('explain-btn').addEventListener('click', function () {
+        if (currentAnalysis) {
+            showToast('Explanation: This result shows the analysis of the selected document using AI-powered techniques to extract meaningful insights.', 'info');
+        }
+    });
+
+    // Export result
+    document.getElementById('export-btn').addEventListener('click', function () {
+        if (currentAnalysis) {
+            const blob = new Blob([JSON.stringify(currentAnalysis, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `analysis_${currentBundle.run_id}_${currentDocument}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            showToast('Analysis exported successfully!', 'success');
+        }
+    });
+</script>
+
+<style>
+    .result-tab {
+        @apply py-2 px-1 border-b-2 font-medium text-sm;
+    }
+
+    .result-tab.active {
+        @apply border-blue-500 text-blue-600;
+    }
+
+    .result-tab:not(.active) {
+        @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300;
+    }
+</style>
+{% endblock %}

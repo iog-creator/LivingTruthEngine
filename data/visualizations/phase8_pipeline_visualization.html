@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phase 8 Real Data Ingestion Pipeline - Interactive MCP Integration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            padding: 40px;
+        }
+
+        .pipeline {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .stage {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #3498db;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .stage:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .stage.interactive {
+            border-left-color: #e74c3c;
+            background: #fff5f5;
+        }
+
+        .stage h3 {
+            margin: 0 0 10px 0;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        .stage p {
+            margin: 0 0 10px 0;
+            color: #555;
+            line-height: 1.5;
+            font-size: 0.9em;
+        }
+
+        .stage .status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        .status.ready {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.processing {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.complete {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status.interactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .mcp-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+        }
+
+        .mcp-panel h2 {
+            margin: 0 0 20px 0;
+            color: #2c3e50;
+            font-size: 1.5em;
+        }
+
+        .tool-category {
+            margin-bottom: 20px;
+        }
+
+        .tool-category h3 {
+            margin: 0 0 10px 0;
+            color: #495057;
+            font-size: 1.1em;
+            border-bottom: 2px solid #dee2e6;
+            padding-bottom: 5px;
+        }
+
+        .tool-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .tool-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 8px 12px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9em;
+        }
+
+        .tool-item:hover {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            transform: translateX(3px);
+        }
+
+        .tool-item.selected {
+            background: #2196f3;
+            color: white;
+            border-color: #1976d2;
+        }
+
+        .tool-description {
+            font-size: 0.8em;
+            color: #6c757d;
+            margin-top: 3px;
+        }
+
+        .interaction-panel {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .interaction-panel h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .results-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid #e9ecef;
+        }
+
+        .results-panel h3 {
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+        }
+
+        .result-content {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .success {
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .demo-data {
+            background: #e8f4fd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 5px solid #17a2b8;
+        }
+
+        .demo-data h3 {
+            margin: 0 0 15px 0;
+            color: #0c5460;
+        }
+
+        .demo-data pre {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Phase 8 Real Data Ingestion Pipeline</h1>
+            <p>Interactive visualization with MCP Hub Server integration - Connect to your Living Truth Engine tools</p>
+        </div>
+
+        <div class="main-content">
+            <div class="pipeline">
+                <div class="stage interactive" data-tool="start_veritas_run">
+                    <h3>📥 Start Veritas Run</h3>
+                    <p>Initialize a new verifiable data ingestion run with configurable parameters.</p>
+                    <div class="status interactive">Interactive</div>
+                </div>
+
+                <div class="stage interactive" data-tool="archive_youtube_channel">
+                    <h3>🔍 YouTube Channel Archive</h3>
+                    <p>Archive YouTube channels with depth-limited expansion and transcript extraction.</p>
+                    <div class="status interactive">Interactive</div>
+                </div>
+
+                <div class="stage interactive" data-tool="query_langflow">
+                    <h3>🤖 Langflow Query</h3>
+                    <p>Query the multi-agent Langflow workflow for survivor testimony analysis.</p>
+                    <div class="status interactive">Interactive</div>
+                </div>
+
+                <div class="stage interactive" data-tool="analyze_transcript">
+                    <h3>📝 Transcript Analysis</h3>
+                    <p>Analyze transcripts for patterns, entities, and evidence connections.</p>
+                    <div class="status interactive">Interactive</div>
+                </div>
+
+                <div class="stage interactive" data-tool="generate_viz">
+                    <h3>📊 Generate Visualization</h3>
+                    <p>Create interactive visualizations from analysis results and data.</p>
+                    <div class="status interactive">Interactive</div>
+                </div>
+
+                <div class="stage interactive" data-tool="get_veritas_run_status">
+                    <h3>📋 Run Status</h3>
+                    <p>Check the status and progress of ongoing Veritas runs.</p>
+                    <div class="status interactive">Interactive</div>
+                </div>
+
+                <div class="stage interactive" data-tool="list_veritas_runs">
+                    <h3>📚 List Runs</h3>
+                    <p>List recent Veritas runs with metadata and completion status.</p>
+                    <div class="status interactive">Interactive</div>
+                </div>
+
+                <div class="stage interactive" data-tool="open_veritas_bundle">
+                    <h3>📦 Open Bundle</h3>
+                    <p>Open and examine Veritas bundles with manifest and proofs.</p>
+                    <div class="status interactive">Interactive</div>
+                </div>
+            </div>
+
+            <div class="mcp-panel">
+                <h2>🔧 MCP Hub Server Tools</h2>
+
+                <div class="tool-category" data-category="analysis">
+                    <h3>📊 Analysis Tools</h3>
+                    <ul class="tool-list">
+                        <li class="tool-item" data-tool="query_langflow">query_langflow</li>
+                        <li class="tool-item" data-tool="analyze_transcript">analyze_transcript</li>
+                        <li class="tool-item" data-tool="generate_viz">generate_viz</li>
+                        <li class="tool-item" data-tool="batch_analysis_operations">batch_analysis_operations</li>
+                    </ul>
+                </div>
+
+                <div class="tool-category" data-category="channel_archiver">
+                    <h3>🎥 Channel Archiver</h3>
+                    <ul class="tool-list">
+                        <li class="tool-item" data-tool="archive_youtube_channel">archive_youtube_channel</li>
+                        <li class="tool-item" data-tool="build_channel_knowledge_base">build_channel_knowledge_base</li>
+                        <li class="tool-item" data-tool="query_channel_knowledge">query_channel_knowledge</li>
+                        <li class="tool-item" data-tool="get_channel_archive_status">get_channel_archive_status</li>
+                    </ul>
+                </div>
+
+                <div class="tool-category" data-category="veritas">
+                    <h3>🔍 Veritas Operations</h3>
+                    <ul class="tool-list">
+                        <li class="tool-item" data-tool="start_veritas_run">start_veritas_run</li>
+                        <li class="tool-item" data-tool="get_veritas_run_status">get_veritas_run_status</li>
+                        <li class="tool-item" data-tool="list_veritas_runs">list_veritas_runs</li>
+                        <li class="tool-item" data-tool="open_veritas_bundle">open_veritas_bundle</li>
+                    </ul>
+                </div>
+
+                <div class="tool-category" data-category="langflow">
+                    <h3>🤖 Langflow Integration</h3>
+                    <ul class="tool-list">
+                        <li class="tool-item" data-tool="query_langflow">query_langflow</li>
+                        <li class="tool-item" data-tool="create_langflow">create_langflow</li>
+                        <li class="tool-item" data-tool="export_flow_to_file">export_flow_to_file</li>
+                        <li class="tool-item" data-tool="get_langflow_status">get_langflow_status</li>
+                    </ul>
+                </div>
+
+                <div class="tool-category" data-category="system">
+                    <h3>🔧 System Tools</h3>
+                    <ul class="tool-list">
+                        <li class="tool-item" data-tool="get_status">get_status</li>
+                        <li class="tool-item" data-tool="list_sources">list_sources</li>
+                        <li class="tool-item" data-tool="get_lm_studio_models">get_lm_studio_models</li>
+                    </ul>
+                </div>
+
+                <div class="interaction-panel">
+                    <h3>🎯 Tool Interaction</h3>
+                    <div class="form-group">
+                        <label for="selected-tool">Selected Tool:</label>
+                        <input type="text" id="selected-tool" readonly placeholder="Click a tool to select">
+                    </div>
+                    <div class="form-group">
+                        <label for="tool-params">Parameters (JSON):</label>
+                        <textarea id="tool-params" placeholder='{"param": "value"}'></textarea>
+                    </div>
+                    <button class="btn" id="execute-tool">Execute Tool</button>
+                    <button class="btn btn-secondary" id="clear-results">Clear Results</button>
+                </div>
+
+                <div class="results-panel">
+                    <h3>📋 Results</h3>
+                    <div id="results-content" class="result-content">
+                        <div class="loading">Select a tool and click Execute to see results...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-data">
+            <h3>📊 Sample MCP Tool Usage</h3>
+            <pre id="demo-examples"></pre>
+        </div>
+
+        <div class="footer">
+            <p>Phase 8 Real Data Ingestion Pipeline - Living Truth Engine with MCP Hub Server Integration</p>
+            <p>Status: ✅ Interactive | MCP Tools: 63 Available | Hub Server: Operational</p>
+        </div>
+    </div>
+
+    <script>
+        // MCP Tool definitions and examples
+        const mcpTools = {
+            "start_veritas_run": {
+                description: "Start a verifiable Veritas run and write a .veritasrun bundle",
+                example: {
+                    topic: "survivor testimony analysis",
+                    max_docs: 10,
+                    sources: ["youtube", "web", "pdf"]
+                }
+            },
+            "query_langflow": {
+                description: "Query the Langflow workflow for survivor testimony analysis",
+                example: {
+                    param: "Investigate Entity A connections, output as network"
+                }
+            },
+            "archive_youtube_channel": {
+                description: "Archive YouTube channels with depth-limited expansion",
+                example: {
+                    channel_url: "https://www.youtube.com/@imaginationpodcastofficial",
+                    max_videos: 5,
+                    crawl_depth: 2
+                }
+            },
+            "analyze_transcript": {
+                description: "Analyze transcripts for patterns and evidence",
+                example: {
+                    transcript_name: "0xXsEyKguvU_transcript.txt",
+                    anonymize: false
+                }
+            },
+            "generate_viz": {
+                description: "Generate interactive visualizations from data",
+                example: {
+                    data_type: "network_graph",
+                    source: "analysis_results"
+                }
+            },
+            "get_veritas_run_status": {
+                description: "Get status for a Veritas run by run_id",
+                example: {
+                    run_id: "20250810_100000_phase8_demo"
+                }
+            },
+            "list_veritas_runs": {
+                description: "List recent Veritas runs",
+                example: {
+                    limit: 10
+                }
+            },
+            "open_veritas_bundle": {
+                description: "Open a Veritas bundle and return manifest and proofs",
+                example: {
+                    run_id: "20250810_100000_phase8_demo"
+                }
+            },
+            "get_status": {
+                description: "Get system status and health information",
+                example: {}
+            },
+            "list_sources": {
+                description: "List available data sources",
+                example: {}
+            },
+            "get_lm_studio_models": {
+                description: "Get available LM Studio models",
+                example: {}
+            }
+        };
+
+        let selectedTool = null;
+
+        // Initialize the interface
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Load real tool information from API
+            await loadToolInfo();
+
+            // Tool selection from pipeline stages
+            document.querySelectorAll('.stage.interactive').forEach(stage => {
+                stage.addEventListener('click', function () {
+                    const tool = this.dataset.tool;
+                    selectTool(tool);
+                });
+            });
+
+            // Tool selection from MCP panel
+            document.querySelectorAll('.tool-item').forEach(item => {
+                item.addEventListener('click', function () {
+                    const tool = this.dataset.tool;
+                    selectTool(tool);
+                });
+            });
+
+            // Execute tool button
+            document.getElementById('execute-tool').addEventListener('click', executeTool);
+
+            // Clear results button
+            document.getElementById('clear-results').addEventListener('click', clearResults);
+
+            // Update demo examples
+            updateDemoExamples();
+        });
+
+        function selectTool(toolName) {
+            selectedTool = toolName;
+
+            // Update UI
+            document.getElementById('selected-tool').value = toolName;
+
+            // Clear previous selections
+            document.querySelectorAll('.tool-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+
+            // Highlight selected tool
+            document.querySelectorAll(`[data-tool="${toolName}"]`).forEach(item => {
+                item.classList.add('selected');
+            });
+
+            // Load example parameters
+            if (mcpTools[toolName]) {
+                const example = mcpTools[toolName].example;
+                document.getElementById('tool-params').value = JSON.stringify(example, null, 2);
+            } else {
+                document.getElementById('tool-params').value = '{}';
+            }
+
+            // Update results panel
+            document.getElementById('results-content').innerHTML =
+                `<div class="loading">Tool "${toolName}" selected. Click Execute to run...</div>`;
+        }
+
+        async function executeTool() {
+            if (!selectedTool) {
+                showError('Please select a tool first');
+                return;
+            }
+
+            const paramsText = document.getElementById('tool-params').value;
+            let params = {};
+
+            try {
+                params = JSON.parse(paramsText);
+            } catch (e) {
+                showError('Invalid JSON parameters: ' + e.message);
+                return;
+            }
+
+            // Show loading state
+            document.getElementById('results-content').innerHTML =
+                `<div class="loading">Executing ${selectedTool}...</div>`;
+
+            try {
+                // Execute MCP tool through real API
+                const result = await executeMCPTool(selectedTool, params);
+                if (result.success) {
+                    showResult(result);
+                } else {
+                    showError('Tool execution failed: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                showError('Execution failed: ' + error.message);
+            }
+        }
+
+        async function executeMCPTool(toolName, params) {
+            try {
+                const response = await fetch('/api/execute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        tool_name: toolName,
+                        params: params
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                return result;
+            } catch (error) {
+                console.error('Error executing MCP tool:', error);
+                throw error;
+            }
+        }
+
+        async function loadToolInfo() {
+            try {
+                const response = await fetch('/api/tools');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                if (data.success) {
+                    // Update the global mcpTools with real data
+                    Object.assign(mcpTools, data.examples);
+
+                    // Update the tool lists in the UI
+                    updateToolLists(data.tools);
+                }
+            } catch (error) {
+                console.error('Error loading tool info:', error);
+            }
+        }
+
+        function updateToolLists(toolsData) {
+            // Update tool categories in the UI
+            Object.entries(toolsData).forEach(([category, tools]) => {
+                const categoryElement = document.querySelector(`[data-category="${category}"]`);
+                if (categoryElement) {
+                    const toolList = categoryElement.querySelector('.tool-list');
+                    if (toolList) {
+                        toolList.innerHTML = '';
+                        tools.forEach(tool => {
+                            const li = document.createElement('li');
+                            li.className = 'tool-item';
+                            li.dataset.tool = tool.name;
+                            li.innerHTML = `
+                                ${tool.name}
+                                <div class="tool-description">${tool.description}</div>
+                            `;
+                            li.addEventListener('click', () => selectTool(tool.name));
+                            toolList.appendChild(li);
+                        });
+                    }
+                }
+            });
+        }
+
+        function showResult(result) {
+            const content = document.getElementById('results-content');
+            content.innerHTML = `
+                <div class="success">✅ Tool executed successfully!</div>
+                <pre>${JSON.stringify(result, null, 2)}</pre>
+            `;
+        }
+
+        function showError(message) {
+            const content = document.getElementById('results-content');
+            content.innerHTML = `
+                <div class="error">❌ ${message}</div>
+            `;
+        }
+
+        function clearResults() {
+            document.getElementById('results-content').innerHTML =
+                `<div class="loading">Results cleared. Select a tool and click Execute to see results...</div>`;
+        }
+
+        function updateDemoExamples() {
+            const examples = Object.entries(mcpTools).map(([tool, info]) => {
+                return `${tool}:\n  Description: ${info.description}\n  Example: ${JSON.stringify(info.example, null, 2)}\n`;
+            }).join('\n');
+
+            document.getElementById('demo-examples').textContent = examples;
+        }
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key) {
+                    case 'Enter':
+                        e.preventDefault();
+                        executeTool();
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        clearResults();
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - Living Truth Engine</title>
+
+    <!-- Modern CSS Framework -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Custom Styles -->
+    <style>
+        .nav-tab {
+            @apply px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200;
+        }
+
+        .nav-tab.active {
+            @apply bg-blue-100 text-blue-700 border-b-2 border-blue-500;
+        }
+
+        .nav-tab:not(.active) {
+            @apply text-gray-600 hover:text-gray-900 hover:bg-gray-100;
+        }
+
+        .card {
+            @apply bg-white rounded-lg shadow-md border border-gray-200 p-6;
+        }
+
+        .btn-primary {
+            @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+        }
+
+        .btn-secondary {
+            @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+        }
+
+        .toast {
+            @apply fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg max-w-sm;
+        }
+
+        .toast.success {
+            @apply bg-green-500 text-white;
+        }
+
+        .toast.error {
+            @apply bg-red-500 text-white;
+        }
+
+        .toast.info {
+            @apply bg-blue-500 text-white;
+        }
+
+        /* Toggle switch (no Tailwind build required) */
+        label.toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        label.toggle-switch input {
+            display: none;
+        }
+
+        label.toggle-switch .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #e5e7eb;
+            /* gray-200 */
+            border-radius: 9999px;
+            transition: background-color 0.2s ease;
+        }
+
+        label.toggle-switch .slider::after {
+            content: "";
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            top: 2px;
+            background-color: #ffffff;
+            border-radius: 9999px;
+            transition: transform 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        label.toggle-switch input:checked+.slider {
+            background-color: #2563eb;
+            /* blue-600 */
+        }
+
+        label.toggle-switch input:checked+.slider::after {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo and Title -->
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-search text-blue-600 text-2xl"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h1 class="text-xl font-bold text-gray-900">Living Truth Engine</h1>
+                        <p class="text-sm text-gray-500">Survivor Testimony Analysis & Evidence Discovery</p>
+                    </div>
+                </div>
+
+                <!-- System Status -->
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center text-sm text-gray-500">
+                        <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                        System Online
+                    </div>
+                    <button id="help-btn" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-question-circle text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex space-x-8">
+                <a href="/" class="nav-tab {% if request.url.path == '/' %}active{% endif %}">
+                    <i class="fas fa-home mr-2"></i>
+                    Home
+                </a>
+                <a href="/runs" class="nav-tab {% if request.url.path == '/runs' %}active{% endif %}">
+                    <i class="fas fa-list mr-2"></i>
+                    Runs
+                </a>
+                <a href="/analyze" class="nav-tab {% if request.url.path == '/analyze' %}active{% endif %}">
+                    <i class="fas fa-chart-line mr-2"></i>
+                    Analyze
+                </a>
+                <a href="/advanced" class="nav-tab {% if request.url.path == '/advanced' %}active{% endif %}">
+                    <i class="fas fa-cog mr-2"></i>
+                    Advanced
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Help Modal -->
+    <div id="help-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Quick Help</h3>
+                <div class="space-y-3 text-sm text-gray-600">
+                    <div>
+                        <strong>Home:</strong> Start new analyses and see recent activity
+                    </div>
+                    <div>
+                        <strong>Runs:</strong> Browse completed analyses and download results
+                    </div>
+                    <div>
+                        <strong>Analyze:</strong> Explore data and generate visualizations
+                    </div>
+                    <div>
+                        <strong>Advanced:</strong> Expert controls and system settings
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <button id="close-help" class="btn-primary w-full">Got it</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Toast notification system
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+
+        // Help modal
+        document.getElementById('help-btn').addEventListener('click', () => {
+            document.getElementById('help-modal').classList.remove('hidden');
+        });
+
+        document.getElementById('close-help').addEventListener('click', () => {
+            document.getElementById('help-modal').classList.add('hidden');
+        });
+
+        // Close modal on outside click
+        document.getElementById('help-modal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                e.currentTarget.classList.add('hidden');
+            }
+        });
+
+        // Global error handler
+        window.addEventListener('error', (e) => {
+            showToast('An error occurred. Please try again.', 'error');
+        });
+
+        // API helper function
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            try {
+                const options = {
+                    method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+
+                if (data) {
+                    options.body = JSON.stringify(data);
+                }
+
+                const response = await fetch(endpoint, options);
+                const result = await response.json();
+
+                if (result.status === 'error') {
+                    throw new Error(result.error.msg || 'API call failed');
+                }
+
+                return result.data;
+            } catch (error) {
+                showToast(error.message, 'error');
+                throw error;
+            }
+        }
+    </script>
+
+    {% block scripts %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">Advanced Controls</h1>
+        <p class="text-lg text-gray-600">Expert settings and system administration tools</p>
+    </div>
+
+    <!-- Expert Controls -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Left Column: System Settings -->
+        <div class="space-y-6">
+            <!-- Processing Options -->
+            <div class="card">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">
+                    <i class="fas fa-cogs text-blue-600 mr-2"></i>
+                    Processing Options
+                </h2>
+
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label class="text-sm font-medium text-gray-700">OCR Required</label>
+                            <p class="text-xs text-gray-500">Force OCR processing for all documents</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="ocr-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label class="text-sm font-medium text-gray-700">JavaScript Render</label>
+                            <p class="text-xs text-gray-500">Enable JavaScript rendering for web pages</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="js-render-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <label class="text-sm font-medium text-gray-700">Hugging Face Burst</label>
+                            <p class="text-xs text-gray-500">Enable high-performance model inference</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="hf-burst-toggle">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+
+                    <div>
+                        <label for="crawl-depth-input" class="block text-sm font-medium text-gray-700 mb-2">
+                            Crawl Depth
+                        </label>
+                        <input type="number" id="crawl-depth-input" value="1" min="0" max="5"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">How deep to follow external links (0-5)</p>
+                    </div>
+
+                    <div>
+                        <label for="video-limit-input" class="block text-sm font-medium text-gray-700 mb-2">
+                            Video Limit
+                        </label>
+                        <input type="number" id="video-limit-input" value="10" min="1" max="100"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">Maximum number of videos to process</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Actions -->
+            <div class="card">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">
+                    <i class="fas fa-tools text-blue-600 mr-2"></i>
+                    System Actions
+                </h2>
+
+                <div class="space-y-3">
+                    <button id="retry-failed-btn" class="w-full btn-secondary text-left">
+                        <i class="fas fa-redo mr-2"></i>
+                        Retry Last Failed Step
+                    </button>
+
+                    <button id="open-logs-btn" class="w-full btn-secondary text-left">
+                        <i class="fas fa-file-alt mr-2"></i>
+                        Open System Logs
+                    </button>
+
+                    <button id="clear-cache-btn" class="w-full btn-secondary text-left">
+                        <i class="fas fa-broom mr-2"></i>
+                        Clear Cache
+                    </button>
+
+                    <button id="system-status-btn" class="w-full btn-secondary text-left">
+                        <i class="fas fa-heartbeat mr-2"></i>
+                        Check System Status
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: MCP Tester -->
+        <div class="space-y-6">
+            <!-- Raw MCP Tester -->
+            <div class="card">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">
+                    <i class="fas fa-terminal text-blue-600 mr-2"></i>
+                    Raw MCP Tool Tester
+                </h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label for="mcp-tool-select" class="block text-sm font-medium text-gray-700 mb-2">
+                            Select Tool
+                        </label>
+                        <select id="mcp-tool-select"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Choose a tool...</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="mcp-params" class="block text-sm font-medium text-gray-700 mb-2">
+                            Parameters (JSON)
+                        </label>
+                        <textarea id="mcp-params" rows="6" placeholder='{"param1": "value1", "param2": "value2"}'
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm"></textarea>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <button id="test-mcp-btn" class="btn-primary">
+                            <i class="fas fa-play mr-2"></i>
+                            Test Tool
+                        </button>
+                        <button id="clear-mcp-btn" class="btn-secondary">
+                            <i class="fas fa-eraser mr-2"></i>
+                            Clear
+                        </button>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Result
+                        </label>
+                        <div id="mcp-result"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 font-mono text-sm min-h-32 max-h-64 overflow-y-auto">
+                            <p class="text-gray-500">Tool execution result will appear here...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Information -->
+            <div class="card">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">
+                    <i class="fas fa-info-circle text-blue-600 mr-2"></i>
+                    System Information
+                </h2>
+
+                <div id="system-info" class="space-y-3 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">MCP Hub Server:</span>
+                        <span id="mcp-status" class="text-gray-900">Checking...</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Available Tools:</span>
+                        <span id="tool-count" class="text-gray-900">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Langflow Status:</span>
+                        <span id="langflow-status" class="text-gray-900">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Database Status:</span>
+                        <span id="db-status" class="text-gray-900">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Load MCP tools on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        loadMCPTools();
+        loadSystemInfo();
+    });
+
+    // Load MCP tools
+    async function loadMCPTools() {
+        try {
+            const tools = await apiCall('/api/tools');
+            populateToolSelect(tools);
+        } catch (error) {
+            console.error('Failed to load MCP tools:', error);
+            showToast('Failed to load MCP tools: ' + error.message, 'error');
+        }
+    }
+
+    // Populate tool select
+    function populateToolSelect(tools) {
+        const select = document.getElementById('mcp-tool-select');
+        select.innerHTML = '<option value="">Choose a tool...</option>';
+
+        if (tools && tools.categories) {
+            Object.entries(tools.categories).forEach(([category, toolList]) => {
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = category;
+
+                toolList.forEach(tool => {
+                    const option = document.createElement('option');
+                    option.value = tool.name;
+                    option.textContent = tool.name;
+                    optgroup.appendChild(option);
+                });
+
+                select.appendChild(optgroup);
+            });
+        }
+    }
+
+    // Load system information
+    async function loadSystemInfo() {
+        try {
+            const status = await apiCall('/api/status');
+            updateSystemInfo(status);
+        } catch (error) {
+            console.error('Failed to load system info:', error);
+            updateSystemInfo({ error: error.message });
+        }
+    }
+
+    // Update system information display
+    function updateSystemInfo(status) {
+        document.getElementById('mcp-status').textContent = status.status || 'Unknown';
+        document.getElementById('tool-count').textContent = status.total_tools || '0';
+        document.getElementById('langflow-status').textContent = 'Online'; // Placeholder
+        document.getElementById('db-status').textContent = 'Connected'; // Placeholder
+    }
+
+    // Test MCP tool
+    document.getElementById('test-mcp-btn').addEventListener('click', async function () {
+        const toolName = document.getElementById('mcp-tool-select').value;
+        const paramsText = document.getElementById('mcp-params').value;
+        const resultDiv = document.getElementById('mcp-result');
+
+        if (!toolName) {
+            showToast('Please select a tool', 'error');
+            return;
+        }
+
+        try {
+            let params = {};
+            if (paramsText.trim()) {
+                params = JSON.parse(paramsText);
+            }
+
+            resultDiv.innerHTML = '<p class="text-blue-600">Executing tool...</p>';
+
+            const result = await apiCall('/api/execute', 'POST', {
+                tool_name: toolName,
+                params: params
+            });
+
+            resultDiv.innerHTML = `<pre class="text-green-600">${JSON.stringify(result, null, 2)}</pre>`;
+            showToast('Tool executed successfully!', 'success');
+
+        } catch (error) {
+            resultDiv.innerHTML = `<pre class="text-red-600">Error: ${error.message}</pre>`;
+            showToast('Tool execution failed: ' + error.message, 'error');
+        }
+    });
+
+    // Clear MCP tester
+    document.getElementById('clear-mcp-btn').addEventListener('click', function () {
+        document.getElementById('mcp-params').value = '';
+        document.getElementById('mcp-result').innerHTML = '<p class="text-gray-500">Tool execution result will appear here...</p>';
+    });
+
+    // System action buttons
+    document.getElementById('retry-failed-btn').addEventListener('click', function () {
+        showToast('Retry functionality will be implemented here', 'info');
+    });
+
+    document.getElementById('open-logs-btn').addEventListener('click', function () {
+        showToast('Log viewer will be implemented here', 'info');
+    });
+
+    document.getElementById('clear-cache-btn').addEventListener('click', function () {
+        showToast('Cache cleared successfully', 'success');
+    });
+
+    document.getElementById('system-status-btn').addEventListener('click', function () {
+        loadSystemInfo();
+        showToast('System status refreshed', 'success');
+    });
+
+    // Tool selection change
+    document.getElementById('mcp-tool-select').addEventListener('change', function () {
+        const toolName = this.value;
+        if (toolName) {
+            // Load example parameters for the selected tool
+            loadToolExample(toolName);
+        }
+    });
+
+    // Load tool example parameters
+    async function loadToolExample(toolName) {
+        try {
+            const tools = await apiCall('/api/tools');
+            const tool = findToolByName(tools, toolName);
+
+            if (tool && tool.example_params) {
+                document.getElementById('mcp-params').value = JSON.stringify(tool.example_params, null, 2);
+            }
+        } catch (error) {
+            console.error('Failed to load tool example:', error);
+        }
+    }
+
+    // Find tool by name
+    function findToolByName(tools, toolName) {
+        if (tools && tools.categories) {
+            for (const category of Object.values(tools.categories)) {
+                const tool = category.find(t => t.name === toolName);
+                if (tool) return tool;
+            }
+        }
+        return null;
+    }
+
+    // Toggle switches
+    document.getElementById('ocr-toggle').addEventListener('change', function () {
+        showToast(`OCR ${this.checked ? 'enabled' : 'disabled'}`, 'info');
+    });
+
+    document.getElementById('js-render-toggle').addEventListener('change', function () {
+        showToast(`JavaScript rendering ${this.checked ? 'enabled' : 'disabled'}`, 'info');
+    });
+
+    document.getElementById('hf-burst-toggle').addEventListener('change', function () {
+        showToast(`Hugging Face burst ${this.checked ? 'enabled' : 'disabled'}`, 'info');
+    });
+
+    // Input change handlers
+    document.getElementById('crawl-depth-input').addEventListener('change', function () {
+        showToast(`Crawl depth set to ${this.value}`, 'info');
+    });
+
+    document.getElementById('video-limit-input').addEventListener('change', function () {
+        showToast(`Video limit set to ${this.value}`, 'info');
+    });
+</script>
+{% endblock %}

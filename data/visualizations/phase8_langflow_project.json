@@ -1,0 +1,259 @@
+{
+  "name": "Phase 8 Real Data Ingestion",
+  "description": "Langflow project for Phase 8 YouTube channel ingestion pipeline",
+  "flows": [
+    {
+      "name": "Phase 8 Basic Pipeline",
+      "description": "Basic Phase 8 pipeline with single input",
+      "data": {
+        "name": "Phase 8 Real Data Ingestion Pipeline",
+        "description": "Process YouTube channel ingestion with depth-limited expansion and verifiable bundles",
+        "data": {
+          "nodes": [
+            {
+              "id": "input_node",
+              "type": "InputNode",
+              "data": {
+                "node": {
+                  "template": {
+                    "type": "str",
+                    "required": true,
+                    "show": true,
+                    "name": "text",
+                    "display_name": "YouTube Channel URL",
+                    "value": "https://www.youtube.com/@imaginationpodcastofficial"
+                  }
+                }
+              },
+              "position": {
+                "x": 100,
+                "y": 100
+              }
+            },
+            {
+              "id": "llm_chain",
+              "type": "LLMChain",
+              "data": {
+                "node": {
+                  "template": {
+                    "name": "llm_chain",
+                    "display_name": "Phase 8 Pipeline Processor",
+                    "description": "Process YouTube channel ingestion pipeline",
+                    "llm": {
+                      "type": "OpenAI",
+                      "model": "gpt-3.5-turbo",
+                      "temperature": 0.7
+                    },
+                    "prompt": {
+                      "type": "PromptTemplate",
+                      "template": "You are a Phase 8 Real Data Ingestion Pipeline processor.\n\nInput: {text}\n\nProcess this YouTube channel URL through the Phase 8 pipeline:\n\n1. YouTube Channel Discovery: Discover videos using yt-dlp\n2. Transcript Extraction: Extract transcripts with YouTube Transcript API + autosubs fallback\n3. URL Extraction: Extract URLs from transcripts using regex patterns\n4. Depth-Limited Expansion: Expand external links up to configurable depth\n5. Content Fetching: Fetch web content and PDFs with optional OCR/JS rendering\n6. Canonicalization: Convert to standardized JSONL format\n7. Provenance Generation: Generate SHA-256 proofs and Merkle tree\n8. Bundle Creation: Create .veritasrun bundle with manifest, corpus, proofs, merkle, metrics\n\nOutput a detailed summary of what would be processed and the expected bundle structure.\n\nChannel URL: {text}\nMax Videos: 5 (default)\nCrawl Depth: 2 (default)\nOCR Required: false (default)\nJS Render: false (default)"
+                    }
+                  }
+                }
+              },
+              "position": {
+                "x": 300,
+                "y": 100
+              }
+            },
+            {
+              "id": "chat_output",
+              "type": "ChatOutput",
+              "data": {
+                "node": {
+                  "template": {
+                    "name": "chat_output",
+                    "display_name": "Phase 8 Pipeline Results",
+                    "description": "Output the Phase 8 pipeline processing results"
+                  }
+                }
+              },
+              "position": {
+                "x": 500,
+                "y": 100
+              }
+            }
+          ],
+          "edges": [
+            {
+              "source": "input_node",
+              "target": "llm_chain",
+              "sourceHandle": "text",
+              "targetHandle": "input"
+            },
+            {
+              "source": "llm_chain",
+              "target": "chat_output",
+              "sourceHandle": "output",
+              "targetHandle": "input"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Phase 8 Advanced Pipeline",
+      "description": "Advanced Phase 8 pipeline with configurable parameters",
+      "data": {
+        "name": "Phase 8 Advanced Ingestion Pipeline",
+        "description": "Advanced YouTube channel ingestion with configurable parameters and detailed processing",
+        "data": {
+          "nodes": [
+            {
+              "id": "channel_url_input",
+              "type": "InputNode",
+              "data": {
+                "node": {
+                  "template": {
+                    "type": "str",
+                    "required": true,
+                    "show": true,
+                    "name": "channel_url",
+                    "display_name": "YouTube Channel URL",
+                    "value": "https://www.youtube.com/@imaginationpodcastofficial"
+                  }
+                }
+              },
+              "position": {
+                "x": 100,
+                "y": 100
+              }
+            },
+            {
+              "id": "max_videos_input",
+              "type": "InputNode",
+              "data": {
+                "node": {
+                  "template": {
+                    "type": "int",
+                    "required": true,
+                    "show": true,
+                    "name": "max_videos",
+                    "display_name": "Max Videos",
+                    "value": 5
+                  }
+                }
+              },
+              "position": {
+                "x": 100,
+                "y": 200
+              }
+            },
+            {
+              "id": "crawl_depth_input",
+              "type": "InputNode",
+              "data": {
+                "node": {
+                  "template": {
+                    "type": "int",
+                    "required": true,
+                    "show": true,
+                    "name": "crawl_depth",
+                    "display_name": "Crawl Depth",
+                    "value": 2
+                  }
+                }
+              },
+              "position": {
+                "x": 100,
+                "y": 300
+              }
+            },
+            {
+              "id": "text_combiner",
+              "type": "TextCombiner",
+              "data": {
+                "node": {
+                  "template": {
+                    "name": "text_combiner",
+                    "display_name": "Combine Parameters",
+                    "description": "Combine input parameters for processing"
+                  }
+                }
+              },
+              "position": {
+                "x": 250,
+                "y": 200
+              }
+            },
+            {
+              "id": "phase8_processor",
+              "type": "LLMChain",
+              "data": {
+                "node": {
+                  "template": {
+                    "name": "llm_chain",
+                    "display_name": "Phase 8 Pipeline Processor",
+                    "description": "Process YouTube channel ingestion with configurable parameters",
+                    "llm": {
+                      "type": "OpenAI",
+                      "model": "gpt-3.5-turbo",
+                      "temperature": 0.5
+                    },
+                    "prompt": {
+                      "type": "PromptTemplate",
+                      "template": "You are the Phase 8 Real Data Ingestion Pipeline processor.\n\nInput Parameters:\n{text}\n\nProcess this request through the Phase 8 pipeline:\n\n**Phase 8 Pipeline Stages:**\n\n1. **YouTube Channel Discovery**\n   - Use yt-dlp to discover videos from the channel\n   - Sort by oldest/newest/custom order\n   - Limit to specified number of videos\n\n2. **Transcript Extraction**\n   - Extract transcripts using YouTube Transcript API\n   - Fallback to autosubs if API fails\n   - Process all discovered videos\n\n3. **URL Extraction**\n   - Use regex patterns to extract URLs from transcripts\n   - Extract URLs from video descriptions\n   - Validate and filter URLs\n\n4. **Depth-Limited Expansion**\n   - Expand external links up to specified depth\n   - Follow links from transcripts and descriptions\n   - Respect crawl depth limits\n\n5. **Content Fetching**\n   - Fetch web content from expanded URLs\n   - Process PDFs with optional OCR\n   - Use optional JavaScript rendering for dynamic content\n\n6. **Canonicalization**\n   - Convert all content to standardized JSONL format\n   - Normalize text and metadata\n   - Create consistent document structure\n\n7. **Provenance Generation**\n   - Generate SHA-256 proofs for each document\n   - Create Merkle tree for data integrity\n   - Store proofs in proofs/ directory\n\n8. **Bundle Creation**\n   - Create .veritasrun bundle with:\n     - manifest.json (metadata and configuration)\n     - corpus.jsonl (canonicalized documents)\n     - proofs/ (SHA-256 proofs)\n     - merkle.json (Merkle tree)\n     - metrics.json (processing statistics)\n\n**Expected Output:**\nProvide a detailed summary of:\n- What would be processed\n- Expected document counts\n- Bundle structure and location\n- Processing time estimates\n- Data integrity measures\n\nInput: {text}"
+                    }
+                  }
+                }
+              },
+              "position": {
+                "x": 400,
+                "y": 200
+              }
+            },
+            {
+              "id": "chat_output",
+              "type": "ChatOutput",
+              "data": {
+                "node": {
+                  "template": {
+                    "name": "chat_output",
+                    "display_name": "Phase 8 Pipeline Results",
+                    "description": "Output the Phase 8 pipeline processing results and bundle information"
+                  }
+                }
+              },
+              "position": {
+                "x": 550,
+                "y": 200
+              }
+            }
+          ],
+          "edges": [
+            {
+              "source": "channel_url_input",
+              "target": "text_combiner",
+              "sourceHandle": "channel_url",
+              "targetHandle": "text1"
+            },
+            {
+              "source": "max_videos_input",
+              "target": "text_combiner",
+              "sourceHandle": "max_videos",
+              "targetHandle": "text2"
+            },
+            {
+              "source": "crawl_depth_input",
+              "target": "text_combiner",
+              "sourceHandle": "crawl_depth",
+              "targetHandle": "text3"
+            },
+            {
+              "source": "text_combiner",
+              "target": "phase8_processor",
+              "sourceHandle": "text",
+              "targetHandle": "input"
+            },
+            {
+              "source": "phase8_processor",
+              "target": "chat_output",
+              "sourceHandle": "output",
+              "targetHandle": "input"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

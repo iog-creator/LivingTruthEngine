@@ -1,0 +1,76 @@
+{
+  "name": "Phase 8 Real Data Ingestion Pipeline",
+  "description": "Visual representation of YouTube channel ingestion pipeline",
+  "data": {
+    "nodes": [
+      {
+        "id": "input_text",
+        "type": "InputNode",
+        "data": {
+          "node": {
+            "template": {
+              "type": "str",
+              "required": true,
+              "show": true,
+              "name": "text",
+              "display_name": "YouTube Channel URL",
+              "value": "https://www.youtube.com/@imaginationpodcastofficial"
+            }
+          }
+        },
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      {
+        "id": "llm_chain",
+        "type": "LLMChain",
+        "data": {
+          "node": {
+            "template": {
+              "name": "llm_chain",
+              "display_name": "Phase 8 Pipeline Processor",
+              "description": "Process YouTube channel ingestion pipeline"
+            }
+          }
+        },
+        "position": {
+          "x": 300,
+          "y": 100
+        }
+      },
+      {
+        "id": "output_text",
+        "type": "OutputNode",
+        "data": {
+          "node": {
+            "template": {
+              "name": "text",
+              "display_name": "Bundle Summary",
+              "description": "Summary of created bundle"
+            }
+          }
+        },
+        "position": {
+          "x": 500,
+          "y": 100
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "input_text",
+        "target": "llm_chain",
+        "sourceHandle": "text",
+        "targetHandle": "input"
+      },
+      {
+        "source": "llm_chain",
+        "target": "output_text",
+        "sourceHandle": "output",
+        "targetHandle": "text"
+      }
+    ]
+  }
+}

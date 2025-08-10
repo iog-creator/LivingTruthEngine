@@ -20,7 +20,7 @@ The Living Truth Engine is an AI-powered system for survivor testimony corrobora
 - **PostgreSQL**: Primary database for data storage with langflow database
 - **Neo4j**: Graph database for relationship analysis
 - **Redis**: Caching and session management
-- **Dash Dashboard**: Interactive visualizations for survivor testimony analysis
+- **Unified Dashboard**: Guided interface for all operations (Phase 8.1 complete)
 - **MCP Hub Server**: Consolidated tool gateway providing access to all 63 tools via 15 meta-tools
 - **Python Backend**: Core analysis and processing logic
 - **Docker**: Containerized deployment and development
@@ -50,13 +50,23 @@ The Living Truth Engine is an AI-powered system for survivor testimony corrobora
         │                       │
         ▼                       ▼
 ┌─────────────────┐    ┌─────────────────┐
-│   Langflow      │    │   PostgreSQL    │
-│   (Port 7860)   │    │   (Port 5432)   │
+│ Unified Dashboard│    │   PostgreSQL    │
+│   (Port 8050)   │    │   (Port 5432)   │
 │                 │    │                 │
-│ • Multi-Agent   │    │ • Data Storage  │
-│ • Python Native │    │ • Langflow DB   │
-│ • Workflow UI   │    │ • Analysis Data │
+│ • Guided UI     │    │ • Data Storage  │
+│ • Quick Start   │    │ • Langflow DB   │
+│ • Analysis      │    │ • Analysis Data │
 └─────────────────┘    └─────────────────┘
+        │
+        ▼
+┌─────────────────┐
+│   Langflow      │
+│   (Port 7860)   │
+│                 │
+│ • Multi-Agent   │
+│ • Python Native │
+│ • Workflow UI   │
+└─────────────────┘
 ```
 
 ### **Data Flow**

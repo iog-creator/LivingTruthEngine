@@ -1,0 +1,85 @@
+{
+  "name": "Phase 8 Real Data Ingestion Pipeline",
+  "description": "Process YouTube channel ingestion with depth-limited expansion and verifiable bundles",
+  "data": {
+    "nodes": [
+      {
+        "id": "input_node",
+        "type": "InputNode",
+        "data": {
+          "node": {
+            "template": {
+              "type": "str",
+              "required": true,
+              "show": true,
+              "name": "text",
+              "display_name": "YouTube Channel URL",
+              "value": "https://www.youtube.com/@imaginationpodcastofficial"
+            }
+          }
+        },
+        "position": {
+          "x": 100,
+          "y": 100
+        }
+      },
+      {
+        "id": "llm_chain",
+        "type": "LLMChain",
+        "data": {
+          "node": {
+            "template": {
+              "name": "llm_chain",
+              "display_name": "Phase 8 Pipeline Processor",
+              "description": "Process YouTube channel ingestion pipeline",
+              "llm": {
+                "type": "OpenAI",
+                "model": "gpt-3.5-turbo",
+                "temperature": 0.7
+              },
+              "prompt": {
+                "type": "PromptTemplate",
+                "template": "You are a Phase 8 Real Data Ingestion Pipeline processor.\n\nInput: {text}\n\nProcess this YouTube channel URL through the Phase 8 pipeline:\n\n**Phase 8 Pipeline Stages:**\n\n1. **YouTube Channel Discovery**\n   - Use yt-dlp to discover videos from the channel\n   - Sort by oldest/newest/custom order\n   - Limit to specified number of videos\n\n2. **Transcript Extraction**\n   - Extract transcripts using YouTube Transcript API\n   - Fallback to autosubs if API fails\n   - Process all discovered videos\n\n3. **URL Extraction**\n   - Use regex patterns to extract URLs from transcripts\n   - Extract URLs from video descriptions\n   - Validate and filter URLs\n\n4. **Depth-Limited Expansion**\n   - Expand external links up to specified depth\n   - Follow links from transcripts and descriptions\n   - Respect crawl depth limits\n\n5. **Content Fetching**\n   - Fetch web content from expanded URLs\n   - Process PDFs with optional OCR\n   - Use optional JavaScript rendering for dynamic content\n\n6. **Canonicalization**\n   - Convert all content to standardized JSONL format\n   - Normalize text and metadata\n   - Create consistent document structure\n\n7. **Provenance Generation**\n   - Generate SHA-256 proofs for each document\n   - Create Merkle tree for data integrity\n   - Store proofs in proofs/ directory\n\n8. **Bundle Creation**\n   - Create .veritasrun bundle with:\n     - manifest.json (metadata and configuration)\n     - corpus.jsonl (canonicalized documents)\n     - proofs/ (SHA-256 proofs)\n     - merkle.json (Merkle tree)\n     - metrics.json (processing statistics)\n\n**Expected Output:**\nProvide a detailed summary of:\n- What would be processed\n- Expected document counts\n- Bundle structure and location\n- Processing time estimates\n- Data integrity measures\n\nChannel URL: {text}\nMax Videos: 5 (default)\nCrawl Depth: 2 (default)\nOCR Required: false (default)\nJS Render: false (default)"
+              }
+            }
+          }
+        },
+        "position": {
+          "x": 300,
+          "y": 100
+        }
+      },
+      {
+        "id": "chat_output",
+        "type": "ChatOutput",
+        "data": {
+          "node": {
+            "template": {
+              "name": "chat_output",
+              "display_name": "Phase 8 Pipeline Results",
+              "description": "Output the Phase 8 pipeline processing results"
+            }
+          }
+        },
+        "position": {
+          "x": 500,
+          "y": 100
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "input_node",
+        "target": "llm_chain",
+        "sourceHandle": "text",
+        "targetHandle": "input"
+      },
+      {
+        "source": "llm_chain",
+        "target": "chat_output",
+        "sourceHandle": "output",
+        "targetHandle": "input"
+      }
+    ]
+  }
+}

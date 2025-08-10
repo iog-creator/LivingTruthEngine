@@ -1,0 +1,361 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Analysis Runs</h1>
+            <p class="text-lg text-gray-600">Browse completed analyses and download results</p>
+        </div>
+        <button onclick="window.location.href='/'" class="btn-primary">
+            <i class="fas fa-plus mr-2"></i>
+            New Analysis
+        </button>
+    </div>
+
+    <!-- Runs Table -->
+    <div class="card">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold text-gray-900">
+                <i class="fas fa-list text-blue-600 mr-2"></i>
+                All Runs
+            </h2>
+            <div class="flex items-center space-x-4">
+                <input type="text" id="search-runs" placeholder="Search runs..."
+                    class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <button id="refresh-runs" class="btn-secondary">
+                    <i class="fas fa-sync-alt mr-2"></i>
+                    Refresh
+                </button>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Run ID
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Created
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Documents
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="runs-table-body" class="bg-white divide-y divide-gray-200">
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                            <p>Loading runs...</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Run Details Drawer -->
+    <div id="run-details-drawer"
+        class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-6xl shadow-lg rounded-md bg-white">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-semibold text-gray-900">
+                    <i class="fas fa-folder-open text-blue-600 mr-2"></i>
+                    Run Details: <span id="selected-run-id"></span>
+                </h3>
+                <button id="close-drawer" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Details Tabs -->
+            <div class="border-b border-gray-200 mb-6">
+                <nav class="-mb-px flex space-x-8">
+                    <button class="detail-tab active" data-tab="manifest">
+                        <i class="fas fa-file-alt mr-2"></i>
+                        Manifest
+                    </button>
+                    <button class="detail-tab" data-tab="metrics">
+                        <i class="fas fa-chart-bar mr-2"></i>
+                        Metrics
+                    </button>
+                    <button class="detail-tab" data-tab="merkle">
+                        <i class="fas fa-shield-alt mr-2"></i>
+                        Merkle
+                    </button>
+                    <button class="detail-tab" data-tab="corpus">
+                        <i class="fas fa-download mr-2"></i>
+                        Corpus
+                    </button>
+                </nav>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="tab-content" class="min-h-96">
+                <!-- Manifest Tab -->
+                <div id="manifest-tab" class="tab-panel">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <pre id="manifest-content" class="text-sm text-gray-700 whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+
+                <!-- Metrics Tab -->
+                <div id="metrics-tab" class="tab-panel hidden">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <pre id="metrics-content" class="text-sm text-gray-700 whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+
+                <!-- Merkle Tab -->
+                <div id="merkle-tab" class="tab-panel hidden">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <pre id="merkle-content" class="text-sm text-gray-700 whitespace-pre-wrap"></pre>
+                    </div>
+                </div>
+
+                <!-- Corpus Tab -->
+                <div id="corpus-tab" class="tab-panel hidden">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <h4 class="text-lg font-medium text-gray-900">Corpus Data</h4>
+                            <button id="download-corpus" class="btn-primary">
+                                <i class="fas fa-download mr-2"></i>
+                                Download Corpus
+                            </button>
+                        </div>
+                        <div id="corpus-content" class="text-sm text-gray-700">
+                            <p>Click "Download Corpus" to get the complete corpus data.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentRunId = null;
+
+    // Load runs on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        loadRuns();
+    });
+
+    // Refresh button
+    document.getElementById('refresh-runs').addEventListener('click', function () {
+        loadRuns();
+    });
+
+    // Search functionality
+    document.getElementById('search-runs').addEventListener('input', function () {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#runs-table-body tr');
+
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(searchTerm) ? '' : 'none';
+        });
+    });
+
+    // Load runs from API
+    async function loadRuns() {
+        try {
+            const runs = await apiCall('/api/runs');
+            displayRuns(runs);
+        } catch (error) {
+            console.error('Failed to load runs:', error);
+            showToast('Failed to load runs: ' + error.message, 'error');
+        }
+    }
+
+    // Display runs in table
+    function displayRuns(runs) {
+        const tbody = document.getElementById('runs-table-body');
+
+        if (!runs || runs.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                        <i class="fas fa-inbox text-2xl mb-2"></i>
+                        <p>No runs found. Start your first analysis from the Home page.</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        tbody.innerHTML = runs.map(run => `
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    ${run.run_id || 'Unknown'}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    ${formatDate(run.created_at)}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    ${run.doc_count || '0'} documents
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(run.status)}">
+                        ${run.status || 'Unknown'}
+                    </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button onclick="openRunDetails('${run.run_id}')" class="btn-secondary text-sm">
+                        <i class="fas fa-eye mr-1"></i>
+                        Open
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    // Format date
+    function formatDate(dateString) {
+        if (!dateString) return 'Unknown';
+        try {
+            return new Date(dateString).toLocaleDateString();
+        } catch {
+            return dateString;
+        }
+    }
+
+    // Get status color
+    function getStatusColor(status) {
+        switch (status?.toLowerCase()) {
+            case 'completed':
+                return 'bg-green-100 text-green-800';
+            case 'running':
+                return 'bg-blue-100 text-blue-800';
+            case 'failed':
+                return 'bg-red-100 text-red-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    }
+
+    // Open run details
+    async function openRunDetails(runId) {
+        currentRunId = runId;
+        document.getElementById('selected-run-id').textContent = runId;
+        document.getElementById('run-details-drawer').classList.remove('hidden');
+
+        // Load manifest by default
+        await loadTabContent('manifest');
+    }
+
+    // Close drawer
+    document.getElementById('close-drawer').addEventListener('click', function () {
+        document.getElementById('run-details-drawer').classList.add('hidden');
+        currentRunId = null;
+    });
+
+    // Close drawer on outside click
+    document.getElementById('run-details-drawer').addEventListener('click', function (e) {
+        if (e.target === this) {
+            this.classList.add('hidden');
+            currentRunId = null;
+        }
+    });
+
+    // Tab switching
+    document.querySelectorAll('.detail-tab').forEach(tab => {
+        tab.addEventListener('click', function () {
+            const tabName = this.dataset.tab;
+
+            // Update active tab
+            document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+
+            // Show tab content
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+
+            // Load tab content
+            loadTabContent(tabName);
+        });
+    });
+
+    // Load tab content
+    async function loadTabContent(tabName) {
+        if (!currentRunId) return;
+
+        try {
+            let content = '';
+
+            switch (tabName) {
+                case 'manifest':
+                case 'metrics':
+                case 'merkle':
+                    const result = await apiCall(`/api/runs/${currentRunId}`);
+                    content = JSON.stringify(result, null, 2);
+                    break;
+
+                case 'corpus':
+                    content = 'Corpus data will be downloaded when you click the download button.';
+                    break;
+            }
+
+            document.getElementById(tabName + '-content').textContent = content;
+
+        } catch (error) {
+            console.error(`Failed to load ${tabName}:`, error);
+            document.getElementById(tabName + '-content').textContent = `Error loading ${tabName}: ${error.message}`;
+        }
+    }
+
+    // Download corpus
+    document.getElementById('download-corpus').addEventListener('click', async function () {
+        if (!currentRunId) return;
+
+        try {
+            showToast('Downloading corpus...', 'info');
+
+            const corpus = await apiCall(`/api/runs/${currentRunId}/corpus`);
+
+            // Create download link
+            const blob = new Blob([JSON.stringify(corpus, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `corpus_${currentRunId}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+
+            showToast('Corpus downloaded successfully!', 'success');
+
+        } catch (error) {
+            console.error('Failed to download corpus:', error);
+            showToast('Failed to download corpus: ' + error.message, 'error');
+        }
+    });
+</script>
+
+<style>
+    .detail-tab {
+        @apply py-2 px-1 border-b-2 font-medium text-sm;
+    }
+
+    .detail-tab.active {
+        @apply border-blue-500 text-blue-600;
+    }
+
+    .detail-tab:not(.active) {
+        @apply border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300;
+    }
+</style>
+{% endblock %}

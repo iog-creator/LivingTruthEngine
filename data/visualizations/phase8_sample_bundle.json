@@ -1,0 +1,34 @@
+{
+  "run_id": "20250810_100000_phase8_demo",
+  "started_at": "2025-08-10T09:58:38.975970",
+  "channel_url": "https://www.youtube.com/@imaginationpodcastofficial",
+  "max_videos": 5,
+  "crawl_depth": 2,
+  "ocr_required": false,
+  "js_render": false,
+  "documents": [
+    "youtube_real_1",
+    "youtube_real_2",
+    "web_external_1",
+    "pdf_external_1"
+  ],
+  "metrics": {
+    "run_summary": {
+      "total_documents": 4,
+      "total_bytes": 156789,
+      "processing_time": 45.2
+    },
+    "source_distribution": {
+      "youtube": 2,
+      "web": 1,
+      "pdf": 1
+    },
+    "extraction_methods": {
+      "youtube_transcript": 2,
+      "web_scraping": 1,
+      "pdf_extraction": 1
+    }
+  },
+  "merkle_root": "sha256:abc123def456...",
+  "bundle_path": "/data/outputs/runs/20250810_100000_phase8_demo.veritasrun"
+}

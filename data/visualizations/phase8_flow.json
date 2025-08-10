@@ -1,0 +1,317 @@
+{
+  "name": "Phase 8 Real Data Ingestion Pipeline",
+  "description": "Visual representation of the Phase 8 YouTube channel ingestion pipeline with real data processing, depth-limited expansion, and verifiable bundles",
+  "nodes": [
+    {
+      "id": "input_channel_url",
+      "type": "input",
+      "data": {
+        "label": "YouTube Channel URL",
+        "value": "https://www.youtube.com/@imaginationpodcastofficial",
+        "type": "text",
+        "required": true
+      },
+      "position": {
+        "x": 100,
+        "y": 100
+      }
+    },
+    {
+      "id": "input_max_videos",
+      "type": "input",
+      "data": {
+        "label": "Max Videos",
+        "value": 5,
+        "type": "number",
+        "min": 1,
+        "max": 50,
+        "required": true
+      },
+      "position": {
+        "x": 100,
+        "y": 200
+      }
+    },
+    {
+      "id": "input_crawl_depth",
+      "type": "input",
+      "data": {
+        "label": "Crawl Depth",
+        "value": 2,
+        "type": "number",
+        "min": 0,
+        "max": 5,
+        "required": true
+      },
+      "position": {
+        "x": 100,
+        "y": 300
+      }
+    },
+    {
+      "id": "input_ocr_required",
+      "type": "input",
+      "data": {
+        "label": "OCR Required",
+        "value": false,
+        "type": "boolean"
+      },
+      "position": {
+        "x": 100,
+        "y": 400
+      }
+    },
+    {
+      "id": "input_js_render",
+      "type": "input",
+      "data": {
+        "label": "JS Render",
+        "value": false,
+        "type": "boolean"
+      },
+      "position": {
+        "x": 100,
+        "y": 500
+      }
+    },
+    {
+      "id": "youtube_discovery",
+      "type": "process",
+      "data": {
+        "label": "YouTube Channel Discovery",
+        "description": "Discover videos from YouTube channel using yt-dlp",
+        "status": "ready"
+      },
+      "position": {
+        "x": 300,
+        "y": 150
+      }
+    },
+    {
+      "id": "transcript_extraction",
+      "type": "process",
+      "data": {
+        "label": "Transcript Extraction",
+        "description": "Extract transcripts using YouTube Transcript API with autosubs fallback",
+        "status": "ready"
+      },
+      "position": {
+        "x": 500,
+        "y": 150
+      }
+    },
+    {
+      "id": "url_extraction",
+      "type": "process",
+      "data": {
+        "label": "URL Extraction",
+        "description": "Extract URLs from transcripts and descriptions using regex patterns",
+        "status": "ready"
+      },
+      "position": {
+        "x": 700,
+        "y": 150
+      }
+    },
+    {
+      "id": "depth_expansion",
+      "type": "process",
+      "data": {
+        "label": "Depth-Limited Expansion",
+        "description": "Expand external links up to specified depth",
+        "status": "ready"
+      },
+      "position": {
+        "x": 900,
+        "y": 150
+      }
+    },
+    {
+      "id": "content_fetching",
+      "type": "process",
+      "data": {
+        "label": "Content Fetching",
+        "description": "Fetch web content and PDFs with optional OCR and JS rendering",
+        "status": "ready"
+      },
+      "position": {
+        "x": 1100,
+        "y": 150
+      }
+    },
+    {
+      "id": "canonicalization",
+      "type": "process",
+      "data": {
+        "label": "Canonicalization",
+        "description": "Convert all content to standardized JSONL format",
+        "status": "ready"
+      },
+      "position": {
+        "x": 1300,
+        "y": 150
+      }
+    },
+    {
+      "id": "provenance_generation",
+      "type": "process",
+      "data": {
+        "label": "Provenance Generation",
+        "description": "Generate SHA-256 proofs and Merkle tree for data integrity",
+        "status": "ready"
+      },
+      "position": {
+        "x": 1500,
+        "y": 150
+      }
+    },
+    {
+      "id": "bundle_creation",
+      "type": "process",
+      "data": {
+        "label": "Bundle Creation",
+        "description": "Create .veritasrun bundle with manifest, corpus, proofs, merkle, and metrics",
+        "status": "ready"
+      },
+      "position": {
+        "x": 1700,
+        "y": 150
+      }
+    },
+    {
+      "id": "bundle_summary",
+      "type": "output",
+      "data": {
+        "label": "Bundle Summary",
+        "description": "Summary of created bundle with statistics and metadata",
+        "type": "json"
+      },
+      "position": {
+        "x": 1900,
+        "y": 100
+      }
+    },
+    {
+      "id": "bundle_location",
+      "type": "output",
+      "data": {
+        "label": "Bundle Location",
+        "description": "File path to the created .veritasrun bundle",
+        "type": "text"
+      },
+      "position": {
+        "x": 1900,
+        "y": 200
+      }
+    },
+    {
+      "id": "source_distribution",
+      "type": "visualization",
+      "data": {
+        "label": "Source Distribution",
+        "description": "Distribution of content sources (YouTube, web, PDF)",
+        "type": "pie_chart"
+      },
+      "position": {
+        "x": 1900,
+        "y": 300
+      }
+    },
+    {
+      "id": "processing_timeline",
+      "type": "visualization",
+      "data": {
+        "label": "Processing Timeline",
+        "description": "Timeline of processing stages and durations",
+        "type": "timeline"
+      },
+      "position": {
+        "x": 1900,
+        "y": 400
+      }
+    },
+    {
+      "id": "merkle_tree_viz",
+      "type": "visualization",
+      "data": {
+        "label": "Merkle Tree Visualization",
+        "description": "Visual representation of the Merkle tree structure",
+        "type": "tree"
+      },
+      "position": {
+        "x": 1900,
+        "y": 500
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "input_channel_url",
+      "target": "youtube_discovery"
+    },
+    {
+      "source": "input_max_videos",
+      "target": "youtube_discovery"
+    },
+    {
+      "source": "input_crawl_depth",
+      "target": "depth_expansion"
+    },
+    {
+      "source": "input_ocr_required",
+      "target": "content_fetching"
+    },
+    {
+      "source": "input_js_render",
+      "target": "content_fetching"
+    },
+    {
+      "source": "youtube_discovery",
+      "target": "transcript_extraction"
+    },
+    {
+      "source": "transcript_extraction",
+      "target": "url_extraction"
+    },
+    {
+      "source": "url_extraction",
+      "target": "depth_expansion"
+    },
+    {
+      "source": "depth_expansion",
+      "target": "content_fetching"
+    },
+    {
+      "source": "content_fetching",
+      "target": "canonicalization"
+    },
+    {
+      "source": "canonicalization",
+      "target": "provenance_generation"
+    },
+    {
+      "source": "provenance_generation",
+      "target": "bundle_creation"
+    },
+    {
+      "source": "bundle_creation",
+      "target": "bundle_summary"
+    },
+    {
+      "source": "bundle_creation",
+      "target": "bundle_location"
+    },
+    {
+      "source": "bundle_creation",
+      "target": "source_distribution"
+    },
+    {
+      "source": "bundle_creation",
+      "target": "processing_timeline"
+    },
+    {
+      "source": "provenance_generation",
+      "target": "merkle_tree_viz"
+    }
+  ]
+}

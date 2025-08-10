@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Welcome Section -->
+    <div class="text-center">
+        <h1 class="text-3xl font-bold text-gray-900 mb-4">Welcome to Living Truth Engine</h1>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+            Analyze survivor testimony and discover supporting evidence from multiple sources.
+            Start your first analysis in under a minute.
+        </p>
+    </div>
+
+    <!-- Quick Start Card -->
+    <div class="card">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold text-gray-900">
+                <i class="fas fa-rocket text-blue-600 mr-2"></i>
+                Quick Start - YouTube Analysis
+            </h2>
+            <button id="more-options-btn" class="text-blue-600 hover:text-blue-800 text-sm">
+                More options <i class="fas fa-chevron-down ml-1"></i>
+            </button>
+        </div>
+
+        <form id="quick-start-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                <div>
+                    <label for="channel-url" class="block text-sm font-medium text-gray-700 mb-2">
+                        Channel URL
+                    </label>
+                    <input type="url" id="channel-url" name="channel_url" placeholder="https://www.youtube.com/@channel"
+                        value="https://www.youtube.com/@imaginationpodcastofficial"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required>
+                    <p class="text-xs text-gray-500 mt-1">Default: Imagination Podcast Official channel</p>
+                </div>
+
+                <div>
+                    <label for="video-limit" class="block text-sm font-medium text-gray-700 mb-2">
+                        Video Limit
+                    </label>
+                    <input type="number" id="video-limit" name="limit" value="10" min="1" max="50"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">Number of videos to analyze</p>
+                </div>
+
+                <div>
+                    <label for="crawl-depth" class="block text-sm font-medium text-gray-700 mb-2">
+                        Crawl Depth
+                    </label>
+                    <input type="number" id="crawl-depth" name="max_depth" value="3" min="0" max="3"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <p class="text-xs text-gray-500 mt-1">How deep to follow external links</p>
+                </div>
+            </div>
+
+            <!-- Advanced Options (Hidden by default) -->
+            <div id="advanced-options" class="hidden space-y-4 pt-4 border-t border-gray-200">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+                    <div>
+                        <label for="sort-order" class="block text-sm font-medium text-gray-700 mb-2">
+                            Sort Order
+                        </label>
+                        <select id="sort-order" name="sort"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="oldest">Date (oldest first)</option>
+                            <option value="views">Views (most popular)</option>
+                            <option value="relevance">Relevance</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center space-x-6 col-span-3 md:col-span-3">
+                        <div class="flex items-center">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="ocr-required" name="ocr_required">
+                                <span class="slider"></span>
+                            </label>
+                            <label for="ocr-required" class="ml-2 block text-sm text-gray-700">
+                                OCR Required
+                            </label>
+                        </div>
+                        <div class="flex items-center">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="js-render" name="js_render">
+                                <span class="slider"></span>
+                            </label>
+                            <label for="js-render" class="ml-2 block text-sm text-gray-700">
+                                JavaScript Render
+                            </label>
+                        </div>
+                        <div class="flex items-center">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="hf-burst" name="hf_burst">
+                                <span class="slider"></span>
+                            </label>
+                            <label for="hf-burst" class="ml-2 block text-sm text-gray-700">
+                                HF Burst
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Run Label -->
+                    <div>
+                        <label for="run-label" class="block text-sm font-medium text-gray-700 mb-2">
+                            Run Label (optional)
+                        </label>
+                        <input type="text" id="run-label" name="label" placeholder="e.g., P8.1 Demo"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <!-- Save To Directory -->
+                    <div class="md:col-span-2">
+                        <label for="output-dir" class="block text-sm font-medium text-gray-700 mb-2">
+                            Save To Directory (optional)
+                        </label>
+                        <input type="text" id="output-dir" name="output_dir" placeholder="/home/you/AnalysisRuns"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <p class="text-xs text-gray-500 mt-1">If provided, a symlink to the run folder will be created
+                            here.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-4">
+                <div class="text-sm text-gray-600">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    This will start a comprehensive analysis of the YouTube channel
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-play mr-2"></i>
+                    Start Analysis
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Recent Runs Section -->
+    <div class="card">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">
+            <i class="fas fa-history text-blue-600 mr-2"></i>
+            Recent Runs
+        </h2>
+
+        <div id="recent-runs" class="space-y-3">
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                <p>Loading recent runs...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Rail -->
+    <div id="activity-rail" class="hidden card">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">
+            <i class="fas fa-stream text-blue-600 mr-2"></i>
+            Current Activity
+        </h2>
+
+        <div id="activity-steps" class="space-y-3">
+            <!-- Activity steps will be populated here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Toggle advanced options
+    document.getElementById('more-options-btn').addEventListener('click', function () {
+        const advancedOptions = document.getElementById('advanced-options');
+        const button = this;
+
+        if (advancedOptions.classList.contains('hidden')) {
+            advancedOptions.classList.remove('hidden');
+            button.innerHTML = 'Fewer options <i class="fas fa-chevron-up ml-1"></i>';
+        } else {
+            advancedOptions.classList.add('hidden');
+            button.innerHTML = 'More options <i class="fas fa-chevron-down ml-1"></i>';
+        }
+    });
+
+    // Handle form submission
+    document.getElementById('quick-start-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        // Convert checkboxes to booleans
+        data.ocr_required = formData.has('ocr_required');
+        data.js_render = formData.has('js_render');
+
+        // Convert numbers
+        data.limit = parseInt(data.limit);
+        data.max_depth = parseInt(data.max_depth);
+
+        try {
+            showToast('Starting analysis...', 'info');
+
+            const result = await apiCall('/api/runs/youtube/start', 'POST', data);
+
+            showToast('Analysis started successfully!', 'success');
+
+            // Show activity rail
+            document.getElementById('activity-rail').classList.remove('hidden');
+
+            // Add activity step
+            addActivityStep('Analysis started', 'success');
+
+            // Refresh recent runs
+            loadRecentRuns();
+
+        } catch (error) {
+            showToast('Failed to start analysis: ' + error.message, 'error');
+        }
+    });
+
+    // Load recent runs
+    async function loadRecentRuns() {
+        try {
+            const runs = await apiCall('/api/runs');
+            displayRecentRuns(runs);
+        } catch (error) {
+            console.error('Failed to load recent runs:', error);
+        }
+    }
+
+    // Display recent runs
+    function displayRecentRuns(runs) {
+        const container = document.getElementById('recent-runs');
+
+        if (!runs || runs.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-inbox text-2xl mb-2"></i>
+                    <p>No runs yet. Start your first analysis above!</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = runs.map(run => `
+            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-file-alt text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-gray-900">${run.run_id || 'Run'}</h3>
+                        <p class="text-sm text-gray-500">${run.created_at || 'Unknown date'}</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(run.status)}">
+                        ${run.status || 'Unknown'}
+                    </span>
+                    <button onclick="openRun('${run.run_id}')" class="btn-secondary text-sm">
+                        Open
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Get status color
+    function getStatusColor(status) {
+        switch (status?.toLowerCase()) {
+            case 'completed':
+                return 'bg-green-100 text-green-800';
+            case 'running':
+                return 'bg-blue-100 text-blue-800';
+            case 'failed':
+                return 'bg-red-100 text-red-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    }
+
+    // Add activity step
+    function addActivityStep(message, type = 'info') {
+        const container = document.getElementById('activity-steps');
+        const step = document.createElement('div');
+        step.className = 'flex items-center space-x-3 p-3 bg-gray-50 rounded-lg';
+
+        const icon = type === 'success' ? 'fa-check-circle text-green-600' :
+            type === 'error' ? 'fa-exclamation-circle text-red-600' :
+                'fa-info-circle text-blue-600';
+
+        step.innerHTML = `
+            <i class="fas ${icon}"></i>
+            <span class="text-sm text-gray-700">${message}</span>
+        `;
+
+        container.appendChild(step);
+    }
+
+    // Open run details
+    function openRun(runId) {
+        window.location.href = `/runs?run_id=${runId}`;
+    }
+
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', function () {
+        loadRecentRuns();
+    });
+</script>
+{% endblock %}
