@@ -1,0 +1,64 @@
+# Quick Start
+
+This is the fastest way to run the Living Truth Engine and get your first result in under 60 seconds.
+
+## Requirements
+- Docker + Docker Compose
+- Python 3.13 (optional for local tooling)
+
+## Start all services
+```bash
+cd /home/mccoy/Projects/NotebookLM/LivingTruthEngine
+docker compose -f docker/docker-compose.yml up -d
+```
+
+## URLs
+- Dashboard: http://localhost:8050
+- Langflow: http://localhost:7860
+- Neo4j: http://localhost:7474
+- LM Studio: http://localhost:1234
+
+## First analysis (dashboard)
+1. Open http://localhost:8050
+2. Use prefilled channel `https://www.youtube.com/@imaginationpodcastofficial`
+3. Defaults: limit 10, depth 3, sort oldest
+4. Optional: Add "Run Label" and a "Save To Directory" path
+5. Click Start Analysis
+
+The run appears in Recent Runs and the Runs tab. Analyze tab lets you view results (Summary, Entities, Claims, Graph, Timeline).
+
+## Health checks
+```bash
+curl -f http://localhost:8050/api/health        # Dashboard
+curl -f http://localhost:7860/health            # Langflow
+curl -f http://localhost:1234/v1/models         # LM Studio
+curl -f http://localhost:7474/                  # Neo4j
+redis-cli ping                                  # Redis
+```
+
+## Minimal API examples
+```bash
+# List runs (filesystem fallback enabled inside container)
+curl -s http://localhost:8050/api/runs | jq .
+
+# Get run details
+RUN_ID=<your_run_id>
+curl -s http://localhost:8050/api/runs/$RUN_ID | jq .
+
+# Get run corpus
+echo $RUN_ID
+curl -s http://localhost:8050/api/runs/$RUN_ID/corpus | jq .
+
+# List MCP tools (falls back to config/tool_registry.json in the container)
+curl -s http://localhost:8050/api/tools | jq .
+
+# Execute a tool via dashboard
+curl -s http://localhost:8050/api/execute \
+  -H 'Content-Type: application/json' \
+  -d '{"tool_name":"get_status","params":{}}' | jq .
+```
+
+## Troubleshooting
+- Use Ctrl+Shift+R to hard-refresh dashboard after updates
+- If MCP hub tools appear empty in the container, the dashboard falls back to `config/tool_registry.json`
+- All dashboard endpoints return `{status,data,error}`
