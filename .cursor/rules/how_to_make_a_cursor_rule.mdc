@@ -1,7 +1,48 @@
+---
+alwaysApply: true
+description: Rule for How To Make A Cursor Rule
+globs:
+- '**/*'
+---
+
+
+
 # How to Build Cursor Rules - Complete Guide
 
 ## Description
 This rule provides comprehensive guidance on creating effective Cursor rules, including proper structure, metadata, content organization, and best practices for different rule types.
+
+## 🔧 **Cursor Rule Validation Tools**
+
+### **Available MCP Tools**
+The Living Truth Engine provides automated tools for validating and fixing cursor rule frontmatter:
+
+1. **`validate_cursor_rules()`** - Validates all `.mdc` files in `.cursor/rules/` for proper frontmatter
+2. **`fix_cursor_rule_frontmatter(filename)`** - Fixes frontmatter for a specific `.mdc` file
+
+### **Usage Examples**
+```python
+# Validate all cursor rules
+result = engine.validate_cursor_rules()
+print(result)
+
+# Fix a specific file
+result = engine.fix_cursor_rule_frontmatter('my_rule.mdc')
+print(result)
+```
+
+### **Validation Checks**
+The validation tool checks for:
+- ✅ YAML frontmatter presence
+- ✅ Required fields: `description`, `globs`, `alwaysApply`
+- ✅ Valid YAML syntax
+- ✅ Proper structure and formatting
+
+### **When to Use Validation Tools**
+- **Before committing** cursor rule changes
+- **When troubleshooting** cursor rule issues
+- **After manual edits** to ensure proper formatting
+- **During development** to catch frontmatter errors early
 
 ## 🎯 **What Are Cursor Rules?**
 
@@ -266,6 +307,16 @@ project/
 - **Quarterly**: Audit and consolidate related rules
 
 ---
+
+**This rule provides the foundation for creating effective Cursor rules that improve team productivity and code quality.**
+
+@mcp_server_guide_troubshooting.mdc
+
+
+**This rule provides the foundation for creating effective Cursor rules that improve team productivity and code quality.**
+
+@mcp_server_guide_troubshooting.mdc
+
 
 **This rule provides the foundation for creating effective Cursor rules that improve team productivity and code quality.**
 

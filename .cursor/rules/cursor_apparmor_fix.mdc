@@ -1,8 +1,11 @@
 ---
-description: "Cursor AppArmor fix for Ubuntu to resolve freezing issues during AI operations"
-globs: ["**/*.sh", "**/*.py", "**/*.md"]
-alwaysApply: true
+description: Cursor AppArmor fix for Ubuntu to resolve freezing issues during AI operations
+globs:
+- '**/scripts/setup/**'
+- '**/docs/**'
+alwaysApply: false
 ---
+
 
 # Cursor AppArmor Fix for Ubuntu
 

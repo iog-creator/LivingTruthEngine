@@ -1,14 +1,13 @@
 ---
-description: "Development workflow optimized for AI assistance, including code generation, testing, and deployment processes"
-globs: ["**/*.py", "**/*.js", "**/*.ts", "**/*.sh", "**/*.md"]
-alwaysApply: true
+description: Development workflow optimized for AI assistance, including code generation,
+  testing, and deployment processes
+globs:
+- '**/*.py'
+- '**/scripts/**'
+- '**/tests/**'
+alwaysApply: false
 ---
 
----
-description: "Development workflow optimized for AI assistance, including code generation, testing, and deployment processes"
-globs: ["**/*.py", "**/*.js", "**/*.ts", "**/*.sh", "**/*.md"]
-alwaysApply: true
----
 
 # AI-Assisted Development Workflow
 
@@ -39,6 +38,14 @@ This rule defines the development workflow optimized for AI assistance, includin
 # ✅ AI-assisted testing
 python -m pytest tests/ --cov=src/
 python src/mcp_servers/test_mcp_server.py
+
+# ✅ Archiver telemetry visibility
+curl -fsS http://localhost:8000/telemetry/status
+curl -fsS http://localhost:8000/telemetry/stream?lines=50
+
+# ✅ Phase 6 and smoke tests
+pytest -q tests/test_phase6_veritas.py
+pytest -q tests/test_smoke_job_runs.py
 ```
 
 ### **4. Documentation**
@@ -68,6 +75,10 @@ python src/mcp_servers/test_mcp_server.py
 - [ ] **Check code quality** with linting tools
 - [ ] **Update documentation** if needed
 - [ ] **Verify MCP integration** works correctly
+- [ ] **Verify archiver telemetry** (API + MCP tool `get_archiver_telemetry`)
+- [ ] **Ensure `ARCHIVER_SAVE_MODE` is set appropriately** (full/standard/minimal)
+- [ ] **Dashboard**: `GET /health` and `GET /meta` return healthy and include "Job Runs"
+- [ ] **Bundles**: `.veritasrun/` has `manifest.json`, `metrics.json`, and `proofs/*` with Merkle root
 
 ## 🔧 **AI Integration Patterns**
 
@@ -126,6 +137,8 @@ mcp_living_truth_fastmcp_server_query_langflow("Test query")
 ./scripts/testing/trace_performance.sh
 ./scripts/testing/simple_performance_test.sh
 ./scripts/testing/functional_tests.py  # Comprehensive functional testing
+pytest tests/test_phase6_veritas.py     # Veritas proofs & dashboard import
+pytest tests/test_smoke_job_runs.py     # Dashboard health/meta + run bundle
 ./scripts/deployment/deploy.sh
 ```
 

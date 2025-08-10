@@ -41,13 +41,36 @@ mcp = FastMCP()
 from src.analysis.notebook_agent import AdvancedNotebookAgent, StudyGuide, DocumentSummary, ResearchReport
 
 # Import AGI integration components
-from integration.agi_integration import AGILivingTruthIntegration, AGIAnalysisResult, AGIComponent
+try:
+    from src.integration.agi_integration import AGILivingTruthIntegration, AGIAnalysisResult, AGIComponent
+except ImportError:
+    AGILivingTruthIntegration = None
+    AGIAnalysisResult = None
+    AGIComponent = None
 
 # Import channel archiver components
-from processing.channel_archiver import ChannelArchiver, VideoInfo, ArchiveResult, ChannelArchiveSummary
-from visualization.advanced_viz import AdvancedVisualizer
+try:
+    from src.processing.channel_archiver import ChannelArchiver, VideoInfo, ArchiveResult, ChannelArchiveSummary
+except ImportError:
+    ChannelArchiver = None
+    VideoInfo = None
+    ArchiveResult = None
+    ChannelArchiveSummary = None
+try:
+    from src.visualization.advanced_viz import AdvancedVisualizer
+except ImportError:
+    AdvancedVisualizer = None
+
 from pathlib import Path
-from src.analysis.ingestion import IngestionPipeline
+try:
+    from src.analysis.ingestion import IngestionPipeline
+except ImportError:
+    IngestionPipeline = None
+
+try:
+    from src.ingestion_general.runners import VeritasRunner
+except ImportError:
+    VeritasRunner = None
 
 class LivingTruthEngine:
     def __init__(self):
@@ -101,6 +124,14 @@ class LivingTruthEngine:
         except Exception as e:
             logger.error(f"❌ Advanced visualizer initialization failed: {e}")
             self.visualizer = None
+
+        # Initialize Veritas runner (generalist ingestion)
+        try:
+            self.veritas_runner = VeritasRunner()
+            logger.info("✅ VeritasRunner initialized successfully")
+        except Exception as e:
+            logger.error(f"❌ VeritasRunner initialization failed: {e}")
+            self.veritas_runner = None
 
     def query_flowise(self, query: str, anonymize: bool = False, output_type: str = "summary") -> str:
         """Query the Flowise chatflow for pattern recognition and data analysis."""
@@ -996,6 +1027,158 @@ class LivingTruthEngine:
             logger.error(f"Get video transcript error: {e}")
             return f"❌ Get video transcript error: {str(e)}"
 
+    # Veritas generalist ingestion API
+    def start_veritas_run(self, topic: str, max_docs: int = 10, sources: Optional[List[str]] = None) -> str:
+        if not self.veritas_runner:
+            return "❌ VeritasRunner not initialized"
+        status = self.veritas_runner.start(topic=topic, max_docs=max_docs, sources=sources or ["youtube","web","pdf"])
+        return json.dumps(status.__dict__, indent=2)
+
+    def get_veritas_run_status(self, run_id: str) -> str:
+        if not self.veritas_runner:
+            return "❌ VeritasRunner not initialized"
+        status = self.veritas_runner.get_status(run_id)
+        return json.dumps(status.__dict__, indent=2)
+
+    def list_veritas_runs(self, limit: int = 20) -> str:
+        if not self.veritas_runner:
+            return "❌ VeritasRunner not initialized"
+        runs = self.veritas_runner.list_runs(limit=limit)
+        return json.dumps({"runs": runs}, indent=2)
+
+    def open_veritas_bundle(self, run_id: str) -> str:
+        if not self.veritas_runner:
+            return "❌ VeritasRunner not initialized"
+        bundle = self.veritas_runner.open_bundle(run_id)
+        return json.dumps(bundle, indent=2)
+
+    def reanalyze_with_gates(self, run_id: str, gates: Dict[str, Any]) -> str:
+        # Placeholder for future gating logic; fail-fast pattern
+        raise NotImplementedError("Gating reanalysis not yet implemented for Phase 6 scaffold")
+
+    def validate_cursor_rules(self) -> str:
+        """Validate all .mdc files in .cursor/rules/ for proper frontmatter."""
+        try:
+            import yaml
+            from pathlib import Path
+            
+            rules_dir = Path(".cursor/rules")
+            if not rules_dir.exists():
+                return "❌ .cursor/rules directory not found"
+            
+            results = []
+            mdc_files = list(rules_dir.glob("*.mdc"))
+            
+            if not mdc_files:
+                return "❌ No .mdc files found in .cursor/rules/"
+            
+            for mdc_file in mdc_files:
+                try:
+                    with open(mdc_file, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    
+                    # Check for YAML frontmatter
+                    if not content.startswith('---'):
+                        results.append(f"❌ {mdc_file.name}: Missing YAML frontmatter")
+                        continue
+                    
+                    # Extract frontmatter
+                    lines = content.split('\n')
+                    frontmatter_lines = []
+                    in_frontmatter = False
+                    
+                    for line in lines:
+                        if line.strip() == '---':
+                            if not in_frontmatter:
+                                in_frontmatter = True
+                            else:
+                                break
+                        elif in_frontmatter:
+                            frontmatter_lines.append(line)
+                    
+                    if not frontmatter_lines:
+                        results.append(f"❌ {mdc_file.name}: Empty frontmatter")
+                        continue
+                    
+                    # Parse YAML
+                    frontmatter_text = '\n'.join(frontmatter_lines)
+                    try:
+                        frontmatter = yaml.safe_load(frontmatter_text)
+                    except yaml.YAMLError as e:
+                        results.append(f"❌ {mdc_file.name}: Invalid YAML - {e}")
+                        continue
+                    
+                    # Validate required fields
+                    issues = []
+                    if not frontmatter:
+                        issues.append("Empty frontmatter")
+                    else:
+                        if 'description' not in frontmatter:
+                            issues.append("Missing 'description' field")
+                        if 'alwaysApply' not in frontmatter:
+                            issues.append("Missing 'alwaysApply' field")
+                        elif not frontmatter.get('alwaysApply', False) and 'globs' not in frontmatter:
+                            # Only require globs if alwaysApply is false
+                            issues.append("Missing 'globs' field (required when alwaysApply is false)")
+                    
+                    if issues:
+                        results.append(f"❌ {mdc_file.name}: {', '.join(issues)}")
+                    else:
+                        results.append(f"✅ {mdc_file.name}: Valid frontmatter")
+                        
+                except Exception as e:
+                    results.append(f"❌ {mdc_file.name}: Error reading file - {e}")
+            
+            return "\n".join(results)
+            
+        except Exception as e:
+            return f"❌ Cursor rule validation failed: {e}"
+
+    def fix_cursor_rule_frontmatter(self, filename: str) -> str:
+        """Fix frontmatter for a specific .mdc file."""
+        try:
+            import yaml
+            from pathlib import Path
+            
+            mdc_file = Path(f".cursor/rules/{filename}")
+            if not mdc_file.exists():
+                return f"❌ File {filename} not found"
+            
+            with open(mdc_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # Extract the main content (after frontmatter)
+            lines = content.split('\n')
+            main_content_start = 0
+            
+            for i, line in enumerate(lines):
+                if line.strip() == '---':
+                    if main_content_start == 0:
+                        main_content_start = i + 1
+                    else:
+                        main_content_start = i + 1
+                        break
+            
+            main_content = '\n'.join(lines[main_content_start:])
+            
+            # Create proper frontmatter based on filename
+            frontmatter = {
+                'description': f"Rule for {filename.replace('.mdc', '').replace('_', ' ').title()}",
+                'globs': ["**/*"],
+                'alwaysApply': True
+            }
+            
+            # Write fixed content
+            fixed_content = f"---\n{yaml.dump(frontmatter, default_flow_style=False)}---\n\n{main_content}"
+            
+            with open(mdc_file, 'w', encoding='utf-8') as f:
+                f.write(fixed_content)
+            
+            return f"✅ Fixed frontmatter for {filename}"
+            
+        except Exception as e:
+            return f"❌ Failed to fix {filename}: {e}"
+
 # Create engine instance
 engine = LivingTruthEngine()
 
@@ -1291,6 +1474,32 @@ def get_video_transcript(video_id: str) -> str:
     """Get transcript for a specific video."""
     return engine.get_video_transcript(video_id)
 
+# Veritas tools (Phase 6)
+@mcp.tool()
+def start_veritas_run(topic: str, max_docs: int = 10, sources: Optional[List[str]] = None) -> str:
+    """Start a verifiable Veritas run and write a .veritasrun bundle under data/outputs/runs."""
+    return engine.start_veritas_run(topic, max_docs, sources)
+
+@mcp.tool()
+def get_veritas_run_status(run_id: str) -> str:
+    """Get status for a Veritas run by run_id."""
+    return engine.get_veritas_run_status(run_id)
+
+@mcp.tool()
+def list_veritas_runs(limit: int = 20) -> str:
+    """List recent Veritas runs (by run_id)."""
+    return engine.list_veritas_runs(limit)
+
+@mcp.tool()
+def open_veritas_bundle(run_id: str) -> str:
+    """Open a Veritas bundle and return manifest and proofs."""
+    return engine.open_veritas_bundle(run_id)
+
+@mcp.tool()
+def reanalyze_with_gates(run_id: str, gates: Dict[str, Any]) -> str:
+    """Reanalyze a run with gating parameters (placeholder)."""
+    return engine.reanalyze_with_gates(run_id, gates)
+
 @mcp.tool()
 def create_3d_network_visualization(graph_data: dict) -> str:
     """Create 3D network visualization using advanced visualizer."""
@@ -1387,6 +1596,16 @@ def test_migrated_components() -> str:
         return f"Test Results:\n{result.stdout}\nErrors:\n{result.stderr}"
     except Exception as e:
         return f"Error running migrated component tests: {e}"
+
+@mcp.tool()
+def validate_cursor_rules() -> str:
+    """Validate all .mdc files in .cursor/rules/ for proper frontmatter."""
+    return engine.validate_cursor_rules()
+
+@mcp.tool()
+def fix_cursor_rule_frontmatter(filename: str) -> str:
+    """Fix frontmatter for a specific .mdc file."""
+    return engine.fix_cursor_rule_frontmatter(filename)
 
 if __name__ == "__main__":
     logger.info("Living Truth Engine FastMCP Server starting...")

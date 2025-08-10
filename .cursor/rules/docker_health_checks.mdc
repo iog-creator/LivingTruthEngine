@@ -1,3 +1,14 @@
+---
+description: This rule defines Docker health check best practices and troubleshooting
+  procedures for the Living Truth Engine project.
+globs:
+- '**/docker/**'
+- '**/Dockerfile*'
+- '**/docker-compose*'
+alwaysApply: false
+---
+
+
 # Docker Health Check Best Practices
 
 ## Description
@@ -192,5 +203,8 @@ healthcheck:
 ---
 
 **This rule ensures reliable health monitoring for all Docker services in the Living Truth Engine project.**
+
+@how_to_make_a_cursor_rule.mdc
+
 
 @how_to_make_a_cursor_rule.mdc

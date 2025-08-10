@@ -1,3 +1,13 @@
+---
+description: Error handling and testing standards for the Living Truth Engine project,
+  ensuring proper error reporting and comprehensive testing
+globs:
+- '**/*.py'
+- '**/tests/**'
+alwaysApply: false
+---
+
+
 # Error Handling and Testing Standards
 
 ## Description
@@ -159,7 +169,24 @@ def test_audio_generation(self):
 ---
 
 **Follow these standards to ensure robust error handling and comprehensive testing throughout the Living Truth Engine project.**
-description:
-globs:
+
+alwaysApply: false
+---
+
+**Follow these standards to ensure robust error handling and comprehensive testing throughout the Living Truth Engine project.**
+
+alwaysApply: false
+---
+
+alwaysApply: false
+---
+
+alwaysApply: false
+---
+
+
+alwaysApply: false
+---
+
 alwaysApply: false
 ---

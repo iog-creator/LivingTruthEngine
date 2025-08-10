@@ -16,9 +16,9 @@ This document provides comprehensive setup information for the Living Truth Engi
 7. **✅ Dash Dashboard**: Port 8050 - Interactive visualizations
 
 ### **Optional Services (Configured)**
-8. **🆕 DevDocs**: Port 9126 - Document retrieval (MCP server ready)
-9. **🆕 Rulego**: Port 9127 - Workflow orchestration (MCP server ready)
-10. **🆕 MCP Solver**: Port 9128 - Constraint solving (MCP server ready)
+8. **🆕 DevDocs**: Port 9126 - Lightweight internal service providing health endpoint for MCP integration (replaces clone-at-start)
+9. **🆕 Rulego**: Port 9127 - Lightweight internal service providing health endpoint for MCP integration (replaces clone-at-start)
+10. **🆕 MCP Solver**: Port 9128 - Lightweight internal service providing health endpoint for MCP integration (replaces clone-at-start)
 
 ## ⚙️ **Environment Configuration**
 
@@ -211,6 +211,38 @@ python src/mcp_servers/test_mcp_server.py
 - **docs/LANGFLOW_MCP_TOOLS.md**: Langflow MCP tools documentation
 - **env_config.txt**: Comprehensive configuration documentation
 - **env_minimal.txt**: Minimal environment variables for .env file
+
+## 📡 Archiver Telemetry & Data Organization
+
+### Telemetry
+
+The channel archiver emits live telemetry so you can monitor progress:
+
+- Files:
+  - `data/outputs/logs/archive_telemetry/status.json` (snapshot)
+  - `data/outputs/logs/archive_telemetry/current.jsonl` (event stream)
+- API:
+  - `GET /telemetry/status`
+  - `GET /telemetry/stream?lines=200`
+- MCP tool:
+  - `get_archiver_telemetry(lines: int = 200)`
+
+### Organized Data Structure
+
+Videos are organized under `data/sources/organized/<channel>/<video_id>/`:
+
+- `transcript.txt`
+- `transcript_segments.json` (parsed from VTT)
+- `subtitles.vtt` (raw, when available)
+- `metadata.json` (minimal metadata)
+- `record.json` (human-friendly reference: paths + summary)
+- `notes.md` (freeform investigator notes)
+- `annotations.json` (tags, entities, links)
+
+Save modes (env `ARCHIVER_SAVE_MODE`):
+- `minimal`: transcript.txt + record.json
+- `standard`: transcript.txt + transcript_segments.json + record.json
+- `full` (default): transcript.txt + transcript_segments.json + subtitles.vtt + record.json
 
 ## 🔍 **Troubleshooting**
 

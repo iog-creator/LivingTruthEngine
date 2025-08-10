@@ -1,8 +1,11 @@
 ---
-description: "Analysis scripts location and MCP-first batching usage"
-globs: ["**/*.py", "**/*.md", "**/*.sh"]
-alwaysApply: true
+description: Analysis scripts location and MCP-first batching usage
+globs:
+- '**/scripts/analyze/**'
+- '**/src/analysis/**'
+alwaysApply: false
 ---
+
 
 # Analysis Scripts and MCP-First Batching
 

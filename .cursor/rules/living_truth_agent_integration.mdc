@@ -1,0 +1,234 @@
+---
+description: Systematic process for integrating Living Truth Agent functionality into
+  LivingTruthEngine while building MCP tools for each component
+globs:
+- '**/src/analysis/**'
+- '**/src/integration/**'
+alwaysApply: false
+---
+
+
+# Living Truth Agent Integration Process
+
+## Description
+This rule defines the systematic process for integrating Living Truth Agent functionality into LivingTruthEngine while building MCP tools for each component.
+
+## 🎯 **Integration Process Standards**
+
+### **Phase-Based Integration**
+1. **Phase 1**: Core System Integration ✅ **COMPLETED**
+   - Configuration system migrated
+   - Hybrid retrieval system migrated
+   - Research analysis system migrated
+
+2. **Phase 2**: Advanced Features Integration 🔄 **IN PROGRESS**
+   - Notebook Agent System
+   - AGI Integration Layer
+   - Channel Archiver System
+
+3. **Phase 3**: MCP Integration Enhancement
+   - Enhanced MCP tools for all components
+   - Tool registry updates
+   - Performance monitoring
+
+### **MCP-First Development Pattern**
+For every component migrated, follow this pattern:
+
+1. **Create Component**: Migrate the core functionality
+2. **Build MCP Tools**: Create MCP tools for the component
+3. **Update Registry**: Add tools to tool_registry.json
+4. **Test Integration**: Verify MCP tools work correctly
+5. **Document**: Update cursor rules and documentation
+
+## 📋 **MCP Tool Development Checklist**
+
+### **Before Creating Any Component**
+- [ ] **Check existing MCP tools** in tool_registry.json
+- [ ] **Plan MCP tool structure** for the component
+- [ ] **Define tool parameters** and return types
+- [ ] **Consider tool categories** (analysis, system, langflow, etc.)
+
+### **During Component Migration**
+- [ ] **Create component file** with proper imports
+- [ ] **Add MCP tool decorators** for key functions
+- [ ] **Integrate with existing config** system
+- [ ] **Follow error handling** patterns
+- [ ] **Add logging** for debugging
+
+### **After Component Creation**
+- [ ] **Update tool registry** with new tools
+- [ ] **Test MCP tools** via hub server
+- [ ] **Update cursor rules** if needed
+- [ ] **Document tool usage** examples
+
+## 🔧 **MCP Tool Categories**
+
+### **Analysis Tools** (Biblical Forensic)
+- `analyze_biblical_evidence` - Biblical forensic analysis
+- `extract_claims` - Claims extraction and verification
+- `map_entities` - Entity relationship mapping
+- `conduct_research_analysis` - Comprehensive research analysis
+
+### **Notebook Agent Tools** (Document Processing)
+- `process_documents` - Universal document processing
+- `generate_study_guide` - Study guide generation
+- `summarize_documents` - Document summarization
+- `conduct_web_research` - Web research capabilities
+
+### **AGI Integration Tools** (Advanced AI)
+- `integrate_agi_analysis` - AGI system integration
+- `cross_validate_findings` - Cross-validation of results
+- `generate_confidence_scores` - Confidence scoring
+- `create_integrated_insights` - Integrated insights generation
+
+### **Processing Tools** (Content Management)
+- `process_youtube_content` - YouTube content processing
+- `archive_channel_content` - Channel archiving
+- `extract_transcripts` - Transcript extraction
+- `organize_content` - Content organization
+
+## 🚨 **Integration Standards**
+
+### **Required Patterns**
+- **MCP-First**: Every component must have MCP tools
+- **Error Handling**: No fallback mechanisms, fail-fast approach
+- **Configuration**: Use centralized config system
+- **Logging**: Comprehensive logging for all operations
+- **Testing**: MCP tool testing for all functionality
+
+### **File Organization**
+```
+LivingTruthEngine/src/
+├── analysis/
+│   ├── notebook_agent.py          # Notebook agent with MCP tools
+│   ├── agi_integration.py         # AGI integration with MCP tools
+│   └── channel_archiver.py        # Channel archiver with MCP tools
+├── mcp_servers/
+│   └── living_truth_fastmcp_server.py  # Enhanced with new tools
+└── config/
+    └── tool_registry.json         # Updated with new tools
+```
+
+### **MCP Tool Schema**
+```json
+{
+  "name": "tool_name",
+  "description": "Tool description",
+  "server": "living_truth_fastmcp_server",
+  "module": "src.mcp_servers.living_truth_fastmcp_server",
+  "function": "tool_function",
+  "params_schema": {
+    "param_name": {
+      "type": "string",
+      "required": true,
+      "description": "Parameter description"
+    }
+  }
+}
+```
+
+## 🎯 **Integration Workflow**
+
+### **1. Component Analysis**
+```python
+# Analyze source component
+source_file = "living_truth_agent/core/component.py"
+# Identify key functions for MCP tools
+# Plan integration approach
+```
+
+### **2. Component Migration**
+```python
+# Create target component
+target_file = "LivingTruthEngine/src/analysis/component.py"
+# Migrate with MCP tool integration
+# Follow LivingTruthEngine patterns
+```
+
+### **3. MCP Tool Creation**
+```python
+# Add MCP tools to living_truth_fastmcp_server.py
+@mcp.tool()
+def component_tool(param: str) -> str:
+    """MCP tool for component functionality."""
+    return component_instance.function(param)
+```
+
+### **4. Registry Update**
+```json
+// Update config/tool_registry.json
+{
+  "name": "component_tool",
+  "description": "Component functionality",
+  "server": "living_truth_fastmcp_server",
+  "module": "src.mcp_servers.living_truth_fastmcp_server",
+  "function": "component_tool"
+}
+```
+
+### **5. Testing and Validation**
+```python
+# Test MCP tool via hub server
+result = mcp_mcp_hub_server_execute_tool("component_tool", {"param": "test"})
+# Validate functionality
+# Update documentation
+```
+
+## 📊 **Integration Metrics**
+
+### **Success Criteria**
+- ✅ **100% MCP Coverage**: Every component has MCP tools
+- ✅ **100% Tool Registry**: All tools documented in registry
+- ✅ **100% Error Handling**: Proper error handling in all tools
+- ✅ **100% Testing**: All MCP tools tested and working
+- ✅ **100% Documentation**: All tools documented
+
+### **Quality Standards**
+- **Tool Response Time**: <1s for individual tools
+- **Error Rate**: <5% in tool execution
+- **Documentation**: Complete parameter descriptions
+- **Testing**: Comprehensive test coverage
+
+## 🚀 **Next Steps**
+
+### **Phase 2.1: Notebook Agent System**
+1. **Migrate notebook_agent.py** with MCP tools
+2. **Create MCP tools** for document processing
+3. **Update tool registry** with new tools
+4. **Test integration** via MCP hub server
+
+### **Phase 2.2: AGI Integration Layer**
+1. **Migrate agi_integration.py** with MCP tools
+2. **Create MCP tools** for AGI operations
+3. **Update tool registry** with new tools
+4. **Test integration** via MCP hub server
+
+### **Phase 2.3: Channel Archiver System**
+1. **Migrate channel_archiver.py** with MCP tools
+2. **Create MCP tools** for content processing
+3. **Update tool registry** with new tools
+4. **Test integration** via MCP hub server
+
+---
+
+**This rule ensures systematic integration with MCP tool development for every component migrated from Living Truth Agent to LivingTruthEngine.**
+
+@mcp_server_integration.mdc
+@current_working_state.mdc
+@project_overview.mdc
+
+alwaysApply: false
+---
+
+@project_overview.mdc
+
+alwaysApply: false
+---
+
+@project_overview.mdc
+
+alwaysApply: false
+---
+
+alwaysApply: false
+---

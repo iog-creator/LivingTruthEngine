@@ -205,6 +205,10 @@ docker compose -f docker/docker-compose.yml up -d
 - **Redis**: localhost:6379
 - **Neo4j**: http://localhost:7474
 - **LM Studio**: http://localhost:1234 (with system model access)
+ - **Dashboard**: http://localhost:8050 (health at /health, metadata at /meta including tabs)
+ - **DevDocs**: http://localhost:9126 (internal health service used by MCP)
+ - **Rulego**: http://localhost:9127 (internal health service used by MCP)
+ - **MCP Solver**: http://localhost:9128 (internal health service used by MCP)
 
 ## 📁 **Project Structure**
 
@@ -254,14 +258,15 @@ LivingTruthEngine/
 
 ## 🔧 **Development Features**
 
-### **MCP Server Tools (23 Total)**
+### **MCP Server Tools (25 Total)**
 
-#### **Living Truth FastMCP Server (22 tools)**
+#### **Living Truth FastMCP Server (24 tools)**
 - **LM Studio Tools** (4): `get_lm_studio_models`, `generate_lm_studio_text`, `test_lm_studio_connection`, `get_lm_studio_status`
 - **Core Tools** (6): `query_langflow`, `get_status`, `list_sources`, `analyze_transcript`, `generate_viz`, `generate_audio`
 - **Batch Tools** (2): `batch_system_operations`, `batch_analysis_operations`
 - **Utility Tools** (5): `get_project_info`, `get_current_time`, `test_tool`, `fix_flow`, `query_flowise`
 - **Automation Tools** (5): `auto_detect_and_add_tools`, `auto_update_all_documentation`, `auto_update_cursor_rules`, `auto_validate_system_state`, `comprehensive_health_check`
+- **Cursor Rule Tools** (2): `validate_cursor_rules`, `fix_cursor_rule_frontmatter` - Validate and fix cursor rule frontmatter
 
 #### **Langflow MCP Server (6 tools)**
 - `query_langflow` - Query Langflow workflows for survivor testimony analysis
@@ -272,9 +277,9 @@ LivingTruthEngine/
 - `test_tool` - Simple test tool for Cursor detection
 
 ### **Additional MCP Servers (8 Total)**
-- **DevDocs MCP Server**: Document retrieval and crawling (`crawl_docs`, `retrieve_docs`, `get_devdocs_status`, `get_devdocs_info`)
-- **Rulego MCP Server**: Workflow orchestration (`query_rulego_chain`, `list_rulego_chains`, `create_rulego_chain`, `get_rulego_status`, `get_rulego_info`)
-- **MCP Solver Server**: Constraint solving and LLM routing (`solve_constraint`, `route_llm`, `list_solver_capabilities`, `get_solver_status`, `get_solver_info`)
+- **DevDocs MCP Server**: Document retrieval and crawling (`crawl_docs`, `retrieve_docs`, `get_devdocs_status`, `get_devdocs_info`) — backed by an internal lightweight service exposing `/health` on port 9126
+- **Rulego MCP Server**: Workflow orchestration (`query_rulego_chain`, `list_rulego_chains`, `create_rulego_chain`, `get_rulego_status`, `get_rulego_info`) — backed by an internal lightweight service exposing `/health` on port 9127
+- **MCP Solver Server**: Constraint solving and LLM routing (`solve_constraint`, `route_llm`, `list_solver_capabilities`, `get_solver_status`, `get_solver_info`) — backed by an internal lightweight service exposing `/health` on port 9128
 - **GitHub MCP Server**: Repository management and collaboration
 - **PostgreSQL MCP Server**: Database operations and querying
 - **Hugging Face MCP Server**: Model and dataset access
@@ -285,6 +290,12 @@ LivingTruthEngine/
 - **Intelligent refactoring** suggestions
 - **Documentation generation**
 - **Workflow optimization**
+
+### **Cursor Rule Management**
+- **Automated Validation**: Use `validate_cursor_rules()` to check all `.mdc` files for proper frontmatter
+- **Automated Fixing**: Use `fix_cursor_rule_frontmatter(filename)` to fix specific cursor rule files
+- **Proper Configuration**: 4 always-apply rules (project-wide), 13 file-specific rules with globs
+- **Best Practices**: Follows Cursor documentation for rule types and `alwaysApply` settings
 
 ### **Docker Best Practices**
 - **Docker Compose v2**: Modern syntax and features
@@ -518,9 +529,9 @@ docker image prune -f
 - **LM Studio**: http://localhost:1234
 - **Living Truth Engine**: http://localhost:9123-9124
 - **MCP Server**: Running locally (not in Docker) for stability
-- **DevDocs**: http://localhost:9126 (Optional)
-- **Rulego**: http://localhost:9127 (Optional)
-- **MCP Solver**: http://localhost:9128 (Optional)
+- **DevDocs**: http://localhost:9126 — internal health service used by MCP
+- **Rulego**: http://localhost:9127 — internal health service used by MCP
+- **MCP Solver**: http://localhost:9128 — internal health service used by MCP
 
 ### **Key Files**
 - **Docker Compose**: `docker/docker-compose.yml`

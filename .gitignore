@@ -22,19 +22,11 @@ wheels/
 MANIFEST
 
 # Virtual environments
-venv/
-env/
-ENV/
-env.bak/
-venv.bak/
-living_venv/
+
 
 # Environment variables
 
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+
 
 # IDE
 .vscode/
@@ -130,7 +122,28 @@ celerybeat.pid
 # mypy
 .mypy_cache/
 .dmypy.json
-dmypy.json .env
+dmypy.json
 env_config.txt
-.env
+
 ven.txt
+
+# Data files
+data/outputs/
+data/logs/
+data/runs/
+data/sources/analysis/
+data/sources/backups/
+data/sources/devdocs/
+data/sources/keyframes/
+data/sources/organized/
+
+# Large video files
+data/sources/*.mp4
+data/sources/*.webm
+data/sources/*.part
+data/sources/videos/
+*.mp4
+*.webm
+*.avi
+*.mov
+*.mkv

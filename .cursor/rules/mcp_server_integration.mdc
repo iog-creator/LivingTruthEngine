@@ -1,8 +1,13 @@
 ---
-description: "MCP (Model Context Protocol) server integration practices for the Living Truth Engine, ensuring proper tool usage and system integration"
-globs: ["**/*.py", "**/mcp_servers/**/*", "**/.cursor/mcp.json"]
-alwaysApply: true
+description: MCP (Model Context Protocol) server integration practices for the Living
+  Truth Engine, ensuring proper tool usage and system integration
+globs:
+- '**/mcp*.py'
+- '**/mcp*.json'
+- '**/src/mcp_servers/**'
+alwaysApply: false
 ---
+
 
 # MCP Server Integration and Best Practices
 
@@ -699,3 +704,19 @@ def recover_tool_usage():
 - **@development_workflow.mdc** - Development workflow and best practices
 - **@docker_best_practices.mdc** - Docker configuration and deployment
 - **@system_management.mdc** - System management and automation
+
+## Phase 6 integration updates
+
+- Optional services stabilized as internal stubs (health-only) used by MCP adapters:
+  - DevDocs: http://localhost:9126/health
+  - Rulego: http://localhost:9127/health
+  - MCP Solver: http://localhost:9128/health
+- Dashboard service exposes:
+  - Health: http://localhost:8050/health
+  - Meta: http://localhost:8050/meta (tabs include "Job Runs")
+- MCP Hub validation: ensure categories `documentation`, `workflow`, `solver` list their status tools and execute successfully.
+
+### Tests added
+- `tests/test_services_operational.py`: operational checks for services + LM Studio endpoints
+- `tests/test_phase6_veritas.py`: Merkle roundtrip, bundle proofs, engine list/open, dashboard import
+- `tests/test_smoke_job_runs.py`: dashboard health/meta, Job Runs presence, start run + bundle checks

@@ -27,3 +27,4 @@ class JobResults(BaseModel):
     run_folder: str
     notes: Optional[Dict] = None
 
+

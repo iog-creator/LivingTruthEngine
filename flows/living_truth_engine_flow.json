@@ -4,7 +4,7 @@
   "data": {
     "nodes": [
       {
-        "id": "start-2277c6c3",
+        "id": "start-458c788f",
         "type": "ChatInput",
         "data": {
           "label": "Start",
@@ -41,7 +41,7 @@
         }
       },
       {
-        "id": "llm-de340a17",
+        "id": "llm-ee042a62",
         "type": "LLM",
         "data": {
           "label": "ChatLocalAI (Qwen3-8B)",
@@ -77,7 +77,7 @@
         }
       },
       {
-        "id": "agent-1329ec57",
+        "id": "agent-d72b4c63",
         "type": "Agent",
         "data": {
           "label": "Planner",
@@ -108,7 +108,7 @@
         }
       },
       {
-        "id": "iteration-6ead724a",
+        "id": "iteration-2c4910b5",
         "type": "Loop",
         "data": {
           "label": "Spawn SubAgents",
@@ -129,7 +129,7 @@
         }
       },
       {
-        "id": "subagent-b7596f12",
+        "id": "subagent-806e7519",
         "type": "Agent",
         "data": {
           "label": "SubAgent",
@@ -177,7 +177,7 @@
         }
       },
       {
-        "id": "writer-43ef7107",
+        "id": "writer-75b4de1d",
         "type": "Agent",
         "data": {
           "label": "Writer Agent",
@@ -208,7 +208,7 @@
         }
       },
       {
-        "id": "condition-2e7bc65d",
+        "id": "condition-45c0adba",
         "type": "Condition",
         "data": {
           "label": "More SubAgents?",
@@ -243,7 +243,7 @@
         }
       },
       {
-        "id": "loop-9be0311f",
+        "id": "loop-b8930376",
         "type": "Loop",
         "data": {
           "label": "Back to Planner",
@@ -252,7 +252,7 @@
               "target": {
                 "type": "str",
                 "required": true,
-                "value": "agent-1329ec57"
+                "value": "agent-d72b4c63"
               },
               "max_iterations": {
                 "type": "int",
@@ -269,7 +269,7 @@
         }
       },
       {
-        "id": "output-10d18f35",
+        "id": "output-f75f9174",
         "type": "ChatOutput",
         "data": {
           "label": "Generate Report",
@@ -292,65 +292,65 @@
     ],
     "edges": [
       {
-        "id": "edge-3cd4022e",
-        "source": "start-2277c6c3",
-        "target": "llm-de340a17",
+        "id": "edge-94013233",
+        "source": "start-458c788f",
+        "target": "llm-ee042a62",
         "sourceHandle": "output",
         "targetHandle": "input"
       },
       {
-        "id": "edge-c1dd5a29",
-        "source": "llm-de340a17",
-        "target": "agent-1329ec57",
+        "id": "edge-d37fb91a",
+        "source": "llm-ee042a62",
+        "target": "agent-d72b4c63",
         "sourceHandle": "output",
         "targetHandle": "model"
       },
       {
-        "id": "edge-b01f852f",
-        "source": "start-2277c6c3",
-        "target": "agent-1329ec57",
+        "id": "edge-b82aa0ef",
+        "source": "start-458c788f",
+        "target": "agent-d72b4c63",
         "sourceHandle": "output",
         "targetHandle": "input"
       },
       {
-        "id": "edge-b79a084b",
-        "source": "agent-1329ec57",
-        "target": "iteration-6ead724a",
+        "id": "edge-78677489",
+        "source": "agent-d72b4c63",
+        "target": "iteration-2c4910b5",
         "sourceHandle": "output",
         "targetHandle": "input"
       },
       {
-        "id": "edge-543851e6",
-        "source": "iteration-6ead724a",
-        "target": "writer-43ef7107",
+        "id": "edge-5cf0d88c",
+        "source": "iteration-2c4910b5",
+        "target": "writer-75b4de1d",
         "sourceHandle": "output",
         "targetHandle": "input"
       },
       {
-        "id": "edge-757e5d85",
-        "source": "writer-43ef7107",
-        "target": "condition-2e7bc65d",
+        "id": "edge-3f4ecf19",
+        "source": "writer-75b4de1d",
+        "target": "condition-45c0adba",
         "sourceHandle": "output",
         "targetHandle": "input"
       },
       {
-        "id": "edge-ebebf1bb",
-        "source": "condition-2e7bc65d",
-        "target": "loop-9be0311f",
+        "id": "edge-0c553e97",
+        "source": "condition-45c0adba",
+        "target": "loop-b8930376",
         "sourceHandle": "More subagents needed",
         "targetHandle": "input"
       },
       {
-        "id": "edge-80824149",
-        "source": "condition-2e7bc65d",
-        "target": "output-10d18f35",
+        "id": "edge-23e28297",
+        "source": "condition-45c0adba",
+        "target": "output-f75f9174",
         "sourceHandle": "Findings sufficient",
         "targetHandle": "input"
       },
       {
-        "id": "edge-efe626e5",
-        "source": "loop-9be0311f",
-        "target": "agent-1329ec57",
+        "id": "edge-aa5839c0",
+        "source": "loop-b8930376",
+        "target": "agent-d72b4c63",
         "sourceHandle": "output",
         "targetHandle": "input"
       }

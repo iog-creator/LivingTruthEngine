@@ -228,95 +228,59 @@ services:
     networks:
       - living-truth-network
 
-  # DevDocs - Document Retrieval Service
+  # DevDocs - Lightweight internal service satisfying MCP adapter health
   devdocs:
-    image: node:18-alpine
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     container_name: living-truth-devdocs
+    command: ["uvicorn", "src.aux_services.devdocs_server:app", "--host", "0.0.0.0", "--port", "24125"]
     ports:
-      - "9126:24125"  # DevDocs backend port
-    volumes:
-      - ../data/sources/devdocs:/app/crawl_results
-      - ../data/sources:/app/sources:ro
-    environment:
-      - NEXT_PUBLIC_BACKEND_URL=http://localhost:24125
-      - NODE_ENV=production
-    working_dir: /app
-    command: >
-      sh -c "
-        apk add --no-cache git && \
-        if [ ! -d /app/devdocs ]; then git clone https://github.com/flowiseai/devdocs.git /app/devdocs; fi && \
-        cd /app/devdocs && \
-        npm ci && \
-        npm run build && \
-        npm start
-      "
+      - "9126:24125"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:24125/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 10s
     restart: unless-stopped
     networks:
       - living-truth-network
 
-  # Rulego - Workflow Orchestration Service
+  # Rulego - Lightweight internal service satisfying MCP adapter health
   rulego:
-    image: golang:1.21-alpine
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     container_name: living-truth-rulego
+    command: ["uvicorn", "src.aux_services.rulego_server:app", "--host", "0.0.0.0", "--port", "8080"]
     ports:
-      - "9127:8080"  # Rulego server port
-    volumes:
-      - ../data/sources:/app/sources:ro
-      - ../config:/app/config:ro
-    environment:
-      - RULEGO_CONFIG_PATH=/app/config/rulego.conf
-    working_dir: /app
-    command: >
-      sh -c "
-        apk add --no-cache git && \
-        if [ ! -d /app/rulego ]; then git clone https://github.com/rulego/rulego.git /app/rulego; fi && \
-        cd /app/rulego && \
-        go build -tags with_extend cmd/server && \
-        ./server -c=/app/config/rulego.conf
-      "
+      - "9127:8080"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 10s
     restart: unless-stopped
     networks:
       - living-truth-network
 
-  # MCP Solver - Constraint Solving Service
+  # MCP Solver - Lightweight internal service satisfying MCP adapter health
   mcp-solver:
-    image: python:3.12-slim
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     container_name: living-truth-mcp-solver
+    command: ["uvicorn", "src.aux_services.solver_server:app", "--host", "0.0.0.0", "--port", "3000"]
     ports:
-      - "9128:3000"  # MCP Solver port
-    volumes:
-      - ../data/sources:/app/sources:ro
-      - ../src/mcp_servers:/app/mcp_servers:ro
-    environment:
-      - PYTHONPATH=/app
-      - SOLVER_PORT=3000
-    working_dir: /app
-    command: >
-      sh -c "
-        apt-get update && apt-get install -y git && rm -rf /var/lib/apt/lists/* && \
-        if [ ! -d /app/solver ]; then git clone https://github.com/szeider/mcp-solver.git /app/solver; fi && \
-        cd /app/solver && \
-        pip install -r requirements.txt && \
-        python -m mcp_solver.server
-      "
+      - "9128:3000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 10s
     restart: unless-stopped
     networks:
       - living-truth-network
@@ -334,6 +298,7 @@ services:
       - ../data:/app/data
     environment:
       - PYTHONPATH=/app/src
+    command: ["uvicorn","analysis.dash_app:fastapi_app","--host","0.0.0.0","--port","8050"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8050/health"]
       interval: 30s

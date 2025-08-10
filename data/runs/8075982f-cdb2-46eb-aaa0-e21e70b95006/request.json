@@ -1,0 +1,1 @@
+{"target": "https://www.youtube.com/@imaginationpodcastofficial", "connectors": ["youtube"], "max_items": 3, "crawl_depth": 1, "gates": {"budget_usd_per_run": 0.0}, "order": "oldest", "video_ids": null}

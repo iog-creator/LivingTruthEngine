@@ -1,9 +1,10 @@
 ---
-description: "This rule provides a comprehensive overview of the Living Truth Engine project, including architecture, components, and development guidelines."
-globs: ["**/*"]
 alwaysApply: true
+description: Rule for Project Overview
 ---
 
+
+alwaysApply: true
 # Living Truth Engine - Project Overview
 
 ## Description

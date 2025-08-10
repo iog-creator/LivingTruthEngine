@@ -161,6 +161,11 @@ class LangflowMCP:
             ConnectionError: If Langflow API is unavailable.
             HTTPException: For HTTP-related errors with appropriate status codes.
         """
+        # Check if write operations are enabled
+        if os.getenv('LANGFLOW_WRITE_ENABLED', 'false').lower() != 'true':
+            logger.warning("Langflow write operations disabled (LANGFLOW_WRITE_ENABLED=false)")
+            return {"status": "skipped", "reason": "Write operations disabled", "flow_id": flow_id or "unknown"}
+        
         if not flow_config or not isinstance(flow_config, dict):
             logger.error("Invalid flow configuration: %s", flow_config)
             raise ValueError("Flow configuration must be a non-empty dictionary")
@@ -176,9 +181,12 @@ class LangflowMCP:
                 "Content-Type": "application/json",
                 "accept": "application/json"
             }
-            url = f"{self.langflow_api_endpoint}/api/v1/flows"
+            # Langflow requires trailing slash for create endpoint
+            base_url = f"{self.langflow_api_endpoint}/api/v1/flows/"
+            url = base_url
             if flow_id:
-                url += f"/{flow_id}"
+                # Update endpoint (no trailing slash after id)
+                url = f"{self.langflow_api_endpoint}/api/v1/flows/{flow_id}"
                 method = "PATCH"
             else:
                 method = "POST"

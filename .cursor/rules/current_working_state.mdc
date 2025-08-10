@@ -1,8 +1,9 @@
 ---
-description: "Current working state of the Living Truth Engine project, documenting all operational services and their configurations"
-globs: ["**/*"]
+description: Current working state of the Living Truth Engine project, documenting
+  all operational services and their configurations
 alwaysApply: true
 ---
+
 
 # Living Truth Engine - Current Working State
 
@@ -50,8 +51,9 @@ All services are running successfully in the `LivingTruthEngine` project:
 7. **✅ Dash Dashboard**: `living-truth-dashboard` - port 8050 (healthy)
    - Interactive visualizations for survivor testimony analysis
    - Web interface: http://localhost:8050
-   - Health check: `{"status":"healthy","service":"dashboard"}`
-   - Features: Network graphs, timeline data, statistics
+   - Health: `GET /health` → `{"status":"healthy","service":"dashboard"}`
+   - Meta: `GET /meta` → `{"tabs":["Visualizations","Job Runs"], ...}`
+   - Features: Network graphs, timeline data, statistics, Job Runs tab
 
 #### **MCP Hub Server (Cursor Integration)**
 **✅ MCP Hub Server**: Single consolidated server solving 63-tool limit issue

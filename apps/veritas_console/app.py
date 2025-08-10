@@ -25,3 +25,4 @@ if job:
         res = requests.get(f"{API}/jobs/{job}/results", timeout=10).json()
         st.subheader("Results"); st.json(res)
 
+

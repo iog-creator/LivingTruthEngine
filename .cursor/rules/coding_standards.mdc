@@ -1,8 +1,9 @@
 ---
-description: "Coding standards optimized for AI-assisted development, ensuring code quality, consistency, and AI understanding"
-globs: ["**/*.py", "**/*.js", "**/*.ts", "**/*.json"]
 alwaysApply: true
+description: Rule for Coding Standards
 ---
+
+
 
 # Coding Standards for AI-Assisted Development
 

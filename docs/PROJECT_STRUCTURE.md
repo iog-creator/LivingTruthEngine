@@ -92,11 +92,15 @@ LivingTruthEngine/
 │       ├── langflow_mcp_server.py # Langflow MCP server
 │       ├── living_truth_fastmcp_server.py # Living Truth FastMCP server
 │       ├── mcp_hub_server.py # MCP Hub Server (main gateway)
-│       ├── mcp_solver_server.py # MCP Solver server
+│       ├── mcp_solver_server.py # MCP Solver MCP adapter
 │       ├── postgresql_mcp_server.py # PostgreSQL MCP server
 │       ├── rulego_mcp_server.py # Rulego MCP server
 │       ├── test_mcp_detection.py # MCP server testing
 │       └── test_mcp_server.py # MCP server unit tests
+│   ├── aux_services/         # Internal lightweight services for health checks
+│   │   ├── devdocs_server.py   # provides /health for DevDocs MCP integration
+│   │   ├── rulego_server.py    # provides /health for Rulego MCP integration
+│   │   └── solver_server.py    # provides /health for MCP Solver MCP integration
 ├── tests/                    # Test files
 │   ├── test_langflow_flow.py # Langflow flow testing
 │   ├── test_langflow_mcp_server.py # Langflow MCP server tests

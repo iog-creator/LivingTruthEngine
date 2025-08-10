@@ -32,3 +32,4 @@ def results(job_id: str):
     if not res: raise HTTPException(404, "results not available")
     return JobResults(**res)
 
+

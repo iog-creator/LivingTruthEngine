@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "last_updated": "2025-08-03",
-  "total_tools": 63,
+  "total_tools": 99,
   "servers": {
     "living_truth_fastmcp_server": {
       "description": "Living Truth Fastmcp Server MCP Server",
@@ -15,6 +15,85 @@
           "params_schema": {
             "param": {
               "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "start_veritas_run",
+          "description": "Start a verifiable Veritas run and write a .veritasrun bundle.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "start_veritas_run",
+          "params_schema": {
+            "topic": {
+              "type": "string",
+              "required": true
+            },
+            "max_docs": {
+              "type": "int",
+              "required": false,
+              "default": 10
+            },
+            "sources": {
+              "type": "list",
+              "required": false
+            }
+          }
+        },
+        {
+          "name": "get_veritas_run_status",
+          "description": "Get status for a Veritas run by run_id.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "get_veritas_run_status",
+          "params_schema": {
+            "run_id": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "list_veritas_runs",
+          "description": "List recent Veritas runs (by run_id).",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "list_veritas_runs",
+          "params_schema": {
+            "limit": {
+              "type": "int",
+              "required": false,
+              "default": 20
+            }
+          }
+        },
+        {
+          "name": "open_veritas_bundle",
+          "description": "Open a Veritas bundle and return manifest and proofs.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "open_veritas_bundle",
+          "params_schema": {
+            "run_id": {
+              "type": "string",
+              "required": true
+            }
+          }
+        },
+        {
+          "name": "reanalyze_with_gates",
+          "description": "Reanalyze a run with gating parameters (placeholder).",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "reanalyze_with_gates",
+          "params_schema": {
+            "run_id": {
+              "type": "string",
+              "required": true
+            },
+            "gates": {
+              "type": "dict",
               "required": true
             }
           }
@@ -291,6 +370,435 @@
               "required": true
             }
           }
+        },
+        {
+          "name": "process_notebook_query",
+          "description": "Process a query using the notebook agent for document analysis and research.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "process_notebook_query",
+          "params_schema": {
+            "query": {
+              "type": "string",
+              "required": true,
+              "description": "Query to process with the notebook agent"
+            }
+          }
+        },
+        {
+          "name": "generate_study_guide",
+          "description": "Generate a comprehensive study guide from available documents.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "generate_study_guide",
+          "params_schema": {}
+        },
+        {
+          "name": "summarize_documents",
+          "description": "Summarize available documents with analysis and insights.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "summarize_documents",
+          "params_schema": {}
+        },
+        {
+          "name": "conduct_web_research",
+          "description": "Conduct web research on a specific topic using available tools.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "conduct_web_research",
+          "params_schema": {
+            "topic": {
+              "type": "string",
+              "required": true,
+              "description": "Topic to research"
+            }
+          }
+        },
+        {
+          "name": "fetch_youtube_transcript",
+          "description": "Fetch and process YouTube transcript from a video URL.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "fetch_youtube_transcript",
+          "params_schema": {
+            "url": {
+              "type": "string",
+              "required": true,
+              "description": "YouTube video URL"
+            }
+          }
+        },
+        {
+          "name": "get_notebook_agent_status",
+          "description": "Get notebook agent system status and health information.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "get_notebook_agent_status",
+          "params_schema": {}
+        },
+        {
+          "name": "analyze_with_agi_integration",
+          "description": "Perform comprehensive analysis using AGI integration for advanced pattern recognition.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "analyze_with_agi_integration",
+          "params_schema": {
+            "query": {
+              "type": "string",
+              "required": true,
+              "description": "Query to analyze with AGI integration"
+            },
+            "analysis_type": {
+              "type": "string",
+              "required": false,
+              "default": "comprehensive",
+              "description": "Type of analysis (comprehensive, biblical, pattern, creative)"
+            }
+          }
+        },
+        {
+          "name": "get_agi_components_status",
+          "description": "Get status of all AGI system components and their capabilities.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "get_agi_components_status",
+          "params_schema": {}
+        },
+        {
+          "name": "get_agi_integration_status",
+          "description": "Get overall AGI integration status and system health.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "get_agi_integration_status",
+          "params_schema": {}
+        },
+        {
+          "name": "cross_validate_findings",
+          "description": "Cross-validate findings between Living Truth Engine and AGI system.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "cross_validate_findings",
+          "params_schema": {
+            "query": {
+              "type": "string",
+              "required": true,
+              "description": "Query to cross-validate"
+            }
+          }
+        },
+        {
+          "name": "generate_integrated_insights",
+          "description": "Generate integrated insights combining Living Truth Engine and AGI analysis.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "generate_integrated_insights",
+          "params_schema": {
+            "query": {
+              "type": "string",
+              "required": true,
+              "description": "Query to generate insights for"
+            }
+          }
+        },
+        {
+          "name": "archive_youtube_channel",
+          "description": "Archive an entire YouTube channel by fetching all video transcripts.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "archive_youtube_channel",
+          "params_schema": {
+            "channel_url": {
+              "type": "string",
+              "required": true,
+              "description": "YouTube channel URL to archive"
+            },
+            "max_videos": {
+              "type": "int",
+              "required": false,
+              "description": "Maximum number of videos to archive (optional)"
+            }
+          }
+        },
+        {
+          "name": "build_channel_knowledge_base",
+          "description": "Build a comprehensive knowledge base from archived channel videos.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "build_channel_knowledge_base",
+          "params_schema": {}
+        },
+        {
+          "name": "query_channel_knowledge",
+          "description": "Query the archived channel knowledge using RAG.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "query_channel_knowledge",
+          "params_schema": {
+            "query": {
+              "type": "string",
+              "required": true,
+              "description": "Query to search in channel knowledge base"
+            }
+          }
+        },
+        {
+          "name": "get_channel_archive_status",
+          "description": "Get status of channel archive.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "get_channel_archive_status",
+          "params_schema": {}
+        },
+        {
+          "name": "list_archived_videos",
+          "description": "List all archived videos with their status.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "list_archived_videos",
+          "params_schema": {}
+        },
+        {
+          "name": "get_video_transcript",
+          "description": "Get transcript for a specific video.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "get_video_transcript",
+          "params_schema": {
+            "video_id": {
+              "type": "string",
+              "required": true,
+              "description": "YouTube video ID to get transcript for"
+            }
+          }
+        },
+        {
+          "name": "create_3d_network_visualization",
+          "description": "Create 3D network visualization using advanced visualizer.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "create_3d_network_visualization",
+          "params_schema": {
+            "graph_data": {
+              "type": "dict",
+              "required": true,
+              "description": "Graph data with nodes and edges for 3D visualization"
+            }
+          }
+        },
+        {
+          "name": "create_centrality_analysis",
+          "description": "Create centrality analysis visualization.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "create_centrality_analysis",
+          "params_schema": {
+            "graph_data": {
+              "type": "dict",
+              "required": true,
+              "description": "Graph data for centrality analysis"
+            }
+          }
+        },
+        {
+          "name": "create_timeline_visualization",
+          "description": "Create timeline visualization.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "create_timeline_visualization",
+          "params_schema": {
+            "timeline_data": {
+              "type": "list",
+              "required": true,
+              "description": "Timeline data for visualization"
+            }
+          }
+        },
+        {
+          "name": "create_claims_verification_dashboard",
+          "description": "Create claims verification dashboard.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "create_claims_verification_dashboard",
+          "params_schema": {
+            "claims_data": {
+              "type": "list",
+              "required": true,
+              "description": "Claims data for verification dashboard"
+            }
+          }
+        },
+        {
+          "name": "get_visualization_status",
+          "description": "Get advanced visualization system status.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "get_visualization_status",
+          "params_schema": {}
+        },
+        {
+          "name": "search_biblical_evidence",
+          "description": "Search for Biblical evidence related to the query using HybridRetriever.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "search_biblical_evidence",
+          "params_schema": {
+            "query": {
+              "type": "string",
+              "required": true,
+              "description": "Query to search for Biblical evidence"
+            }
+          }
+        },
+        {
+          "name": "search_survivor_testimonies",
+          "description": "Search for survivor testimonies related to the query using HybridRetriever.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "search_survivor_testimonies",
+          "params_schema": {
+            "query": {
+              "type": "string",
+              "required": true,
+              "description": "Query to search for survivor testimonies"
+            }
+          }
+        },
+        {
+          "name": "extract_entities_from_text",
+          "description": "Extract entities from text using ResearchAnalysisSystem.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "extract_entities_from_text",
+          "params_schema": {
+            "text": {
+              "type": "string",
+              "required": true,
+              "description": "Text to extract entities from"
+            }
+          }
+        },
+        {
+          "name": "extract_claims_from_transcript",
+          "description": "Extract claims from transcript using ResearchAnalysisSystem.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "extract_claims_from_transcript",
+          "params_schema": {
+            "transcript_data": {
+              "type": "dict",
+              "required": true,
+              "description": "Transcript data to extract claims from"
+            }
+          }
+        },
+        {
+          "name": "get_migrated_functionality_status",
+          "description": "Get status of all migrated living_truth_agent functionality.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "get_migrated_functionality_status",
+          "params_schema": {}
+        },
+        {
+          "name": "test_migrated_components",
+          "description": "Run comprehensive test of all migrated living_truth_agent components.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "test_migrated_components",
+          "params_schema": {}
+        },
+        {
+          "name": "validate_cursor_rules",
+          "description": "Validate all .mdc files in .cursor/rules/ for proper frontmatter.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "validate_cursor_rules",
+          "params_schema": {}
+        },
+        {
+          "name": "fix_cursor_rule_frontmatter",
+          "description": "Fix frontmatter for a specific .mdc file.",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "fix_cursor_rule_frontmatter",
+          "params_schema": {
+            "filename": {
+              "type": "string",
+              "required": true,
+              "description": "Name of the .mdc file to fix"
+            }
+          }
+        }
+      ]
+    },
+    "mcp_hub_server": {
+      "description": "MCP Hub Server - Consolidated tool gateway",
+      "tools": [
+        {
+          "name": "execute_notebook_tool",
+          "description": "Execute Notebook Agent tools with enhanced error handling.",
+          "server": "mcp_hub_server",
+          "module": "src.mcp_servers.mcp_hub_server",
+          "function": "execute_notebook_tool",
+          "params_schema": {
+            "tool_name": {
+              "type": "string",
+              "required": true,
+              "description": "Name of the notebook tool to execute"
+            },
+            "params": {
+              "type": "dict",
+              "required": true,
+              "description": "Parameters for the tool"
+            }
+          }
+        },
+        {
+          "name": "execute_agi_tool",
+          "description": "Execute AGI Integration tools with enhanced error handling.",
+          "server": "mcp_hub_server",
+          "module": "src.mcp_servers.mcp_hub_server",
+          "function": "execute_agi_tool",
+          "params_schema": {
+            "tool_name": {
+              "type": "string",
+              "required": true,
+              "description": "Name of the AGI tool to execute"
+            },
+            "params": {
+              "type": "dict",
+              "required": true,
+              "description": "Parameters for the tool"
+            }
+          }
+        },
+        {
+          "name": "execute_channel_archiver_tool",
+          "description": "Execute Channel Archiver tools with enhanced error handling.",
+          "server": "mcp_hub_server",
+          "module": "src.mcp_servers.mcp_hub_server",
+          "function": "execute_channel_archiver_tool",
+          "params_schema": {
+            "tool_name": {
+              "type": "string",
+              "required": true,
+              "description": "Name of the channel archiver tool to execute"
+            },
+            "params": {
+              "type": "dict",
+              "required": true,
+              "description": "Parameters for the tool"
+            }
+          }
+        },
+        {
+          "name": "get_phase2_integration_status",
+          "description": "Get comprehensive Phase 2 integration status.",
+          "server": "mcp_hub_server",
+          "module": "src.mcp_servers.mcp_hub_server",
+          "function": "get_phase2_integration_status",
+          "params_schema": {}
         }
       ]
     },

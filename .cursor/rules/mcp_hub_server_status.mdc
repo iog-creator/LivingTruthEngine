@@ -1,3 +1,14 @@
+---
+description: This rule documents the current operational status of the MCP Hub Server,
+  including available tools, usage patterns, and troubleshooting information.
+globs:
+- '**/mcp*.py'
+- '**/mcp*.json'
+- '**/src/mcp_servers/**'
+alwaysApply: false
+---
+
+
 # MCP Hub Server - Current Status and Usage
 
 ## Description
@@ -163,7 +174,9 @@ mcp_mcp_hub_server_delete_tool("old_tool")
 - **@mcp_hub_server.mdc** - Detailed hub server architecture
 - **@mcp_server_integration.mdc** - Integration patterns and best practices
 - **@project_overview.mdc** - Project architecture overview
-description: "Current MCP Hub Server status, tool availability, and usage patterns for the Living Truth Engine"
-globs: ["**/*.py", "**/mcp_servers/**/*", "**/.cursor/mcp.json", "**/config/tool_registry.json"]
-alwaysApply: true
----
+
+## 📚 **Related Rules**
+- **@current_working_state.mdc** - Overall system status
+- **@mcp_hub_server.mdc** - Detailed hub server architecture
+- **@mcp_server_integration.mdc** - Integration patterns and best practices
+- **@project_overview.mdc** - Project architecture overview

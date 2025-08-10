@@ -1,0 +1,35 @@
+# Veritas Generalist Ingestion Configuration Flags
+# Phase 7 Implementation - Living Truth Engine
+
+# Network and External Service Controls
+HF_BURST = "off"           # Disable Hugging Face network bursts by default
+OCR_REQUIRED = "false"     # Disable OCR by default for performance
+PII_SCRUB = "standard"     # Enable standard PII scrubbing
+
+# Ingestion Limits and Controls
+MAX_DOCS_DEFAULT = 10      # Default maximum documents per run
+MAX_BYTES_PER_DOC = 1048576  # 1MB limit per document
+MAX_RUN_DURATION = 300     # 5 minute timeout for ingestion runs
+
+# Bundle and Provenance Settings
+BUNDLE_COMPRESSION = "false"  # Disable compression for easier inspection
+MERKLE_TREE_DEPTH = 16     # Maximum depth for merkle tree construction
+PROOF_FORMAT = "sha256"    # Use SHA-256 for document proofs
+
+# Source Type Controls
+ENABLE_WEB_FETCH = "true"  # Enable web content fetching
+ENABLE_PDF_PROCESSING = "true"  # Enable PDF processing
+ENABLE_YOUTUBE_FETCH = "true"   # Enable YouTube content fetching
+
+# Quality and Validation
+VALIDATE_CONTENT = "true"  # Enable content validation
+CHECK_DUPLICATES = "true"  # Check for duplicate content
+MIN_CONTENT_LENGTH = 100   # Minimum content length in characters
+
+# Error Handling
+FAIL_ON_ERROR = "false"    # Continue processing on individual document errors
+LOG_ERRORS = "true"        # Log all errors for debugging
+RETRY_FAILED = "false"     # Don't retry failed fetches
+
+
+

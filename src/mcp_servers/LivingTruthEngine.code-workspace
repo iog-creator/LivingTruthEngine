@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../../living_truth_agent"
+		}
+	],
+	"settings": {
+		"terminal.integrated.defaultProfile.linux": "bash",
+		"terminal.integrated.profiles.linux": {
+			"bash": {
+				"path": "/usr/bin/bash",
+				"args": [
+					"-c",
+					"source /home/mccoy/Projects/NotebookLM/LivingTruthEngine/living_venv/bin/activate && exec bash"
+				]
+			}
+		}
+	}
+}

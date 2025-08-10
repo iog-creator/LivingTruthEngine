@@ -1,0 +1,7 @@
+---
+alwaysApply: true
+description: Rule for Cursor Rule Management
+globs:
+- '**/*'
+---
+
