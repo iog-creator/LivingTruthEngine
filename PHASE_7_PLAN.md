@@ -1,4 +1,3 @@
-Great—greenlight for Phase 7. Here’s a **ready‑to‑paste plan for Cursor** that cleans up Phase‑6 leftovers and moves straight into the generalist ingestion runner + Job Runs UI. It’s written exactly how Cursor likes it (explicit files, diffs, commands, acceptance criteria).
 
 ---
 

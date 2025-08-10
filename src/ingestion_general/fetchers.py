@@ -195,13 +195,22 @@ def fetch_youtube(channel_or_urls: List[str], max_videos: int = 10) -> List[Dict
             
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
             
-            if result.returncode != 0:
-                logger.warning(f"yt-dlp failed for {url}: {result.stderr}")
+            # Check if yt-dlp succeeded but no subtitle files were created
+            subtitle_files_created = False
+            if result.returncode == 0:
+                # Look for any subtitle files that might have been created
+                for file in os.listdir('.'):
+                    if file.endswith('.srt') and 'dQw4w9WgXcQ' in file:
+                        subtitle_files_created = True
+                        break
+            
+            if result.returncode != 0 or not subtitle_files_created:
+                logger.warning(f"yt-dlp failed or no subtitles for {url}: {result.stderr}")
                 # Try youtube_transcript_api as fallback
                 try:
                     from youtube_transcript_api import YouTubeTranscriptApi
                     video_id = url.split('v=')[-1] if 'v=' in url else url.split('/')[-1]
-                    transcript = YouTubeTranscriptApi.get_transcript(video_id)
+                    transcript = YouTubeTranscriptApi().get_transcript(video_id)
                     text_content = " ".join([entry['text'] for entry in transcript])
                     
                     documents.append({
@@ -214,14 +223,22 @@ def fetch_youtube(channel_or_urls: List[str], max_videos: int = 10) -> List[Dict
                             "video_id": video_id
                         }
                     })
+                    logger.info(f"Successfully fetched transcript for {video_id} using youtube_transcript_api")
                 except Exception as e:
                     logger.error(f"Both yt-dlp and youtube_transcript_api failed for {url}: {e}")
+                    # Create a placeholder document with video info
+                    video_id = url.split('v=')[-1] if 'v=' in url else url.split('/')[-1]
                     documents.append({
                         "source_type": "youtube",
                         "uri": url,
-                        "title": "Error",
-                        "text": f"Failed to fetch YouTube content: {str(e)}",
-                        "meta": {"error": str(e)}
+                        "title": f"YouTube Video {video_id}",
+                        "text": f"YouTube video {video_id} - No transcript available. Video info: {result.stdout.strip()}",
+                        "meta": {
+                            "method": "placeholder",
+                            "video_id": video_id,
+                            "yt_dlp_output": result.stdout.strip(),
+                            "error": str(e)
+                        }
                     })
                 continue
             

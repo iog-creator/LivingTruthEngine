@@ -24,15 +24,19 @@ logs_dir = project_root / 'data' / 'outputs' / 'logs'
 logs_dir.mkdir(parents=True, exist_ok=True)
 
 # Setup logging
+file_handler = logging.FileHandler(logs_dir / 'living_truth_fastmcp.log')
+stream_handler = logging.StreamHandler()
+
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.StreamHandler(),
-        logging.FileHandler(logs_dir / 'living_truth_fastmcp.log')
-    ]
+    handlers=[stream_handler, file_handler]
 )
 logger = logging.getLogger(__name__)
+
+# Store handlers for proper cleanup
+logger.file_handler = file_handler
+logger.stream_handler = stream_handler
 
 # Create FastMCP instance
 mcp = FastMCP()
@@ -1027,11 +1031,36 @@ class LivingTruthEngine:
             logger.error(f"Get video transcript error: {e}")
             return f"❌ Get video transcript error: {str(e)}"
 
-    # Veritas generalist ingestion API
-    def start_veritas_run(self, topic: str, max_docs: int = 10, sources: Optional[List[str]] = None) -> str:
+    # Veritas generalist ingestion API - Phase 8
+    def start_veritas_run(
+        self, 
+        topic: str, 
+        channel_url: Optional[str] = None,
+        selection: str = "oldest",
+        max_videos: int = 10,
+        crawl_depth: int = 1,
+        allow_domains: Optional[List[str]] = None,
+        deny_domains: Optional[List[str]] = None,
+        transcript_pref: str = "yt_api",
+        ocr_mode: str = "off",
+        auto_retry_attempts: int = 2,
+        sources: Optional[List[str]] = None
+    ) -> str:
         if not self.veritas_runner:
             return "❌ VeritasRunner not initialized"
-        status = self.veritas_runner.start(topic=topic, max_docs=max_docs, sources=sources or ["youtube","web","pdf"])
+        status = self.veritas_runner.start(
+            topic=topic,
+            channel_url=channel_url,
+            selection=selection,
+            max_videos=max_videos,
+            crawl_depth=crawl_depth,
+            allow_domains=allow_domains,
+            deny_domains=deny_domains,
+            transcript_pref=transcript_pref,
+            ocr_mode=ocr_mode,
+            auto_retry_attempts=auto_retry_attempts,
+            sources=sources or ["youtube"]
+        )
         return json.dumps(status.__dict__, indent=2)
 
     def get_veritas_run_status(self, run_id: str) -> str:
@@ -1474,11 +1503,27 @@ def get_video_transcript(video_id: str) -> str:
     """Get transcript for a specific video."""
     return engine.get_video_transcript(video_id)
 
-# Veritas tools (Phase 6)
+# Veritas tools (Phase 8)
 @mcp.tool()
-def start_veritas_run(topic: str, max_docs: int = 10, sources: Optional[List[str]] = None) -> str:
-    """Start a verifiable Veritas run and write a .veritasrun bundle under data/outputs/runs."""
-    return engine.start_veritas_run(topic, max_docs, sources)
+def start_veritas_run(
+    topic: str, 
+    channel_url: Optional[str] = None,
+    selection: str = "oldest",
+    max_videos: int = 10,
+    crawl_depth: int = 1,
+    allow_domains: Optional[List[str]] = None,
+    deny_domains: Optional[List[str]] = None,
+    transcript_pref: str = "yt_api",
+    ocr_mode: str = "off",
+    auto_retry_attempts: int = 2,
+    sources: Optional[List[str]] = None
+) -> str:
+    """Start a Phase 8 verifiable Veritas run with flexible parameters and write a .veritasrun bundle."""
+    return engine.start_veritas_run(
+        topic, channel_url, selection, max_videos, crawl_depth,
+        allow_domains, deny_domains, transcript_pref, ocr_mode,
+        auto_retry_attempts, sources
+    )
 
 @mcp.tool()
 def get_veritas_run_status(run_id: str) -> str:

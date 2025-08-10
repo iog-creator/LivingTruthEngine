@@ -1,5 +1,5 @@
 # Veritas Generalist Ingestion Configuration Flags
-# Phase 7 Implementation - Living Truth Engine
+# Phase 8 Implementation - Living Truth Engine
 
 # Network and External Service Controls
 HF_BURST = "off"           # Disable Hugging Face network bursts by default
@@ -16,20 +16,38 @@ BUNDLE_COMPRESSION = "false"  # Disable compression for easier inspection
 MERKLE_TREE_DEPTH = 16     # Maximum depth for merkle tree construction
 PROOF_FORMAT = "sha256"    # Use SHA-256 for document proofs
 
-# Source Type Controls
-ENABLE_WEB_FETCH = "true"  # Enable web content fetching
-ENABLE_PDF_PROCESSING = "true"  # Enable PDF processing
-ENABLE_YOUTUBE_FETCH = "true"   # Enable YouTube content fetching
+# Phase 8: Flexible Run Parameters
+[ingestion]
+default_max_videos = 10
+default_selection = "oldest"  # oldest|latest|by_date_range|ids
+crawl_depth = 1              # 0..3 levels of link following
+allow_domains = ["youtube.com", "youtu.be"]
+deny_domains = []
+transcript_pref = "yt_api"   # yt_api|whisper_local|both
+max_pages_per_run = 50       # Cap on total pages fetched
+max_pages_per_domain = 10    # Cap per domain to prevent runaway
 
-# Quality and Validation
-VALIDATE_CONTENT = "true"  # Enable content validation
-CHECK_DUPLICATES = "true"  # Check for duplicate content
-MIN_CONTENT_LENGTH = 100   # Minimum content length in characters
+# Phase 8: OCR Pipeline Configuration
+[ocr]
+mode = "off"                 # off|auto|manual|auto_retry
+suspect_min_chars = 800      # Minimum characters to consider text extraction successful
+auto_retry_attempts = 2      # Number of OCR attempts for suspect PDFs
+tesseract_langs = "eng"      # Tesseract language codes
+manual_queue_limit = 100     # Maximum files in manual OCR queue
 
-# Error Handling
-FAIL_ON_ERROR = "false"    # Continue processing on individual document errors
-LOG_ERRORS = "true"        # Log all errors for debugging
-RETRY_FAILED = "false"     # Don't retry failed fetches
+# Phase 8: YouTube Channel Processing
+[youtube]
+default_channel = "https://www.youtube.com/@imaginationpodcastofficial"
+extract_flat_timeout = 30    # Timeout for yt-dlp extract_flat operations
+transcript_timeout = 60      # Timeout for transcript fetching
+max_video_age_days = 3650    # Maximum age of videos to process (10 years)
+
+# Phase 8: Web Crawling Configuration
+[web]
+user_agent = "LivingTruthEngine/1.0 (Phase 8)"
+request_timeout = 30         # Timeout for web requests
+max_redirects = 5            # Maximum redirects to follow
+content_type_whitelist = ["text/html", "application/pdf", "text/plain"]
 
 
 

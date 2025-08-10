@@ -5,6 +5,7 @@ Migrated from living_truth_agent to LivingTruthEngine architecture
 """
 
 import os
+import toml
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -213,6 +214,88 @@ class HotswapConfig:
     ROLLBACK_ENABLED: bool = True
     MAX_VERSIONS: int = 10
 
+@dataclass
+class VeritasFlags:
+    """Phase 8: Veritas Generalist Ingestion Configuration"""
+    
+    # Ingestion parameters
+    default_max_videos: int = 10
+    default_selection: str = "oldest"  # oldest|latest|by_date_range|ids
+    crawl_depth: int = 1              # 0..3 levels of link following
+    allow_domains: List[str] = field(default_factory=lambda: ["youtube.com", "youtu.be"])
+    deny_domains: List[str] = field(default_factory=list)
+    transcript_pref: str = "yt_api"   # yt_api|whisper_local|both
+    max_pages_per_run: int = 50       # Cap on total pages fetched
+    max_pages_per_domain: int = 10    # Cap per domain to prevent runaway
+    
+    # OCR configuration
+    ocr_mode: str = "off"             # off|auto|manual|auto_retry
+    suspect_min_chars: int = 800      # Minimum characters to consider text extraction successful
+    auto_retry_attempts: int = 2      # Number of OCR attempts for suspect PDFs
+    tesseract_langs: str = "eng"      # Tesseract language codes
+    manual_queue_limit: int = 100     # Maximum files in manual OCR queue
+    
+    # YouTube configuration
+    default_channel: str = "https://www.youtube.com/@imaginationpodcastofficial"
+    extract_flat_timeout: int = 30    # Timeout for yt-dlp extract_flat operations
+    transcript_timeout: int = 60      # Timeout for transcript fetching
+    max_video_age_days: int = 3650    # Maximum age of videos to process (10 years)
+    
+    # Web crawling configuration
+    user_agent: str = "LivingTruthEngine/1.0 (Phase 8)"
+    request_timeout: int = 30         # Timeout for web requests
+    max_redirects: int = 5            # Maximum redirects to follow
+    content_type_whitelist: List[str] = field(default_factory=lambda: [
+        "text/html", "application/pdf", "text/plain"
+    ])
+    
+    @classmethod
+    def from_toml(cls, toml_path: str = "config/veritas_flags.toml") -> "VeritasFlags":
+        """Load VeritasFlags from TOML configuration file"""
+        try:
+            config_path = Path(toml_path)
+            if config_path.exists():
+                config_data = toml.load(config_path)
+                
+                # Extract ingestion section
+                ingestion = config_data.get("ingestion", {})
+                ocr = config_data.get("ocr", {})
+                youtube = config_data.get("youtube", {})
+                web = config_data.get("web", {})
+                
+                return cls(
+                    default_max_videos=ingestion.get("default_max_videos", 10),
+                    default_selection=ingestion.get("default_selection", "oldest"),
+                    crawl_depth=ingestion.get("crawl_depth", 1),
+                    allow_domains=ingestion.get("allow_domains", ["youtube.com", "youtu.be"]),
+                    deny_domains=ingestion.get("deny_domains", []),
+                    transcript_pref=ingestion.get("transcript_pref", "yt_api"),
+                    max_pages_per_run=ingestion.get("max_pages_per_run", 50),
+                    max_pages_per_domain=ingestion.get("max_pages_per_domain", 10),
+                    
+                    ocr_mode=ocr.get("mode", "off"),
+                    suspect_min_chars=ocr.get("suspect_min_chars", 800),
+                    auto_retry_attempts=ocr.get("auto_retry_attempts", 2),
+                    tesseract_langs=ocr.get("tesseract_langs", "eng"),
+                    manual_queue_limit=ocr.get("manual_queue_limit", 100),
+                    
+                    default_channel=youtube.get("default_channel", "https://www.youtube.com/@imaginationpodcastofficial"),
+                    extract_flat_timeout=youtube.get("extract_flat_timeout", 30),
+                    transcript_timeout=youtube.get("transcript_timeout", 60),
+                    max_video_age_days=youtube.get("max_video_age_days", 3650),
+                    
+                    user_agent=web.get("user_agent", "LivingTruthEngine/1.0 (Phase 8)"),
+                    request_timeout=web.get("request_timeout", 30),
+                    max_redirects=web.get("max_redirects", 5),
+                    content_type_whitelist=web.get("content_type_whitelist", ["text/html", "application/pdf", "text/plain"])
+                )
+            else:
+                print(f"Warning: VeritasFlags TOML file not found at {toml_path}, using defaults")
+                return cls()
+        except Exception as e:
+            print(f"Error loading VeritasFlags from {toml_path}: {e}, using defaults")
+            return cls()
+
 class LivingTruthConfig:
     """Main configuration class for Living Truth Engine"""
     
@@ -226,6 +309,7 @@ class LivingTruthConfig:
         self.security = SecurityConfig()
         self.monitoring = MonitoringConfig()
         self.hotswap = HotswapConfig()
+        self.veritas_flags = VeritasFlags.from_toml()
         
         # LivingTruthEngine specific paths
         self.PROJECT_ROOT = Path(__file__).parent.parent.parent

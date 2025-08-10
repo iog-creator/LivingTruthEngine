@@ -31,15 +31,19 @@ from src.config import get_config
 
 # Setup logging
 config = get_config()
+file_handler = logging.FileHandler(config.LOGS_DIR / "retrieval.log")
+stream_handler = logging.StreamHandler()
+
 logging.basicConfig(
     level=getattr(logging, config.monitoring.LOG_LEVEL),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(config.LOGS_DIR / "retrieval.log"),
-        logging.StreamHandler()
-    ]
+    handlers=[file_handler, stream_handler]
 )
 logger = logging.getLogger(__name__)
+
+# Store handlers for proper cleanup
+logger.file_handler = file_handler
+logger.stream_handler = stream_handler
 
 # Reranking imports
 try:

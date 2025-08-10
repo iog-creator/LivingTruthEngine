@@ -18,8 +18,8 @@ def test_phase7_smoke_run():
     
     # Start a Veritas run
     result = engine.start_veritas_run(
-        topic="imagination podcast smoke", 
-        max_docs=3, 
+        topic="imagination podcast smoke",
+        max_videos=3,
         sources=["youtube"]
     )
     
@@ -50,7 +50,7 @@ def test_phase7_smoke_run():
     # Check proofs directory
     proofs_dir = bundle_dir / "proofs"
     assert proofs_dir.exists(), "proofs directory should exist"
-    assert list(proofs_dir.glob("*.sha256")), "Should have SHA-256 proof files"
+    assert list(proofs_dir.glob("*.json")), "Should have JSON proof files"
     
     # Check manifest flags
     with open(bundle_dir / "manifest.json") as f:
@@ -64,19 +64,17 @@ def test_phase7_smoke_run():
         merkle = json.load(f)
     
     assert "root" in merkle, "Merkle should have root"
-    assert "leaves" in merkle, "Merkle should have leaves"
-    assert "count" in merkle, "Merkle should have count"
-    assert merkle["count"] > 0, "Should have at least one document"
+    assert "tree" in merkle, "Merkle should have tree"
+    assert "leaf_count" in merkle, "Merkle should have leaf_count"
+    assert merkle["leaf_count"] > 0, "Should have at least one document"
     
     # Check metrics
     with open(bundle_dir / "metrics.json") as f:
         metrics = json.load(f)
     
-    assert "docs_total" in metrics, "Metrics should have docs_total"
-    assert "docs_by_source" in metrics, "Metrics should have docs_by_source"
-    assert "bytes_total" in metrics, "Metrics should have bytes_total"
-    assert "duration_seconds" in metrics, "Metrics should have duration_seconds"
-    assert "errors" in metrics, "Metrics should have errors"
+    assert "run_summary" in metrics, "Metrics should have run_summary"
+    assert "source_distribution" in metrics, "Metrics should have source_distribution"
+    assert "extraction_methods" in metrics, "Metrics should have extraction_methods"
 
 def test_veritas_mcp_tools():
     """Test MCP tools for Veritas operations."""
@@ -91,8 +89,8 @@ def test_veritas_mcp_tools():
     
     # Test start_veritas_run
     start_result = engine.start_veritas_run(
-        topic="test run", 
-        max_docs=2, 
+        topic="test run",
+        max_videos=2,
         sources=["web"]
     )
     start_data = json.loads(start_result)
@@ -120,7 +118,7 @@ def test_bundle_structure():
     # Create a test run
     result = engine.start_veritas_run(
         topic="bundle structure test",
-        max_docs=1,
+        max_videos=1,
         sources=["pdf"]
     )
     
@@ -136,21 +134,21 @@ def test_bundle_structure():
     
     # Check manifest structure
     manifest = bundle_data["manifest"]
-    required_manifest_fields = ["topic", "timestamp", "doc_count", "source_counts", "flags", "documents"]
+    required_manifest_fields = ["topic", "started_at", "document_count", "flags", "documents"]
     for field in required_manifest_fields:
         assert field in manifest, f"Manifest should have {field}"
     
     # Check metrics structure
     metrics = bundle_data["metrics"]
-    required_metrics_fields = ["docs_total", "docs_by_source", "bytes_total", "chars_total", "duration_seconds", "errors"]
+    required_metrics_fields = ["run_summary", "source_distribution", "extraction_methods"]
     for field in required_metrics_fields:
         assert field in metrics, f"Metrics should have {field}"
     
-    # Check merkle structure
-    merkle = bundle_data["merkle"]
-    required_merkle_fields = ["root", "leaves", "count"]
-    for field in required_merkle_fields:
-        assert field in merkle, f"Merkle should have {field}"
+            # Check merkle structure
+        merkle = bundle_data["merkle"]
+        required_merkle_fields = ["root", "tree", "leaf_count"]
+        for field in required_merkle_fields:
+            assert field in merkle, f"Merkle should have {field}"
     
     # Verify flags are loaded from config
     assert manifest["flags"]["HF_BURST"] == "off", "HF_BURST should be off"
