@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  veritas_api:
+    build: ./apps/veritas_api
+    environment:
+      - REDIS_URL=${REDIS_URL:-redis://living-truth-redis:6379/0}
+      - DATA_ROOT=/app/data
+      - RUNS_ROOT=/app/data/runs
+    volumes:
+      - ./apps/veritas_api:/app
+      - ./data:/app/data
+    ports: ["8080:8080"]
+    depends_on:
+      - living-truth-redis
+
+  veritas_worker:
+    build: ./apps/veritas_worker
+    environment:
+      - REDIS_URL=${REDIS_URL:-redis://living-truth-redis:6379/0}
+      - DATA_ROOT=/app/data
+      - RUNS_ROOT=/app/data/runs
+    volumes:
+      - ./apps/veritas_worker:/app
+      - ./data:/app/data
+    depends_on:
+      - veritas_api
+      - living-truth-redis
+
+  veritas_console:
+    build: ./apps/veritas_console
+    environment:
+      - API_BASE=http://veritas_api:8080
+    volumes:
+      - ./apps/veritas_console:/app
+      - ./data:/app/data
+    ports: ["8501:8501"]
+    depends_on:
+      - veritas_api
+

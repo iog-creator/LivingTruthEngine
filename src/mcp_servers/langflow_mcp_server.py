@@ -179,10 +179,9 @@ class LangflowMCP:
             url = f"{self.langflow_api_endpoint}/api/v1/flows"
             if flow_id:
                 url += f"/{flow_id}"
-                method = "PATCH"  # Verified update method
+                method = "PATCH"
             else:
-                url += "/"  # Add trailing slash for POST requests
-                method = "POST"  # Verified create method
+                method = "POST"
 
             logger.debug("Sending %s request to %s with config: %s", method, url, flow_config)
             response = requests.request(method, url, json=flow_config, headers=headers, timeout=10)

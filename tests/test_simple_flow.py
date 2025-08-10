@@ -188,7 +188,7 @@ def create_simple_chat_flow():
         print(f"❌ Error creating flow: {e}")
         return None
 
-def test_flow_execution(flow_id):
+def run_flow_execution(flow_id):
     """Test executing the created flow"""
     if not flow_id:
         print("⚠️  No flow ID provided, skipping execution test")
@@ -270,7 +270,7 @@ def main():
     # Test 4: Execute flow (if created successfully)
     if flow_id:
         print("\n" + "=" * 50)
-        test_flow_execution(flow_id)
+        run_flow_execution(flow_id)
     
     # Summary
     print("\n" + "=" * 50)
