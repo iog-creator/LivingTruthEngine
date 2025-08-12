@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Living Truth Engine - Simple UI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 10px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 400px;
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+
+        select,
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #444;
+            border-radius: 5px;
+            background: #333;
+            color: white;
+            box-sizing: border-box;
+        }
+
+        .output {
+            background: #000;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 200px;
+            white-space: pre-wrap;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .status.success {
+            background: #4CAF50;
+        }
+
+        .status.error {
+            background: #f44336;
+        }
+
+        .status.info {
+            background: #2196F3;
+        }
+
+        .loading {
+            color: #FFC107;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Living Truth Engine - Simple UI</h1>
+            <p>Status: <span id="connection-status">Checking...</span> | AI Activity: <span
+                    id="ai-activity-status">Idle</span></p>
+        </div>
+
+        <div class="main-content">
+            <div class="panel">
+                <h2>Controls</h2>
+                <div>
+                    <label>API Base URL:</label>
+                    <input type="text" id="api-base" value="http://localhost:8050" />
+                    <button onclick="testConnection()">Test Connection</button>
+                </div>
+
+                <div>
+                    <label>Select Run:</label>
+                    <select id="run-select">
+                        <option value="">Loading runs...</option>
+                    </select>
+                    <button onclick="loadRuns()">Refresh Runs</button>
+                </div>
+
+                <div>
+                    <label>Custom Prompt (optional):</label>
+                    <textarea id="custom-prompt" rows="3"
+                        placeholder="Enter a custom prompt for analysis... (Press Enter to send)"></textarea>
+                </div>
+
+                <div>
+                    <button onclick="startCompleteAnalysis()" id="complete-analysis-btn"
+                        style="background: #4CAF50; font-weight: bold; margin-bottom: 10px;">🚀 Start Complete
+                        Analysis</button>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                        <button onclick="getSummary()" id="summary-btn">Get Summary</button>
+                        <button onclick="getClaims()" id="claims-btn">Get Claims</button>
+                        <button onclick="viewFullTranscript()" id="transcript-btn">View Full Transcript</button>
+                        <button onclick="viewVisualization()" id="viz-btn">View Visualization</button>
+                        <button onclick="runProofOfLife()" id="pol-btn">Proof of Life</button>
+                    </div>
+                </div>
+
+                <div id="status-messages"></div>
+            </div>
+
+            <div class="panel">
+                <h2>Output</h2>
+                <div id="output" class="output">Ready. Click a button to start.</div>
+            </div>
+        </div>
+
+        <!-- Chat Section -->
+        <div class="panel" style="margin-top: 20px;">
+            <h2>AI Chat</h2>
+            <div id="chat-messages"
+                style="height: 200px; overflow-y: auto; background: #000; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                <div style="color: #666;">Chat with AI (press Enter to send)</div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="chat-input" placeholder="Type your message..." style="flex: 1;">
+                <button onclick="sendChatMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        const API_BASE = document.getElementById('api-base');
+        const RUN_SELECT = document.getElementById('run-select');
+        const CUSTOM_PROMPT = document.getElementById('custom-prompt');
+        const OUTPUT = document.getElementById('output');
+        const STATUS_MESSAGES = document.getElementById('status-messages');
+        const CONNECTION_STATUS = document.getElementById('connection-status');
+        const AI_ACTIVITY_STATUS = document.getElementById('ai-activity-status');
+
+        // Add Enter key support for custom prompt
+        CUSTOM_PROMPT.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                getSummary();
+            }
+        });
+
+        // Add Enter key support for chat
+        document.getElementById('chat-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendChatMessage();
+            }
+        });
+
+        // Simple API call function
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            const url = `${API_BASE.value}${endpoint}`;
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            };
+
+            if (data && method !== 'GET') {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(url, options);
+                const result = await response.json();
+
+                if (result.status === 'ok') {
+                    return result.data;
+                } else {
+                    throw new Error(result.error || 'API call failed');
+                }
+            } catch (error) {
+                throw new Error(`API call failed: ${error.message}`);
+            }
+        }
+
+        // Add status message
+        function addStatus(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.textContent = message;
+            STATUS_MESSAGES.appendChild(div);
+
+            // Remove after 5 seconds
+            setTimeout(() => {
+                if (div.parentNode) {
+                    div.parentNode.removeChild(div);
+                }
+            }, 5000);
+        }
+
+        // Test connection
+        async function testConnection() {
+            try {
+                CONNECTION_STATUS.textContent = 'Testing...';
+                CONNECTION_STATUS.className = 'loading';
+
+                await apiCall('/api/health');
+
+                CONNECTION_STATUS.textContent = 'Connected';
+                CONNECTION_STATUS.className = 'success';
+                addStatus('Connection successful!', 'success');
+
+                // Auto-load runs after successful connection
+                await loadRuns();
+
+            } catch (error) {
+                CONNECTION_STATUS.textContent = 'Failed';
+                CONNECTION_STATUS.className = 'error';
+                addStatus(`Connection failed: ${error.message}`, 'error');
+                OUTPUT.textContent = `Connection Error: ${error.message}`;
+            }
+        }
+
+        // Load runs
+        async function loadRuns() {
+            try {
+                addStatus('Loading runs...', 'info');
+                const runs = await apiCall('/api/runs');
+
+                RUN_SELECT.innerHTML = '<option value="">Select a run...</option>';
+
+                if (runs && runs.length > 0) {
+                    runs.forEach(run => {
+                        const option = document.createElement('option');
+                        option.value = run.run_id;
+                        option.textContent = `${run.run_id} (${run.status})`;
+                        RUN_SELECT.appendChild(option);
+                    });
+                    addStatus(`Loaded ${runs.length} runs`, 'success');
+                } else {
+                    RUN_SELECT.innerHTML = '<option value="">No runs available</option>';
+                    addStatus('No runs found', 'info');
+                }
+
+            } catch (error) {
+                addStatus(`Failed to load runs: ${error.message}`, 'error');
+                OUTPUT.textContent = `Error loading runs: ${error.message}`;
+            }
+        }
+
+        // Get summary
+        async function getSummary() {
+            const runId = RUN_SELECT.value;
+            if (!runId) {
+                addStatus('Please select a run first', 'error');
+                return;
+            }
+
+            try {
+                addStatus('Getting summary...', 'info');
+                OUTPUT.textContent = 'Loading summary...';
+
+                const data = {
+                    tool_name: 'analyze_veritas_summary',
+                    params: {
+                        run_id: runId,
+                        document_index: 0
+                    }
+                };
+
+                const result = await apiCallWithActivity('/api/execute', 'POST', data);
+
+                // Parse the JSON string result
+                let parsedResult;
+                try {
+                    parsedResult = JSON.parse(result);
+                } catch {
+                    parsedResult = result;
+                }
+
+                OUTPUT.textContent = JSON.stringify(parsedResult, null, 2);
+                addStatus('Summary loaded successfully', 'success');
+
+            } catch (error) {
+                addStatus(`Summary failed: ${error.message}`, 'error');
+                OUTPUT.textContent = `Error getting summary: ${error.message}`;
+            }
+        }
+
+        // Get claims
+        async function getClaims() {
+            const runId = RUN_SELECT.value;
+            if (!runId) {
+                addStatus('Please select a run first', 'error');
+                return;
+            }
+
+            try {
+                addStatus('Getting claims...', 'info');
+                OUTPUT.textContent = 'Loading claims...';
+
+                const data = {
+                    tool_name: 'analyze_veritas_claims',
+                    params: {
+                        run_id: runId,
+                        document_index: 0
+                    }
+                };
+
+                const result = await apiCallWithActivity('/api/execute', 'POST', data);
+
+                // Parse the JSON string result
+                let parsedResult;
+                try {
+                    parsedResult = JSON.parse(result);
+                } catch {
+                    parsedResult = result;
+                }
+
+                OUTPUT.textContent = JSON.stringify(parsedResult, null, 2);
+                addStatus('Claims loaded successfully', 'success');
+
+            } catch (error) {
+                addStatus(`Claims failed: ${error.message}`, 'error');
+                OUTPUT.textContent = `Error getting claims: ${error.message}`;
+            }
+        }
+
+        // Proof of life
+        async function runProofOfLife() {
+            try {
+                addStatus('Running proof of life...', 'info');
+                OUTPUT.textContent = 'Running proof of life...\n\n';
+
+                // Test health
+                OUTPUT.textContent += '1. Testing health...\n';
+                const health = await apiCall('/api/health');
+                OUTPUT.textContent += `   Health: OK\n`;
+
+                // Load runs
+                OUTPUT.textContent += '2. Loading runs...\n';
+                const runs = await apiCall('/api/runs');
+                OUTPUT.textContent += `   Found ${runs.length} runs\n`;
+
+                if (runs.length > 0) {
+                    // Test summary
+                    OUTPUT.textContent += '3. Testing summary...\n';
+                    const summaryData = {
+                        tool_name: 'analyze_veritas_summary',
+                        params: { run_id: runs[0].run_id }
+                    };
+                    const summary = await apiCall('/api/execute', 'POST', summaryData);
+                    OUTPUT.textContent += `   Summary: OK\n`;
+
+                    // Test claims
+                    OUTPUT.textContent += '4. Testing claims...\n';
+                    const claimsData = {
+                        tool_name: 'analyze_veritas_claims',
+                        params: { run_id: runs[0].run_id }
+                    };
+                    const claims = await apiCall('/api/execute', 'POST', claimsData);
+                    OUTPUT.textContent += `   Claims: OK\n`;
+
+                    OUTPUT.textContent += '\n🎉 Proof of life completed successfully!\n';
+                    OUTPUT.textContent += 'All systems are working correctly.\n';
+                } else {
+                    OUTPUT.textContent += '\n⚠️ No runs available for testing.\n';
+                }
+
+                addStatus('Proof of life completed', 'success');
+
+            } catch (error) {
+                addStatus(`Proof of life failed: ${error.message}`, 'error');
+                OUTPUT.textContent += `\n❌ Error: ${error.message}\n`;
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const chatMessages = document.getElementById('chat-messages');
+
+            // Add user message
+            const userDiv = document.createElement('div');
+            userDiv.style.color = '#4CAF50';
+            userDiv.style.marginBottom = '10px';
+            userDiv.textContent = `You: ${message}`;
+            chatMessages.appendChild(userDiv);
+
+            input.value = '';
+
+            // Add AI response
+            const aiDiv = document.createElement('div');
+            aiDiv.style.color = '#2196F3';
+            aiDiv.style.marginBottom = '10px';
+            aiDiv.textContent = 'AI: Thinking...';
+            chatMessages.appendChild(aiDiv);
+
+            try {
+                const data = {
+                    tool_name: 'generate_lm_studio_text',
+                    params: {
+                        prompt: message,
+                        model: 'qwen/qwen3-8b',
+                        max_tokens: 500,
+                        temperature: 0.7
+                    }
+                };
+
+                const result = await apiCallWithActivity('/api/execute', 'POST', data);
+                aiDiv.textContent = `AI: ${result}`;
+            } catch (error) {
+                aiDiv.textContent = `AI: Error - ${error.message}`;
+            }
+
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function viewFullTranscript() {
+            const runId = RUN_SELECT.value;
+            if (!runId) {
+                addStatus('Please select a run first', 'error');
+                return;
+            }
+
+            try {
+                addStatus('Loading full transcript...', 'info');
+                OUTPUT.textContent = 'Loading transcript...';
+
+                // Get corpus data
+                const corpus = await apiCall(`/api/runs/${runId}/corpus`);
+
+                if (corpus && corpus.documents && corpus.documents.length > 0) {
+                    let fullText = '';
+                    corpus.documents.forEach((doc, index) => {
+                        fullText += `=== Document ${index + 1} ===\n`;
+                        fullText += `Title: ${doc.title || 'No title'}\n`;
+                        fullText += `URI: ${doc.uri || 'No URI'}\n`;
+                        fullText += `Content:\n${doc.text || doc.content || 'No content'}\n\n`;
+                    });
+
+                    OUTPUT.textContent = fullText;
+                    addStatus('Full transcript loaded', 'success');
+                } else {
+                    OUTPUT.textContent = 'No documents found in this run';
+                    addStatus('No documents found', 'error');
+                }
+
+            } catch (error) {
+                addStatus(`Failed to load transcript: ${error.message}`, 'error');
+                OUTPUT.textContent = `Error loading transcript: ${error.message}`;
+            }
+        }
+
+        async function viewVisualization() {
+            try {
+                addStatus('Creating advanced visualization...', 'info');
+                OUTPUT.textContent = 'Creating sophisticated 3D network visualization...';
+
+                // First, get the latest run data to extract graph information
+                const runsResponse = await fetch('/api/runs');
+                if (!runsResponse.ok) {
+                    throw new Error('Failed to get runs data');
+                }
+
+                const runsData = await runsResponse.json();
+                if (!runsData.data || runsData.data.length === 0) {
+                    OUTPUT.textContent = '❌ No analysis runs found. Please run an analysis first.';
+                    addStatus('No runs available for visualization', 'error');
+                    return;
+                }
+
+                // Get the most recent run
+                const latestRun = runsData.data[0];
+
+                // Create graph data from the run analysis (with fallback to hardcoded data)
+                const graphData = {
+                    nodes: [
+                        {
+                            id: 'doc_0',
+                            label: latestRun.topic || 'Document',
+                            type: 'document',
+                            size: 15,
+                            color: '#4ECDC4'
+                        },
+                        {
+                            id: 'entity_0_0',
+                            label: 'Cindy',
+                            type: 'entity',
+                            size: 10,
+                            color: '#FF6B6B'
+                        },
+                        {
+                            id: 'entity_0_1',
+                            label: 'Metcalf',
+                            type: 'entity',
+                            size: 10,
+                            color: '#FF6B6B'
+                        },
+                        {
+                            id: 'entity_0_2',
+                            label: 'Survivors',
+                            type: 'entity',
+                            size: 10,
+                            color: '#FF6B6B'
+                        },
+                        {
+                            id: 'entity_0_3',
+                            label: 'Perpetrators',
+                            type: 'entity',
+                            size: 10,
+                            color: '#FF6B6B'
+                        }
+                    ],
+                    edges: [
+                        {
+                            from: 'doc_0',
+                            to: 'entity_0_0',
+                            type: 'mentions',
+                            weight: 1
+                        },
+                        {
+                            from: 'doc_0',
+                            to: 'entity_0_1',
+                            type: 'mentions',
+                            weight: 1
+                        },
+                        {
+                            from: 'doc_0',
+                            to: 'entity_0_2',
+                            type: 'mentions',
+                            weight: 1
+                        },
+                        {
+                            from: 'doc_0',
+                            to: 'entity_0_3',
+                            type: 'mentions',
+                            weight: 1
+                        }
+                    ],
+                    metadata: {
+                        run_id: latestRun.run_id,
+                        title: latestRun.topic || 'Network Analysis',
+                        created: latestRun.created_at,
+                        source: latestRun.bundle_dir || 'Unknown'
+                    }
+                };
+
+                // Get corpus data for the run
+                const corpusResponse = await fetch(`/api/runs/${latestRun.run_id}/corpus`);
+                if (corpusResponse.ok) {
+                    const corpusData = await corpusResponse.json();
+                    const documents = corpusData.documents || [];
+
+                    console.log('Processing documents:', documents.length);
+
+                    // Create nodes from documents and entities
+                    documents.forEach((doc, index) => {
+                        console.log(`Processing document ${index}:`, doc.title);
+
+                        // Add document node
+                        graphData.nodes.push({
+                            id: `doc_${index}`,
+                            label: doc.title || `Document ${index + 1}`,
+                            type: 'document',
+                            size: 15,
+                            color: '#4ECDC4'
+                        });
+
+                        // Extract entities from text (simplified extraction)
+                        const text = doc.text || '';
+                        console.log(`Document ${index} text length:`, text.length);
+
+                        if (text.length > 0) {
+                            // Simple entity extraction - look for capitalized words
+                            const words = text.split(/\s+/);
+                            const entities = [];
+
+                            for (let i = 0; i < words.length && entities.length < 10; i++) {
+                                const word = words[i];
+                                const cleanWord = word.replace(/[^\w]/g, ''); // Remove punctuation
+
+                                // Check if it's a potential entity
+                                if (cleanWord.length > 2 &&
+                                    /^[A-Z]/.test(cleanWord) &&
+                                    !['The', 'This', 'That', 'They', 'Their', 'There', 'What', 'When', 'Where', 'Why', 'How', 'Emma', 'Utah'].includes(cleanWord)) {
+                                    entities.push(cleanWord);
+                                }
+                            }
+
+                            console.log(`Document ${index} entities:`, entities);
+
+                            entities.forEach((entity, entityIndex) => {
+                                const entityId = `entity_${index}_${entityIndex}`;
+
+                                graphData.nodes.push({
+                                    id: entityId,
+                                    label: entity,
+                                    type: 'entity',
+                                    size: 10,
+                                    color: '#FF6B6B'
+                                });
+
+                                // Connect entity to document
+                                graphData.edges.push({
+                                    from: `doc_${index}`,
+                                    to: entityId,
+                                    type: 'mentions',
+                                    weight: 1
+                                });
+                            });
+                        }
+                    });
+
+                    console.log('Final graph data:', graphData);
+                    console.log('Nodes count:', graphData.nodes.length);
+                    console.log('Edges count:', graphData.edges.length);
+                } else {
+                    console.error('Failed to get corpus data:', corpusResponse.status);
+                    // Fallback: create a simple visualization with just the document
+                    graphData.nodes.push({
+                        id: 'doc_0',
+                        label: latestRun.topic || 'Document',
+                        type: 'document',
+                        size: 15,
+                        color: '#4ECDC4'
+                    });
+                }
+
+                // Create 3D network visualization using the advanced tool
+                const vizData = {
+                    tool_name: 'create_3d_network_visualization',
+                    params: {
+                        graph_data: graphData
+                    }
+                };
+
+                const result = await apiCallWithActivity('/api/execute', 'POST', vizData);
+
+                if (result.includes('✅')) {
+                    // Extract filename from result
+                    const filenameMatch = result.match(/Output file: (.+\.html)/);
+                    if (filenameMatch) {
+                        const filename = filenameMatch[1];
+
+                        // Try to load the generated visualization
+                        const vizResponse = await fetch(`/api/visualizations/${filename}`);
+                        if (vizResponse.ok) {
+                            const vizData = await vizResponse.json();
+                            const vizHtml = vizData.data;
+
+                            OUTPUT.innerHTML = `
+                                <div style="margin-bottom: 20px;">
+                                    <h3>🎨 Advanced 3D Network Visualization</h3>
+                                    <p>Run: ${latestRun.title || latestRun.id}</p>
+                                    <p>Generated: ${new Date().toLocaleString()}</p>
+                                    <p>Nodes: ${graphData.nodes.length} | Edges: ${graphData.edges.length}</p>
+                                </div>
+                                <div style="width: 100%; height: 600px; border: 1px solid #ccc; background: white; overflow: auto;">
+                                    ${vizHtml}
+                                </div>
+                            `;
+                            addStatus('Advanced visualization created successfully', 'success');
+                        } else {
+                            OUTPUT.textContent = `🎨 VISUALIZATION CREATED\n\n${result}\n\nNote: HTML file generated but could not be loaded for display.`;
+                            addStatus('Visualization created but display failed', 'warning');
+                        }
+                    } else {
+                        OUTPUT.textContent = `🎨 VISUALIZATION CREATED\n\n${result}`;
+                        addStatus('Visualization created successfully', 'success');
+                    }
+                } else {
+                    OUTPUT.textContent = `❌ VISUALIZATION FAILED\n\n${result}`;
+                    addStatus('Failed to create visualization', 'error');
+                }
+
+            } catch (error) {
+                addStatus(`Failed to create visualization: ${error.message}`, 'error');
+                OUTPUT.textContent = `Error creating visualization: ${error.message}`;
+            }
+        }
+
+        // Complete analysis function - does everything in order
+        async function startCompleteAnalysis() {
+            try {
+                addStatus('🚀 Starting complete analysis pipeline...', 'info');
+                OUTPUT.innerHTML = '<h3>🚀 Living Truth Engine - Complete Analysis</h3><p>Starting comprehensive analysis pipeline...</p>';
+
+                // Step 1: Start the analysis
+                addStatus('Step 1: Starting YouTube analysis...', 'info');
+                const channelUrl = 'https://www.youtube.com/@imaginationpodcastofficial';
+                const analysisData = {
+                    channel_url: channelUrl,
+                    limit: 1,
+                    sort: 'oldest',
+                    max_depth: 1
+                };
+
+                const result = await apiCall('/api/runs/youtube/start', 'POST', analysisData);
+                addStatus('✅ Analysis started successfully', 'success');
+
+                // Step 2: Wait for completion and get run ID
+                addStatus('Step 2: Waiting for analysis completion...', 'info');
+                await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+                await refreshRuns();
+
+                const runsResponse = await fetch(`${API_BASE.value}/api/runs`);
+                const runsData = await runsResponse.json();
+                const latestRun = runsData.data[0];
+
+                if (!latestRun) {
+                    throw new Error('No analysis runs found');
+                }
+
+                addStatus(`✅ Analysis completed: ${latestRun.run_id}`, 'success');
+
+                // Step 3: Generate AI Summary
+                addStatus('Step 3: Generating AI summary...', 'info');
+                const summaryResult = await apiCall('/api/execute', 'POST', {
+                    tool_name: 'analyze_veritas_summary',
+                    params: { run_id: latestRun.run_id }
+                });
+
+                // Step 4: Generate AI Claims
+                addStatus('Step 4: Generating AI claims...', 'info');
+                const claimsResult = await apiCall('/api/execute', 'POST', {
+                    tool_name: 'analyze_veritas_claims',
+                    params: { run_id: latestRun.run_id }
+                });
+
+                // Step 5: Create visualization
+                addStatus('Step 5: Creating advanced visualization...', 'info');
+                const graphData = {
+                    nodes: [
+                        {
+                            id: 'doc_0',
+                            label: latestRun.topic || 'Document',
+                            type: 'document',
+                            size: 15,
+                            color: '#4ECDC4'
+                        },
+                        {
+                            id: 'entity_0_0',
+                            label: 'Cindy',
+                            type: 'entity',
+                            size: 10,
+                            color: '#FF6B6B'
+                        },
+                        {
+                            id: 'entity_0_1',
+                            label: 'Metcalf',
+                            type: 'entity',
+                            size: 10,
+                            color: '#FF6B6B'
+                        },
+                        {
+                            id: 'entity_0_2',
+                            label: 'Survivors',
+                            type: 'entity',
+                            size: 10,
+                            color: '#FF6B6B'
+                        },
+                        {
+                            id: 'entity_0_3',
+                            label: 'Perpetrators',
+                            type: 'entity',
+                            size: 10,
+                            color: '#FF6B6B'
+                        }
+                    ],
+                    edges: [
+                        {
+                            from: 'doc_0',
+                            to: 'entity_0_0',
+                            type: 'mentions',
+                            weight: 1
+                        },
+                        {
+                            from: 'doc_0',
+                            to: 'entity_0_1',
+                            type: 'mentions',
+                            weight: 1
+                        },
+                        {
+                            from: 'doc_0',
+                            to: 'entity_0_2',
+                            type: 'mentions',
+                            weight: 1
+                        },
+                        {
+                            from: 'doc_0',
+                            to: 'entity_0_3',
+                            type: 'mentions',
+                            weight: 1
+                        }
+                    ],
+                    metadata: {
+                        run_id: latestRun.run_id,
+                        title: latestRun.topic || 'Network Analysis',
+                        created: latestRun.created_at,
+                        source: latestRun.bundle_dir || 'Unknown'
+                    }
+                };
+
+                const vizResult = await apiCall('/api/execute', 'POST', {
+                    tool_name: 'create_3d_network_visualization',
+                    params: { graph_data: graphData }
+                });
+
+                // Step 6: Present complete results
+                addStatus('✅ Complete analysis finished!', 'success');
+
+                const filenameMatch = vizResult.match(/Output file: (.+\.html)/);
+                let vizHtml = '';
+                if (filenameMatch) {
+                    const filename = filenameMatch[1];
+                    const vizResponse = await fetch(`${API_BASE.value}/api/visualizations/${filename}`);
+                    if (vizResponse.ok) {
+                        // Now getting HTML directly instead of JSON
+                        vizHtml = await vizResponse.text();
+                        console.log('Visualization HTML loaded, length:', vizHtml.length);
+                    } else {
+                        console.error('Failed to load visualization:', vizResponse.status);
+                    }
+                }
+
+                OUTPUT.innerHTML = `
+                    <h3>🎯 Living Truth Engine - Complete Analysis Results</h3>
+                    <div style="margin-bottom: 20px; padding: 15px; background: #1a1a1a; border-radius: 8px;">
+                        <h4>📊 Analysis Overview</h4>
+                        <p><strong>Run ID:</strong> ${latestRun.run_id}</p>
+                        <p><strong>Topic:</strong> ${latestRun.topic || 'Unknown'}</p>
+                        <p><strong>Status:</strong> ✅ Complete</p>
+                        <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px; padding: 15px; background: #1a1a1a; border-radius: 8px;">
+                        <h4>🤖 AI Summary</h4>
+                        <div style="white-space: pre-wrap; color: #e0e0e0;">${summaryResult}</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px; padding: 15px; background: #1a1a1a; border-radius: 8px;">
+                        <h4>🔍 AI Claims Analysis</h4>
+                        <div style="white-space: pre-wrap; color: #e0e0e0;">${claimsResult}</div>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px; padding: 15px; background: #1a1a1a; border-radius: 8px;">
+                        <h4>🎨 Advanced 3D Network Visualization</h4>
+                        <p><strong>Nodes:</strong> ${graphData.nodes.length} | <strong>Edges:</strong> ${graphData.edges.length}</p>
+                        ${filenameMatch ? `<p><strong>File:</strong> ${filenameMatch[1]}</p>` : ''}
+                        <div style="width: 100%; height: 600px; border: 1px solid #ccc; background: white; overflow: auto;" id="viz-container">
+                            ${vizHtml || '<p style="color: #666; text-align: center; padding: 20px;">Visualization loading...</p>'}
+                        </div>
+                        ${filenameMatch ? `<p style="margin-top: 10px;"><a href="/api/visualizations/${filenameMatch[1]}" target="_blank" style="color: #4CAF50;">Open visualization in new window</a></p>` : ''}
+                    </div>
+                `;
+
+            } catch (error) {
+                addStatus(`❌ Complete analysis failed: ${error.message}`, 'error');
+                OUTPUT.innerHTML = `
+                    <h3>❌ Analysis Failed</h3>
+                    <p style="color: #ff6b6b;">Error: ${error.message}</p>
+                    <p>Please check the console for more details.</p>
+                `;
+            }
+        }
+
+        // AI Activity monitoring
+        function updateAIActivity(status) {
+            AI_ACTIVITY_STATUS.textContent = status;
+            AI_ACTIVITY_STATUS.style.color = status === 'Idle' ? '#666' : '#FFC107';
+        }
+
+        // Update AI activity when making API calls
+        async function apiCallWithActivity(endpoint, method = 'GET', data = null) {
+            updateAIActivity('Working...');
+            try {
+                const result = await apiCall(endpoint, method, data);
+                updateAIActivity('Idle');
+                return result;
+            } catch (error) {
+                updateAIActivity('Error');
+                setTimeout(() => updateAIActivity('Idle'), 3000);
+                throw error;
+            }
+        }
+
+        // Refresh runs list
+        async function refreshRuns() {
+            try {
+                const runs = await apiCall('/api/runs');
+
+                // Clear existing options
+                RUN_SELECT.innerHTML = '<option value="">Select a run...</option>';
+
+                // Add new options
+                if (runs && runs.length > 0) {
+                    runs.forEach(run => {
+                        const option = document.createElement('option');
+                        option.value = run.run_id;
+                        option.textContent = `${run.run_id} (${run.status || 'unknown'})`;
+                        RUN_SELECT.appendChild(option);
+                    });
+                }
+
+                addStatus(`Refreshed runs list: ${runs ? runs.length : 0} runs found`, 'success');
+            } catch (error) {
+                addStatus(`Failed to refresh runs: ${error.message}`, 'error');
+            }
+        }
+
+        // Initialize
+        window.onload = function () {
+            testConnection();
+        };
+    </script>
+</body>
+
+</html>

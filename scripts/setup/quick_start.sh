@@ -21,7 +21,7 @@ if $DOCKER_COMPOSE_CMD ps | grep -q "Up"; then
     echo ""
     echo "Services are already running!"
     echo "🌐 Access points:"
-    echo "   - Flowise: http://localhost:3000"
+    echo "   - Langflow: http://localhost:7860"
     echo "   - Dashboard: http://localhost:8050"
     echo "   - LM Studio: http://localhost:1234"
     exit 0
@@ -36,16 +36,16 @@ cd "$PROJECT_ROOT"
 
 # Create necessary directories
 echo "📁 Creating directories..."
-mkdir -p logs config tests docs scripts models .flowise
+mkdir -p logs config tests docs scripts models .Langflow
 
 # Check if .env file exists and has required variables
 if [ ! -f .env ]; then
     echo "❌ .env file not found. Creating template..."
     cat > .env << EOF
-# Flowise Configuration
-FLOWISE_API_ENDPOINT=http://localhost:3000
-FLOWISE_API_KEY=your_flowise_api_key
-FLOWISE_CHATFLOW_ID=your_chatflow_id
+# Langflow Configuration
+Langflow_API_ENDPOINT=http://localhost:7860
+Langflow_API_KEY=your_Langflow_api_key
+Langflow_CHATFLOW_ID=your_chatflow_id
 
 # LangChain Configuration
 LANGCHAIN_API_KEY=your_langsmith_key
@@ -112,14 +112,14 @@ echo ""
 echo "✅ Setup complete!"
 echo ""
 echo "🌐 Services available at:"
-echo "   - Flowise: http://localhost:3000"
+echo "   - Langflow: http://localhost:7860"
 echo "   - Dashboard: http://localhost:8050"
 echo "   - LM Studio: http://localhost:1234"
 echo "   - PostgreSQL: localhost:5432"
 echo ""
 echo "📝 Next steps:"
 echo "   1. Update .env file with your actual API keys"
-echo "   2. Import the living_truth_full_flow.json into Flowise"
+echo "   2. Import the living_truth_full_flow.json into Langflow"
 echo "   3. Test the MCP server integration"
 echo "   4. Access the dashboard at http://localhost:8050"
 echo ""

@@ -39,6 +39,10 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             <option value="">Select a document...</option>
                         </select>
+                        <div id="document-info" class="mt-3 text-xs text-gray-600 space-y-1 hidden">
+                            <div id="doc-meta-line"></div>
+                            <div id="doc-uri-line"></div>
+                        </div>
                     </div>
 
                     <!-- Analysis Type -->
@@ -69,6 +73,20 @@
                     <div id="bundle-details" class="text-sm text-gray-600 space-y-1">
                         <!-- Bundle details will be populated here -->
                     </div>
+
+                    <!-- Transcript Type Indicator -->
+                    <div id="transcript-type-info"
+                        class="hidden mt-4 p-3 border-l-4 border-blue-500 bg-blue-50 rounded">
+                        <div class="flex items-center space-x-2">
+                            <i class="fas fa-file-alt text-blue-600"></i>
+                            <div>
+                                <h4 class="font-medium text-blue-900">Transcript Type</h4>
+                                <p id="transcript-type-message" class="text-sm text-blue-700">
+                                    <!-- Transcript type message will be populated here -->
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -84,7 +102,7 @@
                     <div class="flex items-center space-x-2">
                         <button id="explain-btn" class="btn-secondary text-sm" disabled>
                             <i class="fas fa-question-circle mr-1"></i>
-                            Explain Result
+                            Explain
                         </button>
                         <button id="export-btn" class="btn-secondary text-sm" disabled>
                             <i class="fas fa-download mr-1"></i>
@@ -123,9 +141,8 @@
                 <div id="results-content" class="min-h-96">
                     <!-- Summary Tab -->
                     <div id="summary-tab" class="result-panel">
-                        <div class="text-center py-12 text-gray-500">
-                            <i class="fas fa-chart-bar text-4xl mb-4"></i>
-                            <p class="text-lg">Select a bundle and document to start analysis</p>
+                        <div id="summary-content" class="py-6">
+                            <div class="text-sm text-gray-500">Select a bundle and document to start analysis</div>
                         </div>
                     </div>
 
@@ -172,10 +189,13 @@
     let currentBundle = null;
     let currentDocument = null;
     let currentAnalysis = null;
+    let currentCorpusDocs = [];
 
     // Load bundles on page load
     document.addEventListener('DOMContentLoaded', function () {
         loadBundles();
+        // Ensure default tab is Summary
+        switchResultTab('summary');
     });
 
     // Bundle selection
@@ -195,6 +215,12 @@
     document.getElementById('document-select').addEventListener('change', function () {
         currentDocument = this.value;
         updateAnalyzeButton();
+        // Auto-preview summary for selected document
+        if (currentBundle && currentDocument !== null && currentDocument !== '') {
+            switchResultTab('summary');
+            previewSummary(currentBundle.run_id, parseInt(currentDocument));
+            updateDocumentInfo(parseInt(currentDocument));
+        }
     });
 
     // Analysis type selection
@@ -232,7 +258,7 @@
     // Load bundles
     async function loadBundles() {
         try {
-            const bundles = await apiCall('/api/runs');
+            const bundles = await LTE_API.apiGet('/api/runs');
             populateBundleSelect(bundles);
         } catch (error) {
             console.error('Failed to load bundles:', error);
@@ -258,7 +284,7 @@
     // Load bundle details
     async function loadBundleDetails(bundleId) {
         try {
-            const details = await apiCall(`/api/runs/${bundleId}`);
+            const details = await LTE_API.apiGet(`/api/runs/${bundleId}`);
             currentBundle = details;
             displayBundleInfo(details);
         } catch (error) {
@@ -270,6 +296,8 @@
     function displayBundleInfo(bundle) {
         const container = document.getElementById('bundle-details');
         const infoDiv = document.getElementById('bundle-info');
+        const transcriptInfo = document.getElementById('transcript-type-info');
+        const transcriptMessage = document.getElementById('transcript-type-message');
 
         container.innerHTML = `
             <div><strong>Run ID:</strong> ${bundle.run_id || 'Unknown'}</div>
@@ -277,6 +305,37 @@
             <div><strong>Created:</strong> ${formatDate(bundle.created_at)}</div>
             <div><strong>Documents:</strong> ${bundle.doc_count || 0}</div>
         `;
+
+        // Show transcript type information if available
+        if (bundle.manifest && bundle.manifest.parameters) {
+            const transcriptPref = bundle.manifest.parameters.transcript_pref;
+            if (transcriptPref) {
+                let message = '';
+                let iconClass = 'fas fa-file-alt text-blue-600';
+                let borderClass = 'border-blue-500 bg-blue-50';
+
+                if (transcriptPref === 'yt_api' || transcriptPref === 'yt_api_only') {
+                    message = 'Official transcript used';
+                    iconClass = 'fas fa-check-circle text-green-600';
+                    borderClass = 'border-green-500 bg-green-50';
+                } else if (transcriptPref === 'autosubs') {
+                    message = 'Auto-subs used — quality checks passed';
+                    iconClass = 'fas fa-exclamation-triangle text-yellow-600';
+                    borderClass = 'border-yellow-500 bg-yellow-50';
+                } else {
+                    message = `Transcript preference: ${transcriptPref}`;
+                }
+
+                transcriptMessage.textContent = message;
+                transcriptInfo.className = `mt-4 p-3 border-l-4 ${borderClass} rounded`;
+                transcriptInfo.querySelector('i').className = iconClass;
+                transcriptInfo.classList.remove('hidden');
+            } else {
+                transcriptInfo.classList.add('hidden');
+            }
+        } else {
+            transcriptInfo.classList.add('hidden');
+        }
 
         infoDiv.classList.remove('hidden');
     }
@@ -290,9 +349,20 @@
     // Load documents for bundle
     async function loadDocuments(bundleId) {
         try {
-            const corpus = await apiCall(`/api/runs/${bundleId}/corpus`);
-            populateDocumentSelect(corpus);
+            const corpus = await LTE_API.apiGet(`/api/runs/${bundleId}/corpus`);
+            currentCorpusDocs = corpus && corpus.documents ? corpus.documents : [];
+            populateDocumentSelect(currentCorpusDocs);
             showDocumentSection();
+            // Auto-select first document if available
+            if (currentCorpusDocs.length > 0) {
+                const select = document.getElementById('document-select');
+                select.value = '0';
+                currentDocument = '0';
+                updateAnalyzeButton();
+                switchResultTab('summary');
+                previewSummary(bundleId, 0);
+                updateDocumentInfo(0);
+            }
         } catch (error) {
             console.error('Failed to load documents:', error);
             showToast('Failed to load documents: ' + error.message, 'error');
@@ -300,15 +370,19 @@
     }
 
     // Populate document select
-    function populateDocumentSelect(corpus) {
+    function populateDocumentSelect(documents) {
         const select = document.getElementById('document-select');
         select.innerHTML = '<option value="">Select a document...</option>';
 
-        if (corpus && corpus.documents && corpus.documents.length > 0) {
-            corpus.documents.forEach((doc, index) => {
+        if (documents && documents.length > 0) {
+            documents.forEach((doc, index) => {
                 const option = document.createElement('option');
                 option.value = index;
-                option.textContent = doc.title || `Document ${index + 1}`;
+                const duration = formatDurationSeconds((doc.meta && doc.meta.duration) ? doc.meta.duration : null);
+                const uploaded = formatUploadDate((doc.meta && doc.meta.upload_date) ? doc.meta.upload_date : null);
+                const textLen = (doc.text ? doc.text.length : 0);
+                const title = doc.title || `Document ${index + 1}`;
+                option.textContent = `${title}${duration ? ' · ' + duration : ''}${uploaded ? ' · ' + uploaded : ''} · ${textLen} chars`;
                 select.appendChild(option);
             });
         }
@@ -324,12 +398,55 @@
         document.getElementById('document-section').classList.add('hidden');
         document.getElementById('document-select').innerHTML = '<option value="">Select a document...</option>';
         currentDocument = null;
+        document.getElementById('document-info').classList.add('hidden');
     }
 
     // Update analyze button state
     function updateAnalyzeButton() {
         const button = document.getElementById('analyze-btn');
         button.disabled = !(currentBundle && currentDocument !== null);
+    }
+
+    // Update document info panel
+    function updateDocumentInfo(index) {
+        try {
+            const info = document.getElementById('document-info');
+            const metaLine = document.getElementById('doc-meta-line');
+            const uriLine = document.getElementById('doc-uri-line');
+            const doc = currentCorpusDocs[index];
+            if (!doc) {
+                info.classList.add('hidden');
+                return;
+            }
+            const duration = formatDurationSeconds((doc.meta && doc.meta.duration) ? doc.meta.duration : null);
+            const uploaded = formatUploadDate((doc.meta && doc.meta.upload_date) ? doc.meta.upload_date : null);
+            const textLen = (doc.text ? doc.text.length : 0);
+            metaLine.textContent = `${doc.source_type || 'unknown'}${duration ? ' · ' + duration : ''}${uploaded ? ' · ' + uploaded : ''} · ${textLen} chars`;
+            if (doc.uri) {
+                uriLine.innerHTML = `URI: <a class="text-blue-600 underline" href="${doc.uri}" target="_blank">${doc.uri}</a>`;
+            } else {
+                uriLine.textContent = '';
+            }
+            info.classList.remove('hidden');
+        } catch (e) {
+            console.error('Update doc info failed:', e);
+        }
+    }
+
+    function formatUploadDate(yyyymmdd) {
+        if (!yyyymmdd || typeof yyyymmdd !== 'string' || yyyymmdd.length !== 8) return '';
+        const y = yyyymmdd.slice(0, 4), m = yyyymmdd.slice(4, 6), d = yyyymmdd.slice(6, 8);
+        try { return new Date(`${y}-${m}-${d}T00:00:00Z`).toLocaleDateString(); } catch { return ''; }
+    }
+
+    function formatDurationSeconds(sec) {
+        if (sec == null || isNaN(sec)) return '';
+        sec = Math.floor(sec);
+        const h = Math.floor(sec / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        const s = sec % 60;
+        if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        return `${m}:${String(s).padStart(2, '0')}`;
     }
 
     // Perform analysis
@@ -339,18 +456,20 @@
 
             const analysisType = document.getElementById('analysis-type').value;
             const analysisData = {
-                bundle_id: currentBundle.run_id,
-                document_index: parseInt(currentDocument),
-                analysis_type: analysisType
+                run_id: currentBundle.run_id,
+                document_index: parseInt(currentDocument)
             };
 
             let result;
             switch (analysisType) {
                 case 'entities':
-                    result = await apiCall('/api/analyze/entities', 'POST', analysisData);
+                    result = await LTE_API.apiPost('/api/analyze/entities', analysisData);
                     break;
                 case 'claims':
-                    result = await apiCall('/api/analyze/claims', 'POST', analysisData);
+                    result = await LTE_API.apiPost('/api/analyze/claims', analysisData);
+                    break;
+                case 'summary':
+                    result = await LTE_API.apiPost('/api/analyze/summary', analysisData);
                     break;
                 default:
                     result = { message: 'Analysis completed', type: analysisType };
@@ -377,12 +496,23 @@
 
         switch (type) {
             case 'summary':
-                container.innerHTML = `
-                    <div class="prose max-w-none">
-                        <h3>Analysis Summary</h3>
-                        <p>${result.message || 'Summary analysis completed.'}</p>
+                const sc = document.getElementById('summary-content');
+                sc.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="text-sm text-gray-500">${result.uri ? `<a class='text-blue-600 underline' href='${result.uri}' target='_blank'>Source</a>` : ''}</div>
+                        <h3 class="text-lg font-medium text-gray-900">${result.title || 'Document Summary'}</h3>
+                        <pre class="whitespace-pre-wrap text-sm text-gray-800 bg-gray-50 p-3 rounded">${result.snippet || ''}</pre>
+                        <div class="text-xs text-gray-500">Length: ${result.length ?? 0} chars</div>
+                        <div>
+                            <button id="toggle-full-text" class="btn-secondary text-xs" onclick="toggleFullText()">Show full transcript</button>
+                        </div>
+                        <div id="full-text-container" class="hidden mt-3">
+                            <pre class="whitespace-pre-wrap text-sm text-gray-800 bg-gray-50 p-3 rounded"></pre>
+                        </div>
                     </div>
                 `;
+                // If backend provided a full_text field, store it for toggle; otherwise try to reuse snippet
+                window.__lt_full_text = (result.full_text && typeof result.full_text === 'string') ? result.full_text : (result.snippet || '');
                 break;
 
             case 'entities':
@@ -437,6 +567,38 @@
                     </div>
                 `;
                 break;
+        }
+    }
+
+    // Toggle full transcript visibility
+    function toggleFullText() {
+        try {
+            const container = document.getElementById('full-text-container');
+            const pre = container ? container.querySelector('pre') : null;
+            const btn = document.getElementById('toggle-full-text');
+            if (!container || !pre || !btn) return;
+            const isHidden = container.classList.contains('hidden');
+            if (isHidden) {
+                pre.textContent = window.__lt_full_text || '';
+                container.classList.remove('hidden');
+                btn.textContent = 'Hide full transcript';
+            } else {
+                container.classList.add('hidden');
+                btn.textContent = 'Show full transcript';
+            }
+        } catch (e) {
+            console.error('toggleFullText failed', e);
+        }
+    }
+
+    // Auto-preview summary for selected document
+    async function previewSummary(runId, docIndex) {
+        try {
+            const data = await LTE_API.apiPost('/api/analyze/summary', { run_id: runId, document_index: docIndex });
+            displayAnalysisResult('summary', data);
+        } catch (e) {
+            console.error('Summary preview failed:', e);
+            showToast('Could not load document preview', 'error');
         }
     }
 

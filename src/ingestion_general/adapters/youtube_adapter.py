@@ -8,6 +8,7 @@ import subprocess
 import json
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
+from pathlib import Path
 from urllib.parse import urlparse, parse_qs
 
 try:
@@ -182,10 +183,10 @@ class YouTubeAdapter:
         return videos[:max_videos]
     
     def fetch_transcript(
-        self, 
-        video_id: str, 
-        transcript_pref: str = "yt_api"
-    ) -> Optional[str]:
+        self,
+        video_id: str,
+        transcript_pref: str = "yt_api",
+    ) -> str:
         """
         Fetch transcript for a YouTube video
         
@@ -197,30 +198,29 @@ class YouTubeAdapter:
             Transcript text or None if not available
         """
         logger.info(f"Fetching transcript for video {video_id} with preference {transcript_pref}")
-        
-        # Try YouTube Transcript API first
-        if transcript_pref in ["yt_api", "both"] and YOUTUBE_TRANSCRIPT_AVAILABLE:
+
+        method = transcript_pref.strip().lower()
+
+        if method == "yt_api":
+            if not YOUTUBE_TRANSCRIPT_AVAILABLE:
+                raise RuntimeError("youtube_transcript_api not available")
             try:
-                transcript = YouTubeTranscriptApi().get_transcript(video_id)
-                text_content = " ".join([entry['text'] for entry in transcript])
-                logger.info(f"Successfully fetched transcript via YouTube API for {video_id}")
+                api = YouTubeTranscriptApi()
+                transcript = api.fetch(video_id)
+                text_content = " ".join([entry.text for entry in transcript])
+                if not text_content.strip():
+                    raise ValueError("empty transcript text")
                 return text_content
             except Exception as e:
-                logger.warning(f"YouTube Transcript API failed for {video_id}: {e}")
-        
-        # Try Whisper local if enabled
-        if transcript_pref in ["whisper_local", "both"]:
-            try:
-                text_content = self._fetch_transcript_whisper_local(video_id)
-                if text_content:
-                    logger.info(f"Successfully fetched transcript via Whisper for {video_id}")
-                    return text_content
-            except Exception as e:
-                logger.warning(f"Whisper local failed for {video_id}: {e}")
-        
-        # Fallback: create placeholder with video info
-        logger.warning(f"No transcript available for {video_id}, creating placeholder")
-        return f"[No transcript available for video {video_id}]"
+                raise RuntimeError(f"YouTube Transcript API failed: {e}")
+
+        if method == "autosubs":
+            text_content = self._fetch_transcript_autosubs(video_id)
+            if not text_content or not text_content.strip():
+                raise RuntimeError("yt-dlp autosubs returned empty transcript")
+            return text_content
+
+        raise ValueError(f"Unsupported transcript_pref: {transcript_pref}")
     
     def _fetch_transcript_whisper_local(self, video_id: str) -> Optional[str]:
         """
@@ -235,8 +235,52 @@ class YouTubeAdapter:
         # 2. Running Whisper locally on the audio
         # 3. Returning the transcribed text
         
-        logger.debug(f"Whisper local transcription not yet implemented for {video_id}")
-        return None
+        logger.debug(f"Whisper local transcription not implemented for {video_id}")
+        raise NotImplementedError("whisper_local transcription not implemented")
+
+    def _fetch_transcript_autosubs(self, video_id: str) -> Optional[str]:
+        """Fetch subtitles via yt-dlp auto-sub feature and parse VTT."""
+        sources_dir = Path("data/sources")
+        sources_dir.mkdir(parents=True, exist_ok=True)
+        url = f"https://www.youtube.com/watch?v={video_id}"
+        cmd = [
+            "yt-dlp",
+            "--skip-download",
+            "--write-auto-sub",
+            "--sub-lang", "en",
+            "--convert-subs", "vtt",
+            "-o", str(sources_dir / f"{video_id}_%(ext)s.%(ext)s"),
+            url,
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=self.transcript_timeout)
+        if result.returncode != 0:
+            logger.warning(f"yt-dlp returned {result.returncode} for {video_id}: {result.stderr.strip()}")
+            return None
+        vtts = list(sources_dir.glob(f"{video_id}_*.vtt"))
+        if not vtts:
+            return None
+        return self._parse_vtt_file(vtts[0])
+
+    def _parse_vtt_file(self, vtt_path: Path) -> str:
+        """Parse a .vtt subtitle file into plain text."""
+        try:
+            lines: list[str] = []
+            with open(vtt_path, "r", encoding="utf-8", errors="ignore") as f:
+                for line in f:
+                    s = line.strip()
+                    if not s:
+                        continue
+                    if s.startswith("WEBVTT"):
+                        continue
+                    if "-->" in s:
+                        continue
+                    if s.isdigit():
+                        continue
+                    lines.append(s)
+            return "\n".join(lines)
+        except Exception as e:
+            logger.warning(f"Failed to parse VTT {vtt_path}: {e}")
+            return ""
     
     def get_video_metadata(self, video_id: str) -> Optional[Dict[str, Any]]:
         """Get additional video metadata"""

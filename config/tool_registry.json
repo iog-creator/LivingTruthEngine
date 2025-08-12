@@ -21,23 +21,71 @@
         },
         {
           "name": "start_veritas_run",
-          "description": "Start a verifiable Veritas run and write a .veritasrun bundle.",
+          "description": "Start a Phase 8 verifiable Veritas run with flexible parameters and write a .veritasrun bundle.",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
           "function": "start_veritas_run",
           "params_schema": {
             "topic": {
               "type": "string",
-              "required": true
+              "required": true,
+              "description": "Run topic/name"
             },
-            "max_docs": {
+            "channel_url": {
+              "type": "string",
+              "required": false,
+              "description": "YouTube channel URL (defaults to Imagination Podcast)"
+            },
+            "selection": {
+              "type": "string",
+              "required": false,
+              "default": "oldest",
+              "description": "Video selection method (oldest|latest|by_date_range|ids)"
+            },
+            "max_videos": {
               "type": "int",
               "required": false,
-              "default": 10
+              "default": 10,
+              "description": "Maximum videos to process"
+            },
+            "crawl_depth": {
+              "type": "int",
+              "required": false,
+              "default": 1,
+              "description": "Web crawling depth (0-3)"
+            },
+            "allow_domains": {
+              "type": "list",
+              "required": false,
+              "description": "Allowed domains for web crawling"
+            },
+            "deny_domains": {
+              "type": "list",
+              "required": false,
+              "description": "Denied domains for web crawling"
+            },
+            "transcript_pref": {
+              "type": "string",
+              "required": false,
+              "default": "autosubs",
+              "description": "Transcript preference (yt_api|whisper_local|both)"
+            },
+            "ocr_mode": {
+              "type": "string",
+              "required": false,
+              "default": "off",
+              "description": "OCR mode (off|auto|manual|auto_retry)"
+            },
+            "auto_retry_attempts": {
+              "type": "int",
+              "required": false,
+              "default": 2,
+              "description": "Number of OCR retry attempts"
             },
             "sources": {
               "type": "list",
-              "required": false
+              "required": false,
+              "description": "Source types to process (youtube, web, pdf)"
             }
           }
         },
@@ -82,6 +130,42 @@
           }
         },
         {
+          "name": "analyze_veritas_summary",
+          "description": "Summarize a document from a Veritas run (minimal snippet).",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "analyze_veritas_summary",
+          "params_schema": {
+            "run_id": {
+              "type": "string",
+              "required": true
+            },
+            "document_index": {
+              "type": "int",
+              "required": false,
+              "default": 0
+            }
+          }
+        },
+        {
+          "name": "analyze_veritas_claims",
+          "description": "Extract claims from a document in a Veritas run (minimal stub).",
+          "server": "living_truth_fastmcp_server",
+          "module": "src.mcp_servers.living_truth_fastmcp_server",
+          "function": "analyze_veritas_claims",
+          "params_schema": {
+            "run_id": {
+              "type": "string",
+              "required": true
+            },
+            "document_index": {
+              "type": "int",
+              "required": false,
+              "default": 0
+            }
+          }
+        },
+        {
           "name": "reanalyze_with_gates",
           "description": "Reanalyze a run with gating parameters (placeholder).",
           "server": "living_truth_fastmcp_server",
@@ -99,11 +183,11 @@
           }
         },
         {
-          "name": "query_flowise",
-          "description": "Query the Flowise chatflow for survivor testimony analysis (DEPRECATED - use query_langflow).",
+          "name": "query_Langflow",
+          "description": "Query the Langflow workflow for survivor testimony analysis (DEPRECATED - use query_langflow).",
           "server": "living_truth_fastmcp_server",
           "module": "src.mcp_servers.living_truth_fastmcp_server",
-          "function": "query_flowise",
+          "function": "query_Langflow",
           "params_schema": {
             "param": {
               "type": "string",

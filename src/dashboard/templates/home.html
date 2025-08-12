@@ -24,7 +24,18 @@
         </div>
 
         <form id="quick-start-form" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+            <!-- Preflight Status -->
+            <div id="preflight-status" class="hidden p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-info-circle text-blue-600"></i>
+                    <div>
+                        <h4 class="font-medium text-gray-900">Preflight Check</h4>
+                        <p id="preflight-message" class="text-sm text-gray-600">Checking transcript availability...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                 <div>
                     <label for="channel-url" class="block text-sm font-medium text-gray-700 mb-2">
                         Channel URL
@@ -40,19 +51,44 @@
                     <label for="video-limit" class="block text-sm font-medium text-gray-700 mb-2">
                         Video Limit
                     </label>
-                    <input type="number" id="video-limit" name="limit" value="10" min="1" max="50"
+                    <input type="number" id="video-limit" name="limit" value="1" min="1" max="50"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <p class="text-xs text-gray-500 mt-1">Number of videos to analyze</p>
+                    <p class="text-xs text-gray-500 mt-1">Number of videos to analyze (default: 1 for tiny smoke)</p>
                 </div>
 
                 <div>
                     <label for="crawl-depth" class="block text-sm font-medium text-gray-700 mb-2">
                         Crawl Depth
                     </label>
-                    <input type="number" id="crawl-depth" name="max_depth" value="3" min="0" max="3"
+                    <input type="number" id="crawl-depth" name="max_depth" value="1" min="0" max="3"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <p class="text-xs text-gray-500 mt-1">How deep to follow external links</p>
+                    <p class="text-xs text-gray-500 mt-1">How deep to follow external links (default: 1)</p>
                 </div>
+
+                <div>
+                    <label for="transcript-mode" class="block text-sm font-medium text-gray-700 mb-2">
+                        Transcript Mode
+                    </label>
+                    <select id="transcript-mode" name="transcript_mode"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="prefer_official">Prefer Official (fallback allowed)</option>
+                        <option value="official_only">Official Only</option>
+                        <option value="autosubs_only">Auto-subs Only</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">How to handle transcript availability</p>
+                </div>
+            </div>
+
+            <!-- Preset Buttons -->
+            <div class="flex items-center space-x-4">
+                <button type="button" id="tiny-smoke-btn" class="btn-secondary text-sm">
+                    <i class="fas fa-fire mr-1"></i>
+                    Tiny Smoke
+                </button>
+                <button type="button" id="preflight-btn" class="btn-secondary text-sm">
+                    <i class="fas fa-search mr-1"></i>
+                    Preflight Check
+                </button>
             </div>
 
             <!-- Advanced Options (Hidden by default) -->
@@ -127,7 +163,7 @@
                     <i class="fas fa-info-circle mr-1"></i>
                     This will start a comprehensive analysis of the YouTube channel
                 </div>
-                <button type="submit" class="btn-primary">
+                <button type="submit" id="start-btn" class="btn-primary" disabled>
                     <i class="fas fa-play mr-2"></i>
                     Start Analysis
                 </button>
@@ -166,6 +202,9 @@
 
 {% block scripts %}
 <script>
+    let preflightCompleted = false;
+    let preflightDecision = null;
+
     // Toggle advanced options
     document.getElementById('more-options-btn').addEventListener('click', function () {
         const advancedOptions = document.getElementById('advanced-options');
@@ -180,25 +219,117 @@
         }
     });
 
+    // Tiny Smoke preset
+    document.getElementById('tiny-smoke-btn').addEventListener('click', function () {
+        document.getElementById('video-limit').value = '1';
+        document.getElementById('crawl-depth').value = '1';
+        document.getElementById('transcript-mode').value = 'prefer_official';
+        showToast('Tiny Smoke preset applied!', 'info');
+    });
+
+    // Preflight check
+    document.getElementById('preflight-btn').addEventListener('click', async function () {
+        const channelUrl = document.getElementById('channel-url').value;
+        const limit = document.getElementById('video-limit').value;
+        const depth = document.getElementById('crawl-depth').value;
+
+        if (!channelUrl) {
+            showToast('Please enter a channel URL first', 'error');
+            return;
+        }
+
+        try {
+            // Show preflight status
+            const preflightStatus = document.getElementById('preflight-status');
+            const preflightMessage = document.getElementById('preflight-message');
+            preflightStatus.classList.remove('hidden');
+            preflightMessage.textContent = 'Checking transcript availability...';
+
+            // Call preflight endpoint
+            const transcriptMode = document.getElementById('transcript-mode').value;
+            const params = new URLSearchParams({
+                channel_url: channelUrl,
+                limit: limit,
+                depth: depth,
+                transcript_mode: transcriptMode
+            });
+
+            const data = await LTE_API.apiGet(`/api/preflight/youtube?${params}`);
+
+            preflightDecision = data.decision;
+            preflightCompleted = true;
+
+            if (data.decision === 'official') {
+                preflightMessage.textContent = `${data.videos_considered} video(s) with official transcripts available`;
+                preflightStatus.className = 'p-4 border border-green-200 rounded-lg bg-green-50';
+                preflightStatus.querySelector('i').className = 'fas fa-check-circle text-green-600';
+                showToast('Preflight passed: Official transcripts available', 'success');
+            } else if (data.decision === 'autosubs') {
+                preflightMessage.textContent = `${data.videos_considered} video(s) with auto-subs available (quality checks passed)`;
+                preflightStatus.className = 'p-4 border border-yellow-200 rounded-lg bg-yellow-50';
+                preflightStatus.querySelector('i').className = 'fas fa-exclamation-triangle text-yellow-600';
+                showToast('Preflight passed: Auto-subs available', 'warning');
+            } else {
+                preflightMessage.textContent = data.reason;
+                preflightStatus.className = 'p-4 border border-red-200 rounded-lg bg-red-50';
+                preflightStatus.querySelector('i').className = 'fas fa-times-circle text-red-600';
+                showToast('Preflight failed: ' + data.reason, 'error');
+            }
+
+            // Enable/disable start button based on preflight result
+            updateStartButton();
+        } catch (error) {
+            preflightMessage.textContent = 'Preflight check failed: ' + error.message;
+            preflightStatus.className = 'p-4 border border-red-200 rounded-lg bg-red-50';
+            preflightStatus.querySelector('i').className = 'fas fa-times-circle text-red-600';
+            showToast('Preflight failed: ' + error.message, 'error');
+            preflightCompleted = false;
+            updateStartButton();
+        }
+    });
+
+    // Update start button state
+    function updateStartButton() {
+        const startBtn = document.getElementById('start-btn');
+        console.log('updateStartButton called:', { preflightCompleted, preflightDecision });
+        if (preflightCompleted && (preflightDecision === 'official' || preflightDecision === 'autosubs')) {
+            startBtn.disabled = false;
+            startBtn.className = 'btn-primary';
+            console.log('Start button enabled');
+        } else {
+            startBtn.disabled = true;
+            startBtn.className = 'btn-primary opacity-50 cursor-not-allowed';
+            console.log('Start button disabled');
+        }
+    }
+
     // Handle form submission
     document.getElementById('quick-start-form').addEventListener('submit', async function (e) {
         e.preventDefault();
+        console.log('Form submitted!');
 
         const formData = new FormData(this);
         const data = Object.fromEntries(formData.entries());
+        console.log('Form data:', data);
 
         // Convert checkboxes to booleans
         data.ocr_required = formData.has('ocr_required');
         data.js_render = formData.has('js_render');
+        data.hf_burst = formData.has('hf_burst');
 
         // Convert numbers
         data.limit = parseInt(data.limit);
         data.max_depth = parseInt(data.max_depth);
 
+        // Add transcript_mode
+        data.transcript_mode = data.transcript_mode || 'prefer_official';
+
         try {
+            console.log('Making API call to start analysis...');
             showToast('Starting analysis...', 'info');
 
-            const result = await apiCall('/api/runs/youtube/start', 'POST', data);
+            const result = await LTE_API.apiPost('/api/runs/youtube/start', data);
+            console.log('API call result:', result);
 
             showToast('Analysis started successfully!', 'success');
 
@@ -219,7 +350,8 @@
     // Load recent runs
     async function loadRecentRuns() {
         try {
-            const runs = await apiCall('/api/runs');
+            const resp = await LTE_API.apiGet('/api/runs');
+            const runs = Array.isArray(resp) ? resp : (resp || []);
             displayRecentRuns(runs);
         } catch (error) {
             console.error('Failed to load recent runs:', error);
@@ -240,27 +372,58 @@
             return;
         }
 
-        container.innerHTML = runs.map(run => `
-            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+        container.innerHTML = runs.map((run) => {
+            const isString = (typeof run === 'string');
+            const runId = isString ? run : (run.run_id || '');
+            const topic = isString ? `Run ${runId}` : (run.topic || run.run_id || 'Run');
+            const created = isString ? 'Loading…' : (formatDate(run.created_at) || formatDate(run.started_at) || 'Unknown date');
+            const docs = isString ? '' : `${run.doc_count ?? 0} docs`;
+            const status = isString ? 'completed' : (run.status || 'Unknown');
+            return `
+            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50" data-run-id="${runId}">
                 <div class="flex items-center space-x-4">
                     <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                         <i class="fas fa-file-alt text-blue-600"></i>
                     </div>
                     <div>
-                        <h3 class="font-medium text-gray-900">${run.run_id || 'Run'}</h3>
-                        <p class="text-sm text-gray-500">${run.created_at || 'Unknown date'}</p>
+                        <h3 class="font-medium text-gray-900">${topic}</h3>
+                        <p class="text-sm text-gray-500">${created}${docs ? ' · ' + docs : ''}</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <span class="px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(run.status)}">
-                        ${run.status || 'Unknown'}
+                    <span class="px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(status)}">
+                        ${status}
                     </span>
-                    <button onclick="openRun('${run.run_id}')" class="btn-secondary text-sm">
+                    <button onclick="openRun('${runId}')" class="btn-secondary text-sm">
                         Open
                     </button>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
+
+        // Backfill details for string-only items
+        runs.forEach((run) => {
+            if (typeof run !== 'string') return;
+            const runId = run;
+            if (!runId || runId === 'undefined') return; // Skip invalid run IDs
+            const card = container.querySelector(`[data-run-id="${runId}"]`);
+            if (!card) return;
+            LTE_API.apiGet(`/api/runs/${encodeURIComponent(runId)}`)
+                .then(data => {
+                    const manifest = data.manifest || {};
+                    const metrics = data.metrics || {};
+                    const topic = manifest.topic || runId;
+                    const created = manifest.started_at || manifest.created_at || 'Unknown date';
+                    const docCount = (metrics.run_summary && metrics.run_summary.total_documents) || manifest.document_count || 0;
+                    const titleEl = card.querySelector('h3');
+                    const metaEl = card.querySelector('p.text-sm');
+                    if (titleEl) titleEl.textContent = topic;
+                    if (metaEl) metaEl.textContent = `${new Date(created).toLocaleString() || created} · ${docCount} docs`;
+                })
+                .catch((error) => {
+                    console.log('Error fetching run details for', runId, error);
+                });
+        });
     }
 
     // Get status color
@@ -298,6 +461,18 @@
     // Open run details
     function openRun(runId) {
         window.location.href = `/runs?run_id=${runId}`;
+    }
+
+    // Format date helper
+    function formatDate(dateString) {
+        if (!dateString || dateString === 'Unknown') return 'Unknown date';
+        try {
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'Unknown date';
+            return date.toLocaleString();
+        } catch (e) {
+            return 'Unknown date';
+        }
     }
 
     // Load data on page load

@@ -1,10 +1,7 @@
 ---
-alwaysApply: true
 description: Rule for Coding Standards
+alwaysApply: false
 ---
-
-
-
 # Coding Standards for AI-Assisted Development
 
 ## Description

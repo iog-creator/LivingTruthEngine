@@ -1,14 +1,7 @@
 ---
-alwaysApply: true
-description: Rule for Project Overview
+description: This rule provides a comprehensive overview of the Living Truth Engine project, including architecture, components, and development guidelines.
+alwaysApply: false
 ---
-
-
-alwaysApply: true
-# Living Truth Engine - Project Overview
-
-## Description
-This rule provides a comprehensive overview of the Living Truth Engine project, including architecture, components, and development guidelines.
 
 ## 🎯 **Project Overview**
 

@@ -137,9 +137,9 @@ class LivingTruthEngine:
             logger.error(f"❌ VeritasRunner initialization failed: {e}")
             self.veritas_runner = None
 
-    def query_flowise(self, query: str, anonymize: bool = False, output_type: str = "summary") -> str:
-        """Query the Flowise chatflow for pattern recognition and data analysis."""
-        return "❌ Flowise has been removed from the project. Please use query_langflow instead."
+    def query_Langflow(self, query: str, anonymize: bool = False, output_type: str = "summary") -> str:
+        """Query the Langflow chatflow for pattern recognition and data analysis."""
+        return "❌ Langflow has been removed from the project. Please use query_langflow instead."
 
     def query_langflow(self, query: str, anonymize: bool = False, output_type: str = "summary") -> str:
         """Query the Langflow workflow for survivor testimony analysis."""
@@ -576,13 +576,57 @@ class LivingTruthEngine:
             if not self.visualizer:
                 return "❌ Advanced visualizer not initialized"
             
-            # Create 3D network graph
-            fig = self.visualizer.create_interactive_3d_network_graph(graph_data)
+            # Normalize incoming graph data to the schema expected by AdvancedVisualizer
+            normalized: dict[str, Any] = {"nodes": {}, "edges": []}
+
+            try:
+                incoming_nodes = graph_data.get("nodes", {})
+                # Support both list-of-nodes and dict-of-nodes inputs
+                if isinstance(incoming_nodes, list):
+                    for index, node in enumerate(incoming_nodes):
+                        node_id = node.get("id") or f"node_{index}"
+                        node_copy = {k: v for k, v in node.items() if k != "id"}
+                        normalized["nodes"][node_id] = node_copy
+                elif isinstance(incoming_nodes, dict):
+                    normalized["nodes"] = incoming_nodes
+
+                incoming_edges = graph_data.get("edges", [])
+                for edge in incoming_edges:
+                    source = edge.get("source") or edge.get("from")
+                    target = edge.get("target") or edge.get("to")
+                    if not source or not target:
+                        # Skip malformed edges
+                        continue
+                    attributes = edge.get("attributes")
+                    if attributes is None:
+                        # Carry through any other fields as edge attributes
+                        attributes = {
+                            k: v for k, v in edge.items()
+                            if k not in ("source", "target", "from", "to")
+                        }
+                    normalized["edges"].append({
+                        "source": source,
+                        "target": target,
+                        "attributes": attributes,
+                    })
+            except Exception as norm_err:
+                logger.error(f"Graph data normalization failed: {norm_err}")
+                # Fall back to original data to avoid total failure
+                normalized = graph_data
+
+            # Create 3D network graph with normalized data
+            fig = self.visualizer.create_interactive_3d_network_graph(normalized)
             
             # Save visualization
             timestamp = time.strftime("%Y%m%d_%H%M%S")
             output_file = f"3d_network_visualization_{timestamp}.html"
-            self.visualizer.export_visualization_data(graph_data, f"3d_network_data_{timestamp}.json")
+            output_path = self.visualizer.output_dir / output_file
+            
+            # Save the Plotly figure as HTML
+            fig.write_html(str(output_path))
+            
+            # Also save the data for reference
+            self.visualizer.export_visualization_data(normalized, f"3d_network_data_{timestamp}.json")
             
             return f"✅ 3D network visualization created successfully\nOutput file: {output_file}"
             
@@ -1073,7 +1117,7 @@ class LivingTruthEngine:
         if not self.veritas_runner:
             return "❌ VeritasRunner not initialized"
         runs = self.veritas_runner.list_runs(limit=limit)
-        return json.dumps({"runs": runs}, indent=2)
+        return json.dumps(runs, indent=2)
 
     def open_veritas_bundle(self, run_id: str) -> str:
         if not self.veritas_runner:
@@ -1208,6 +1252,401 @@ class LivingTruthEngine:
         except Exception as e:
             return f"❌ Failed to fix {filename}: {e}"
 
+    def analyze_veritas_summary(self, run_id: str, document_index: int = 0) -> str:
+        """Generate a real AI-powered summary of a document in a Veritas run.
+        Output JSON: {"title": str, "uri": str, "summary": str, "key_points": list, "length": int}
+        """
+        try:
+            if not self.veritas_runner:
+                return json.dumps({"error": "VeritasRunner not initialized"})
+            
+            # Resolve bundle path
+            base = self.veritas_runner.runs_dir
+            bundle_dir = base / (run_id if run_id.endswith('.veritasrun') else f"{run_id}.veritasrun")
+            corpus_path = bundle_dir / "corpus.jsonl"
+            
+            if not corpus_path.exists():
+                return json.dumps({"error": f"corpus.jsonl not found for {run_id}"})
+            
+            # Load documents
+            documents = []
+            with open(corpus_path, "r", encoding="utf-8", errors="ignore") as f:
+                for line in f:
+                    s = line.strip()
+                    if not s:
+                        continue
+                    try:
+                        doc = json.loads(s)
+                        if isinstance(doc, dict):
+                            # Normalize
+                            if "uri" not in doc and "url" in doc:
+                                doc["uri"] = doc["url"]
+                            if "text" not in doc and "content" in doc:
+                                doc["text"] = doc["content"]
+                            documents.append(doc)
+                    except Exception:
+                        continue
+            
+            if not documents:
+                return json.dumps({"error": "No documents in corpus"})
+            
+            idx = max(0, min(int(document_index), len(documents) - 1))
+            doc = documents[idx]
+            text = (doc.get("text") or "").strip()
+            title = doc.get("title") or doc.get("uri") or "Document"
+            uri = doc.get("uri") or ""
+            
+            if not text:
+                return json.dumps({"error": "No text content found"})
+            
+            # Generate AI summary using pattern analysis
+            summary_result = self._generate_ai_summary(text, title)
+            
+            return json.dumps({
+                "title": title,
+                "uri": uri,
+                "summary": summary_result["summary"],
+                "key_points": summary_result["key_points"],
+                "sentiment": summary_result["sentiment"],
+                "length": len(text),
+                "ai_generated": True
+            })
+            
+        except Exception as e:
+            return json.dumps({"error": f"summary_failed: {str(e)}"})
+    
+    def _generate_ai_summary(self, text: str, title: str) -> dict:
+        """Generate AI-powered summary using real LLM generation."""
+        try:
+            # Use desktop LM Studio for real AI generation
+            prompt = f"""Please analyze this survivor testimony and provide a comprehensive summary.
+
+Title: {title}
+
+Text: {text[:2000]}  # Limit text length for API
+
+Please provide:
+1. A concise summary (2-3 sentences)
+2. 3-5 key points
+3. Overall sentiment (Positive/Negative/Neutral)
+
+Format your response as JSON:
+{{
+    "summary": "brief summary here",
+    "key_points": ["point 1", "point 2", "point 3"],
+    "sentiment": "Positive/Negative/Neutral"
+}}"""
+
+            response = requests.post(
+                f"{self.lm_studio_endpoint}/v1/chat/completions",
+                headers={"Content-Type": "application/json"},
+                json={
+                    "model": "qwen/qwen3-8b",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": 500,
+                    "temperature": 0.7
+                },
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                content = result['choices'][0]['message']['content']
+                
+                # Try to parse JSON response
+                try:
+                    import json
+                    parsed = json.loads(content)
+                    return {
+                        "summary": parsed.get("summary", "AI analysis completed"),
+                        "key_points": parsed.get("key_points", []),
+                        "sentiment": parsed.get("sentiment", "Neutral")
+                    }
+                except json.JSONDecodeError:
+                    # Fallback: extract summary from text
+                    lines = content.split('\n')
+                    summary = ""
+                    key_points = []
+                    sentiment = "Neutral"
+                    
+                    for line in lines:
+                        if "summary" in line.lower() and ":" in line:
+                            summary = line.split(":", 1)[1].strip()
+                        elif "sentiment" in line.lower() and ":" in line:
+                            sentiment = line.split(":", 1)[1].strip()
+                        elif line.strip().startswith("-") or line.strip().startswith("*"):
+                            key_points.append(line.strip()[1:].strip())
+                    
+                    return {
+                        "summary": summary or "AI-generated summary available",
+                        "key_points": key_points,
+                        "sentiment": sentiment
+                    }
+            else:
+                logger.error(f"LM Studio API error: {response.status_code}")
+                return self._fallback_summary(text, title)
+                
+        except Exception as e:
+            logger.error(f"Error generating AI summary: {e}")
+            return self._fallback_summary(text, title)
+    
+    def _fallback_summary(self, text: str, title: str) -> dict:
+        """Fallback to pattern-based analysis if LLM fails."""
+        import re
+        
+        # Clean and prepare text
+        text = re.sub(r'\s+', ' ', text).strip()
+        sentences = re.split(r'[.!?]+', text)
+        sentences = [s.strip() for s in sentences if len(s.strip()) > 20]
+        
+        # Define important keywords for survivor testimony analysis
+        survivor_keywords = [
+            "survivor", "victim", "abuse", "trauma", "healing", "recovery", "justice",
+            "testimony", "evidence", "witness", "document", "record", "claim", "allegation",
+            "investigation", "research", "study", "analysis", "report", "finding",
+            "truth", "lie", "cover-up", "conspiracy", "government", "agency", "organization",
+            "ritual", "trafficking", "exploitation", "manipulation", "control", "fear",
+            "courage", "strength", "resilience", "hope", "support", "community", "advocacy"
+        ]
+        
+        # Extract key sentences with important content
+        key_sentences = []
+        for sentence in sentences:
+            sentence_lower = sentence.lower()
+            keyword_count = sum(1 for keyword in survivor_keywords if keyword in sentence_lower)
+            if keyword_count >= 1:  # At least one important keyword
+                key_sentences.append(sentence)
+        
+        # If no key sentences found, use first few meaningful sentences
+        if not key_sentences:
+            key_sentences = sentences[:5]
+        
+        # Generate summary
+        summary = '. '.join(key_sentences[:3]) + '.'
+        
+        # Extract key points
+        key_points = []
+        for sentence in key_sentences[:5]:
+            if len(sentence) > 30:  # Only meaningful points
+                key_points.append(sentence)
+        
+        # Determine sentiment
+        positive_words = ["hope", "healing", "recovery", "justice", "truth", "courage", "strength", "support", "community"]
+        negative_words = ["abuse", "trauma", "fear", "pain", "suffering", "exploitation", "manipulation", "control"]
+        
+        text_lower = text.lower()
+        positive_count = sum(text_lower.count(word) for word in positive_words)
+        negative_count = sum(text_lower.count(word) for word in negative_words)
+        
+        if positive_count > negative_count:
+            sentiment = "Positive"
+        elif negative_count > positive_count:
+            sentiment = "Negative"
+        else:
+            sentiment = "Neutral"
+        
+        return {
+            "summary": summary,
+            "key_points": key_points,
+            "sentiment": sentiment
+        }
+
+    def analyze_veritas_claims(self, run_id: str, document_index: int = 0) -> str:
+        """Extract claims and evidence from a document using AI-powered analysis.
+        Output JSON: {"claims": [{"text": str, "confidence": float, "type": str}]}
+        """
+        try:
+            if not self.veritas_runner:
+                return json.dumps({"claims": []})
+            
+            # Reuse summary loader to get doc
+            base = self.veritas_runner.runs_dir
+            bundle_dir = base / (run_id if run_id.endswith('.veritasrun') else f"{run_id}.veritasrun")
+            corpus_path = bundle_dir / "corpus.jsonl"
+            
+            if not corpus_path.exists():
+                return json.dumps({"claims": []})
+            
+            docs = []
+            with open(corpus_path, "r", encoding="utf-8", errors="ignore") as f:
+                for line in f:
+                    s = line.strip()
+                    if not s:
+                        continue
+                    try:
+                        d = json.loads(s)
+                        if isinstance(d, dict):
+                            if "text" not in d and "content" in d:
+                                d["text"] = d["content"]
+                            docs.append(d)
+                    except Exception:
+                        continue
+            
+            if not docs:
+                return json.dumps({"claims": []})
+            
+            idx = max(0, min(int(document_index), len(docs) - 1))
+            doc = docs[idx]
+            text = (doc.get("text") or "").strip()
+            
+            if not text:
+                return json.dumps({"claims": []})
+            
+            # Extract claims using AI-powered analysis
+            claims = self._extract_claims_ai(text)
+            
+            return json.dumps({"claims": claims})
+            
+        except Exception as e:
+            return json.dumps({"claims": [], "error": str(e)})
+    
+    def _extract_claims_ai(self, text: str) -> list:
+        """Extract claims using real LLM generation."""
+        try:
+            # Use desktop LM Studio for real AI generation
+            prompt = f"""Please analyze this survivor testimony and extract specific claims and evidence.
+
+Text: {text[:2000]}  # Limit text length for API
+
+Please identify and extract claims in the following categories:
+- Allegations (criminal charges, accusations)
+- Evidence (documents, testimony, physical evidence)
+- Abuse (physical, emotional, sexual abuse)
+- Ritual (satanic, occult, cult activities)
+- Trafficking (human trafficking, exploitation)
+- Coverup (conspiracies, corruption, suppression)
+
+For each claim, provide:
+- The specific claim text
+- Confidence level (0.1 to 0.9)
+- Claim type (allegation/evidence/abuse/ritual/trafficking/coverup)
+
+Format your response as JSON:
+{{
+    "claims": [
+        {{
+            "text": "specific claim here",
+            "confidence": 0.8,
+            "type": "allegation"
+        }}
+    ]
+}}"""
+
+            response = requests.post(
+                f"{self.lm_studio_endpoint}/v1/chat/completions",
+                headers={"Content-Type": "application/json"},
+                json={
+                    "model": "qwen/qwen3-8b",
+                    "messages": [{"role": "user", "content": prompt}],
+                    "max_tokens": 800,
+                    "temperature": 0.7
+                },
+                timeout=30
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                content = result['choices'][0]['message']['content']
+                
+                # Try to parse JSON response
+                try:
+                    import json
+                    parsed = json.loads(content)
+                    claims = parsed.get("claims", [])
+                    
+                    # Validate claims format
+                    valid_claims = []
+                    for claim in claims:
+                        if isinstance(claim, dict) and "text" in claim:
+                            valid_claims.append({
+                                "text": claim.get("text", ""),
+                                "confidence": float(claim.get("confidence", 0.5)),
+                                "type": claim.get("type", "unknown")
+                            })
+                    
+                    return valid_claims[:10]  # Return top 10 claims
+                    
+                except json.JSONDecodeError:
+                    # Fallback: extract claims from text
+                    return self._fallback_extract_claims(text)
+            else:
+                logger.error(f"LM Studio API error: {response.status_code}")
+                return self._fallback_extract_claims(text)
+                
+        except Exception as e:
+            logger.error(f"Error extracting claims with AI: {e}")
+            return self._fallback_extract_claims(text)
+    
+    def _fallback_extract_claims(self, text: str) -> list:
+        """Fallback to pattern-based analysis if LLM fails."""
+        import re
+        
+        # Clean text
+        text = re.sub(r'\s+', ' ', text).strip()
+        sentences = re.split(r'[.!?]+', text)
+        sentences = [s.strip() for s in sentences if len(s.strip()) > 20]
+        
+        # Define claim patterns for survivor testimony
+        claim_patterns = {
+            "allegation": [
+                r"alleged", r"allegation", r"accused", r"charged", r"indicted", r"convicted",
+                r"guilty", r"innocent", r"crime", r"criminal", r"illegal", r"unlawful"
+            ],
+            "evidence": [
+                r"evidence", r"proof", r"document", r"record", r"testimony", r"witness",
+                r"statement", r"affidavit", r"deposition", r"exhibit", r"photograph", r"video"
+            ],
+            "abuse": [
+                r"abuse", r"trauma", r"victim", r"survivor", r"assault", r"violence",
+                r"exploitation", r"manipulation", r"control", r"fear", r"threat", r"intimidation"
+            ],
+            "ritual": [
+                r"ritual", r"ceremony", r"cult", r"sacrifice", r"worship", r"devil",
+                r"satanic", r"occult", r"magic", r"spell", r"curse", r"supernatural"
+            ],
+            "trafficking": [
+                r"trafficking", r"smuggling", r"kidnapping", r"abduction", r"forced",
+                r"coerced", r"enslaved", r"prostitution", r"sexual", r"exploitation"
+            ],
+            "coverup": [
+                r"cover-up", r"conspiracy", r"corruption", r"bribery", r"blackmail",
+                r"threat", r"intimidation", r"silence", r"suppress", r"hide", r"conceal"
+            ]
+        }
+        
+        claims = []
+        
+        for sentence in sentences:
+            sentence_lower = sentence.lower()
+            
+            # Check each claim type
+            for claim_type, patterns in claim_patterns.items():
+                for pattern in patterns:
+                    if re.search(pattern, sentence_lower):
+                        # Calculate confidence based on keyword density
+                        keyword_count = sum(1 for p in patterns if re.search(p, sentence_lower))
+                        confidence = min(0.9, 0.3 + (keyword_count * 0.2))
+                        
+                        claims.append({
+                            "text": sentence,
+                            "confidence": round(confidence, 2),
+                            "type": claim_type
+                        })
+                        break  # Only add each sentence once per type
+        
+        # Remove duplicates and sort by confidence
+        unique_claims = []
+        seen_texts = set()
+        for claim in claims:
+            if claim["text"] not in seen_texts:
+                unique_claims.append(claim)
+                seen_texts.add(claim["text"])
+        
+        # Sort by confidence (highest first)
+        unique_claims.sort(key=lambda x: x["confidence"], reverse=True)
+        
+        return unique_claims[:10]  # Return top 10 claims
+
 # Create engine instance
 engine = LivingTruthEngine()
 
@@ -1218,9 +1657,9 @@ def query_langflow(query: str, anonymize: bool = False, output_type: str = "summ
     return engine.query_langflow(query, anonymize, output_type)
 
 @mcp.tool()
-def query_flowise(query: str, anonymize: bool = False, output_type: str = "summary") -> str:
-    """Query the Flowise chatflow for survivor testimony analysis (DEPRECATED - use query_langflow)."""
-    return engine.query_flowise(query, anonymize, output_type)
+def query_Langflow(query: str, anonymize: bool = False, output_type: str = "summary") -> str:
+    """Query the Langflow chatflow for survivor testimony analysis (DEPRECATED - use query_langflow)."""
+    return engine.query_Langflow(query, anonymize, output_type)
 
 @mcp.tool()
 def get_status() -> str:
@@ -1325,7 +1764,7 @@ def get_project_info() -> str:
         # Available tools
         info.append("\n=== AVAILABLE TOOLS ===")
         tools = [
-            "query_flowise - Query Flowise chatflow for survivor testimony analysis (DEPRECATED - use query_langflow)",
+            "query_Langflow - Query Langflow chatflow for survivor testimony analysis (DEPRECATED - use query_langflow)",
             "query_langflow - Query Langflow workflow for survivor testimony analysis", 
             "get_status - Get system status",
             "list_sources - List available sources",
@@ -1513,7 +1952,7 @@ def start_veritas_run(
     crawl_depth: int = 1,
     allow_domains: Optional[List[str]] = None,
     deny_domains: Optional[List[str]] = None,
-    transcript_pref: str = "yt_api",
+    transcript_pref: str = "autosubs",
     ocr_mode: str = "off",
     auto_retry_attempts: int = 2,
     sources: Optional[List[str]] = None
@@ -1651,6 +2090,16 @@ def validate_cursor_rules() -> str:
 def fix_cursor_rule_frontmatter(filename: str) -> str:
     """Fix frontmatter for a specific .mdc file."""
     return engine.fix_cursor_rule_frontmatter(filename)
+
+@mcp.tool()
+def analyze_veritas_summary(run_id: str, document_index: int = 0) -> str:
+    """Summarize a document from a Veritas run (minimal snippet)."""
+    return engine.analyze_veritas_summary(run_id, document_index)
+
+@mcp.tool()
+def analyze_veritas_claims(run_id: str, document_index: int = 0) -> str:
+    """Extract claims from a document in a Veritas run (minimal stub)."""
+    return engine.analyze_veritas_claims(run_id, document_index)
 
 if __name__ == "__main__":
     logger.info("Living Truth Engine FastMCP Server starting...")

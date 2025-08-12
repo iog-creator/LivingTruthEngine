@@ -15,11 +15,30 @@ import spacy
 from collections import defaultdict
 import pandas as pd
 from dataclasses import dataclass, asdict
-import tkinter as tk
-from tkinter import ttk, messagebox, filedialog, simpledialog
+try:
+    import tkinter as tk
+    from tkinter import ttk, messagebox, filedialog, simpledialog
+    GUI_AVAILABLE = True
+except Exception:  # ImportError or missing tk runtime in headless/container
+    GUI_AVAILABLE = False
+    tk = None
+    # Provide minimal placeholders to avoid NameErrors if referenced indirectly
+    class _Stub:  # simple no-op stub for ttk/messagebox/filedialogs
+        def __getattr__(self, name):
+            def _noop(*args, **kwargs):
+                return None
+            return _noop
+    ttk = _Stub()
+    messagebox = _Stub()
+    filedialog = _Stub()
+    simpledialog = _Stub()
 import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend for Docker
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+try:
+    from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # noqa: F401
+except Exception:
+    # In headless environments without Tk, skip the TkAgg backend import
+    FigureCanvasTkAgg = None
 import webbrowser
 import logging
 

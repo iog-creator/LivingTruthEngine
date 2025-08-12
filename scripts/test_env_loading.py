@@ -17,9 +17,9 @@ print(f".env file exists: {(project_root / '.env').exists()}")
 
 # Test key environment variables
 env_vars = [
-    'FLOWISE_API_ENDPOINT',
-    'FLOWISE_API_KEY', 
-    'FLOWISE_CHATFLOW_ID',
+    'Langflow_API_ENDPOINT',
+    'Langflow_API_KEY', 
+    'Langflow_CHATFLOW_ID',
     'LANGCHAIN_API_KEY',
     'SERP_API_KEY'
 ]

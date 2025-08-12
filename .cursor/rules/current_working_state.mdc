@@ -1,10 +1,7 @@
 ---
 description: Current working state of the Living Truth Engine project, documenting
-  all operational services and their configurations
-alwaysApply: true
+alwaysApply: false
 ---
-
-
 # Living Truth Engine - Current Working State
 
 ## Description
@@ -26,7 +23,7 @@ All services are running successfully in the `LivingTruthEngine` project:
    - Caching and session management
    - Responding to ping commands
 
-3. **✅ PostgreSQL**: `living-truth-postgres` - port 5432 (healthy)
+3. **✅ PostgreSQL**: `living-truth-postgres` - port 5434→5432 (healthy)
    - Primary database with langflow database
    - Database: langflow (with proper permissions)
    - User: langflow (with full privileges)
@@ -49,13 +46,21 @@ All services are running successfully in the `LivingTruthEngine` project:
    - API endpoints available
 
 7. **✅ Unified Dashboard**: `living-truth-dashboard` - port 8050 (healthy)
-   - **Phase 8.1 Complete**: Unified guided dashboard with 4-tab interface
+   - **Phase 8.3 Complete**: Strict MCP-only operation with health gates
    - Web interface: http://localhost:8050
    - Health: `GET /api/health` → `{"status":"healthy","service":"unified_dashboard"}`
+   - Health (Full): `GET /api/health/full` → Comprehensive health gates check
    - **Tabs**: Home (Quick Start), Runs, Analyze, Advanced
    - **Features**: Guided workflows, progress tracking, activity feed, responsive design
    - **KPI Achieved**: Time to first analysis < 60 seconds
+   - **Strict Mode**: All endpoints use MCP-only operation (no filesystem fallbacks)
+   - **Health Gates**: All dependencies must be healthy before starting runs
    - **API**: Stable `/api/*` endpoints with standardized response format
+   - **API Shapes (updated)**:
+     - `GET /api/runs` returns items shaped `{ run_id, created_at, doc_count, status }` via MCP only
+     - `GET /api/runs/{run_id}` returns `{ run_id, manifest, metrics, merkle }` via MCP only
+     - `GET /api/runs/{run_id}/corpus` returns `{ documents: [...] }` via MCP only
+     - All endpoints return 503 with `MCP_UNAVAILABLE` error if MCP Hub Server is down
 
 #### **Phase 8 Real Data Ingestion (✅ Complete)**
 - **✅ YouTube Channel Adapter**: Real discovery and processing from Imagination Station channel
@@ -65,6 +70,9 @@ All services are running successfully in the `LivingTruthEngine` project:
 - **✅ Dashboard Controls**: Full control over ingestion parameters via web interface
 - **✅ MCP Integration**: All Phase 8 features accessible via MCP tools
 - **✅ Flag Loading**: Proper configuration management from veritas_flags.toml
+- **✅ Transcript Processing**: Fixed YouTube Transcript API integration for complete transcript extraction
+- **✅ Bundle Creation**: MCP tools successfully create complete bundles with transcripts
+- **✅ Tool Registry**: Updated parameter schema to match actual implementation
 
 #### **Phase 8.1 Unified Dashboard (✅ Complete)**
 - **✅ Navigation Overhaul**: 4-tab interface (Home, Runs, Analyze, Advanced)
@@ -75,6 +83,27 @@ All services are running successfully in the `LivingTruthEngine` project:
 - **✅ Global UI**: Progress toasts, activity feed, contextual help, responsive design
 - **✅ API Foundation**: Stable `/api/*` endpoints with standardized response format
 - **✅ User Experience**: Non-technical users can start immediately with guided workflows
+
+#### **Phase 8.3 No Fallbacks, Verified Ingestion (✅ Complete)**
+- **✅ Health Gates**: Comprehensive health check endpoint `/api/health/full` with all dependency gates
+- **✅ Strict MCP-Only Operation**: All endpoints return 503 when MCP Hub Server is unavailable
+- **✅ No Filesystem Fallbacks**: Removed all fallback mechanisms for runs, tools, and corpus data
+- **✅ Verified Ingestion**: YouTube start endpoint validates bundle structure and transcript content
+- **✅ Bundle Verification**: Ensures required files (manifest, corpus, merkle, metrics) are present
+- **✅ Transcript Validation**: Verifies non-empty transcripts with proper source_type
+- **✅ Error Handling**: Explicit error codes and detailed error messages for all failure modes
+- **✅ Structured Logging**: Trace IDs and detailed logging for all operations
+- **✅ Comprehensive Testing**: 28 tests covering no-fallbacks, health gates, and ingestion scenarios
+- **✅ Observability**: Clear error messages and structured logging make failures obvious
+
+#### **Phase 8.2 MCP Tools Enhancement (✅ Complete)**
+- **✅ YouTube Transcript API Fix**: Fixed API usage from `get_transcript()` to `fetch()` method
+- **✅ Transcript Parsing Fix**: Updated to use `entry.text` for `FetchedTranscriptSnippet` objects
+- **✅ Tool Registry Update**: Updated parameter schema to match actual implementation
+- **✅ Bundle Creation**: MCP tools successfully create complete `.veritasrun` bundles with transcripts
+- **✅ MCP Hub Server Integration**: Tools properly registered and accessible through hub
+- **✅ Performance Monitoring**: Active monitoring with warnings for >2s execution times
+- **✅ Test Verification**: `test_phase8_mcp_tools` and `test_phase8_bundle_structure` passing
 
 #### **MCP Hub Server (Cursor Integration)**
 **✅ MCP Hub Server**: Single consolidated server solving 63-tool limit issue
@@ -127,7 +156,7 @@ All services are running successfully in the `LivingTruthEngine` project:
 - **✅ Flow Components**: Planner, SubAgents, Writer, Condition, Loop nodes
 - **✅ MCP Integration**: Direct Langflow MCP server (`lf-cursor`) + MCP Hub Server tools
 - **✅ Model Integration**: Qwen3-8B and Qwen3-0.6B via LM Studio (port 1234)
-- **✅ Vector Search**: pgVectorSearch with PostgreSQL (port 5432)
+- **✅ Vector Search**: pgVectorSearch with PostgreSQL (port 5434→5432)
 - **✅ Schema Extraction**: `scripts/setup/extract_langflow_schemas_simple.py` generates `config/langflow_schemas.json` from local Langflow code
 - **✅ Flow Generation**: `scripts/setup/generate_langflow_flow.py` creates flow using predefined component schemas
 - **✅ Langflow MCP Server**: Direct connection via `mcp_lf-cursor_*` tools in Cursor
@@ -297,7 +326,7 @@ redis-cli ping  # Redis
 
 ### **Configuration Requirements**
 - **Langflow API endpoint**: http://localhost:7860 (not 3100)
-- **PostgreSQL port**: 5432 (default)
+- **PostgreSQL port**: 5434→5432 (default)
 - **Neo4j ports**: 7474/7687
 - **All services must be in LivingTruthEngine group**
 
@@ -312,10 +341,11 @@ redis-cli ping  # Redis
 - ✅ **100% MCP server functionality** with green dots (8 servers, 23+ tools)
 - ✅ **100% Langflow operational** with health checks
 - ✅ **100% database connectivity** with proper permissions
-- ✅ **100% Unified Dashboard operational** with guided workflows, <60s KPI, and fallback file system access
+- ✅ **100% Unified Dashboard operational** with guided workflows, <60s KPI, and strict MCP-only operation
 - ✅ **100% proper error handling** - no fallback mechanisms, clear error reporting
 - ✅ **100% Phase 8 implementation** - Real data ingestion with all features operational
 - ✅ **100% Phase 8.1 implementation** - Unified guided dashboard with user-friendly interface
+- ✅ **100% Phase 8.3 implementation** - No fallbacks, verified ingestion, health gates, structured logging, comprehensive testing
 - ✅ **100% flag loading system** - Proper configuration management from veritas_flags.toml
 - ✅ **100% test coverage** - Phase 7 (3/3) and Phase 8 (3/3) tests passing with real data
 - ✅ **100% performance targets met** - all services under 2s response time
@@ -326,7 +356,7 @@ redis-cli ping  # Redis
 
 ---
 
-**Status**: ✅ **FULLY OPERATIONAL** - All services implemented according to InstructionsV1.md specifications: Unified dashboard service with guided workflows, proper error handling (no fallbacks), comprehensive functional testing, all 8 MCP servers functional, Phase 8 real data ingestion complete, and Phase 8.1 unified interface complete. System is production-ready and stable with fail-fast error handling, real data processing capabilities, and user-friendly guided workflows.
+**Status**: ✅ **FULLY OPERATIONAL** - All services implemented according to InstructionsV1.md specifications: Unified dashboard service with guided workflows, proper error handling (no fallbacks), comprehensive functional testing, all 8 MCP servers functional, Phase 8 real data ingestion complete, Phase 8.1 unified interface complete, and Phase 8.3 strict MCP-only operation with health gates complete. System is production-ready and stable with fail-fast error handling, real data processing capabilities, user-friendly guided workflows, and verified ingestion with no fallback mechanisms.
 
 ## 📚 **Related Rules**
 - **@mcp_hub_server.mdc** - Detailed MCP Hub Server architecture and usage

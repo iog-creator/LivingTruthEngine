@@ -197,7 +197,7 @@
     // Load MCP tools
     async function loadMCPTools() {
         try {
-            const tools = await apiCall('/api/tools');
+            const tools = await LTE_API.apiGet('/api/tools');
             populateToolSelect(tools);
         } catch (error) {
             console.error('Failed to load MCP tools:', error);
@@ -230,7 +230,7 @@
     // Load system information
     async function loadSystemInfo() {
         try {
-            const status = await apiCall('/api/status');
+            const status = await LTE_API.apiGet('/api/status');
             updateSystemInfo(status);
         } catch (error) {
             console.error('Failed to load system info:', error);
@@ -265,7 +265,7 @@
 
             resultDiv.innerHTML = '<p class="text-blue-600">Executing tool...</p>';
 
-            const result = await apiCall('/api/execute', 'POST', {
+            const result = await LTE_API.apiPost('/api/execute', {
                 tool_name: toolName,
                 params: params
             });
@@ -315,7 +315,7 @@
     // Load tool example parameters
     async function loadToolExample(toolName) {
         try {
-            const tools = await apiCall('/api/tools');
+            const tools = await LTE_API.apiGet('/api/tools');
             const tool = findToolByName(tools, toolName);
 
             if (tool && tool.example_params) {

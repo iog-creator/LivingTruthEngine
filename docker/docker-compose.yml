@@ -32,7 +32,7 @@ services:
     image: lmstudioai/llmster-preview:latest
     container_name: living-truth-lm-studio
     ports:
-      - "1234:1234"
+      - "1235:1234"
     volumes:
       - ../data/models:/app/models
       - ../data/.lmstudio:/app/.lmstudio
@@ -151,7 +151,7 @@ services:
     image: redis:7.2-alpine
     container_name: living-truth-redis
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     restart: unless-stopped
@@ -298,6 +298,9 @@ services:
       - ../data:/app/data
     environment:
       - PYTHONPATH=/app:/app/src
+      - LM_STUDIO_ENDPOINT=http://host.docker.internal:1234
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: ["uvicorn","dashboard.unified_dashboard:main","--host","0.0.0.0","--port","8050"]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8050/api/health"]
@@ -315,6 +318,61 @@ services:
       neo4j:
         condition: service_healthy
     restart: unless-stopped
+    networks:
+      - living-truth-network
+
+  # Veritas API service
+  veritas_api:
+    build:
+      context: ..
+      dockerfile: apps/veritas_api/Dockerfile
+    container_name: living-truth-veritas-api
+    environment:
+      - REDIS_URL=redis://living-truth-redis:6379/0
+    volumes:
+      - ../apps/veritas_api:/app
+      - ../data:/app/data
+    ports: ["8080:8080"]
+    depends_on:
+      redis:
+        condition: service_started
+    networks:
+      - living-truth-network
+
+  # Veritas worker service
+  veritas_worker:
+    build:
+      context: ..
+      dockerfile: apps/veritas_worker/Dockerfile
+    container_name: living-truth-veritas-worker
+    environment:
+      - REDIS_URL=redis://living-truth-redis:6379/0
+    volumes:
+      - ../apps/veritas_worker:/app
+      - ../data:/app/data
+    depends_on:
+      veritas_api:
+        condition: service_started
+      redis:
+        condition: service_started
+    networks:
+      - living-truth-network
+
+  # Veritas console (UI)
+  veritas_console:
+    build:
+      context: ..
+      dockerfile: apps/veritas_console/Dockerfile
+    container_name: living-truth-veritas-console
+    environment:
+      - API_BASE=http://veritas_api:8080
+    volumes:
+      - ../apps/veritas_console:/app
+      - ../data:/app/data
+    ports: ["8501:8501"]
+    depends_on:
+      veritas_api:
+        condition: service_started
     networks:
       - living-truth-network
 

@@ -33,12 +33,12 @@ curl -f http://localhost:8050/api/health        # Dashboard
 curl -f http://localhost:7860/health            # Langflow
 curl -f http://localhost:1234/v1/models         # LM Studio
 curl -f http://localhost:7474/                  # Neo4j
-redis-cli ping                                  # Redis
+redis-cli -p 6380 ping                          # Redis
 ```
 
 ## Minimal API examples
 ```bash
-# List runs (filesystem fallback enabled inside container)
+# List runs (strict MCP-only mode)
 curl -s http://localhost:8050/api/runs | jq .
 
 # Get run details
@@ -49,7 +49,7 @@ curl -s http://localhost:8050/api/runs/$RUN_ID | jq .
 echo $RUN_ID
 curl -s http://localhost:8050/api/runs/$RUN_ID/corpus | jq .
 
-# List MCP tools (falls back to config/tool_registry.json in the container)
+# List MCP tools (strict MCP-only mode)
 curl -s http://localhost:8050/api/tools | jq .
 
 # Execute a tool via dashboard
@@ -60,5 +60,6 @@ curl -s http://localhost:8050/api/execute \
 
 ## Troubleshooting
 - Use Ctrl+Shift+R to hard-refresh dashboard after updates
-- If MCP hub tools appear empty in the container, the dashboard falls back to `config/tool_registry.json`
 - All dashboard endpoints return `{status,data,error}`
+- System requires all health gates to pass before starting runs
+- Check `/api/health/full` for detailed health status

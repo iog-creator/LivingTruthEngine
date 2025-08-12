@@ -62,41 +62,43 @@ class MCPHubServer:
         """
         backup_path = self.registry_path.with_suffix('.json.bak')
         
-        try:
-            if self.registry_path.exists():
-                # Create backup before loading
+        # Prefer loading the primary registry; backup is best-effort only.
+        if self.registry_path.exists():
+            # Try to create a backup, but do not fail if we lack permissions
+            try:
                 import shutil
                 shutil.copy2(self.registry_path, backup_path)
                 logger.debug(f"Created backup: {backup_path}")
-                
-                with open(self.registry_path, 'r') as f:
+            except Exception as backup_err:
+                logger.warning(f"Could not create registry backup ({backup_path}): {backup_err}")
+
+            # Load primary registry
+            try:
+                with open(self.registry_path, 'r', encoding='utf-8') as f:
                     registry = json.load(f)
-                
-                # Validate registry structure
                 self.validate_registry(registry)
-                
                 logger.info(f"Loaded tool registry with {registry.get('total_tools', 0)} tools")
                 return registry
-            else:
-                logger.warning(f"Registry file not found: {self.registry_path}")
-                return {"version": "1.0.0", "total_tools": 0, "servers": {}}
-        except Exception as e:
-            logger.error(f"Error loading registry: {e}")
-            
-            # Try to load from backup
-            if backup_path.exists():
-                try:
-                    logger.info(f"Attempting to load from backup: {backup_path}")
-                    with open(backup_path, 'r') as f:
-                        backup_registry = json.load(f)
-                    self.validate_registry(backup_registry)
-                    logger.info("Successfully loaded registry from backup")
-                    return backup_registry
-                except Exception as backup_error:
-                    logger.error(f"Failed to load backup registry: {backup_error}")
-                    raise ValueError("Backup recovery failed")
-            
-            return {"version": "1.0.0", "total_tools": 0, "servers": {}}
+            except Exception as read_err:
+                logger.error(f"Failed reading primary registry, will try backup: {read_err}")
+
+        else:
+            logger.warning(f"Registry file not found: {self.registry_path}")
+
+        # Fallback: try to load backup
+        if backup_path.exists():
+            try:
+                logger.info(f"Attempting to load from backup: {backup_path}")
+                with open(backup_path, 'r', encoding='utf-8') as f:
+                    backup_registry = json.load(f)
+                self.validate_registry(backup_registry)
+                logger.info("Successfully loaded registry from backup")
+                return backup_registry
+            except Exception as backup_error:
+                logger.error(f"Failed to load backup registry: {backup_error}")
+
+        # Final fallback: empty registry
+        return {"version": "1.0.0", "total_tools": 0, "servers": {}}
 
     def validate_registry(self, registry: Dict[str, Any]) -> bool:
         """

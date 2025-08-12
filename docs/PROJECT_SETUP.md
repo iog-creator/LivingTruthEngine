@@ -114,7 +114,7 @@ docker compose -f docker/docker-compose.yml logs -f
 - **LM Studio Tools** (4): `get_lm_studio_models`, `generate_lm_studio_text`, `test_lm_studio_connection`, `get_lm_studio_status`
 - **Core Tools** (6): `query_langflow`, `get_status`, `list_sources`, `analyze_transcript`, `generate_viz`, `generate_audio`
 - **Batch Tools** (2): `batch_system_operations`, `batch_analysis_operations`
-- **Utility Tools** (5): `get_project_info`, `get_current_time`, `test_tool`, `fix_flow`, `query_flowise`
+- **Utility Tools** (5): `get_project_info`, `get_current_time`, `test_tool`, `fix_flow`, `query_langflow`
 - **Automation Tools** (5): `auto_detect_and_add_tools`, `auto_update_all_documentation`, `auto_update_cursor_rules`, `auto_validate_system_state`, `comprehensive_health_check`
 
 #### **2. Langflow MCP Server (6 tools)**

@@ -38,7 +38,12 @@ class VeritasRunner:
 
     def __init__(self, project_root: Optional[Path] = None) -> None:
         self.project_root = project_root or Path(__file__).resolve().parents[3]
-        self.runs_dir = self.project_root / "data" / "outputs" / "runs"
+        # Allow override via env for tests; default to project data outputs
+        runs_dir_env = os.getenv("VERITAS_RUNS_DIR")
+        if runs_dir_env:
+            self.runs_dir = Path(runs_dir_env)
+        else:
+            self.runs_dir = self.project_root / "data" / "outputs" / "runs"
         self.runs_dir.mkdir(parents=True, exist_ok=True)
         self._status_index: Dict[str, VeritasRunStatus] = {}
         
@@ -56,18 +61,21 @@ class VeritasRunner:
         return "".join(c.lower() if c.isalnum() else "-" for c in text).strip("-")[:40]
 
     def start(
-        self, 
-        topic: str, 
+        self,
+        topic: str,
         channel_url: Optional[str] = None,
         selection: str = "oldest",
         max_videos: int = 10,
         crawl_depth: int = 1,
         allow_domains: Optional[List[str]] = None,
         deny_domains: Optional[List[str]] = None,
-        transcript_pref: str = "yt_api",
+        transcript_pref: str = "autosubs",
         ocr_mode: str = "off",
         auto_retry_attempts: int = 2,
-        sources: Optional[List[str]] = None
+        sources: Optional[List[str]] = None,
+        human_name: Optional[str] = None,
+        # Backwards-compat alias for older tests calling max_docs
+        max_docs: Optional[int] = None,
     ) -> VeritasRunStatus:
         """
         Start a Phase 8 veritas run with flexible parameters
@@ -94,6 +102,10 @@ class VeritasRunner:
         if not channel_url:
             channel_url = self.flags.get("default_channel", "https://www.youtube.com/@imaginationpodcastofficial")
         
+        # Backwards-compat: prefer explicit max_docs if provided
+        if isinstance(max_docs, int) and max_docs >= 0:
+            max_videos = max_docs
+
         # Create run parameters
         run_params = {
             "topic": topic,
@@ -130,41 +142,33 @@ class VeritasRunner:
                 
                 for video in videos:
                     video_id = video.get("id")
-                    if video_id:
-                        # Fetch transcript
-                        transcript = self.youtube_adapter.fetch_transcript(
-                            video_id, 
-                            transcript_pref
-                        )
-                        
-                        # Create document
-                        doc = {
-                            "source_type": "youtube",
-                            "uri": video.get("webpage_url", f"https://www.youtube.com/watch?v={video_id}"),
-                            "title": video.get("title", f"YouTube Video {video_id}"),
-                            "text": transcript or f"[No transcript available for {video_id}]",
-                            "meta": {
-                                "video_id": video_id,
-                                "upload_date": video.get("upload_date"),
-                                "view_count": video.get("view_count", 0),
-                                "duration": video.get("duration", 0),
-                                "extraction_method": "youtube_api"
-                            }
+                    if not video_id:
+                        continue
+                    # Fetch transcript strictly (no fallback placeholders)
+                    transcript = self.youtube_adapter.fetch_transcript(video_id, transcript_pref)
+                    if not transcript or not transcript.strip():
+                        raise RuntimeError(f"Empty transcript for video {video_id}")
+                    # Create document
+                    doc = {
+                        "source_type": "youtube",
+                        "uri": video.get("webpage_url", f"https://www.youtube.com/watch?v={video_id}"),
+                        "title": video.get("title", f"YouTube Video {video_id}"),
+                        "text": transcript,
+                        "meta": {
+                            "video_id": video_id,
+                            "upload_date": video.get("upload_date"),
+                            "view_count": video.get("view_count", 0),
+                            "duration": video.get("duration", 0),
+                            "extraction_method": transcript_pref
                         }
-                        all_docs.append(doc)
+                    }
+                    all_docs.append(doc)
                 
                 logger.info(f"Processed {len(videos)} YouTube videos")
                 
             except Exception as e:
                 logger.error(f"Failed to process YouTube channel: {e}")
-                # Create error document
-                all_docs.append({
-                    "source_type": "youtube",
-                    "uri": channel_url,
-                    "title": f"YouTube Error: {topic}",
-                    "text": f"[Error processing YouTube channel: {e}]",
-                    "meta": {"error": str(e), "extraction_method": "error"}
-                })
+                raise
         
         # Process web sources (if crawl_depth > 0)
         if "web" in sources and crawl_depth > 0:
@@ -240,6 +244,7 @@ class VeritasRunner:
             "max_videos": run_params.get("max_videos"),
             "crawl_depth": run_params.get("crawl_depth"),
             "ocr_mode": run_params.get("ocr_mode"),
+            "human_name": human_name or f"{topic} — {max_videos} videos — depth {crawl_depth}",
             "flags": flags,
             "documents": [doc.get("id") for doc in canonicalized_docs]
         }
@@ -326,9 +331,59 @@ class VeritasRunner:
             bundle_dir=str(bundle),
         )
 
-    def list_runs(self, limit: int = 20) -> List[str]:
-        runs = sorted([p.name[:-11] for p in self.runs_dir.glob("*.veritasrun") if p.is_dir()], reverse=True)
-        return runs[: max(0, limit)]
+    def list_runs(self, limit: int = 20) -> List[Dict[str, Any]]:
+        """List runs with detailed information for the UI."""
+        runs = []
+        for bundle_path in sorted(self.runs_dir.glob("*.veritasrun"), key=lambda p: p.name, reverse=True):
+            if not bundle_path.is_dir():
+                continue
+                
+            run_id = bundle_path.name[:-11]  # Remove .veritasrun suffix
+            
+            try:
+                # Load manifest for detailed information
+                manifest_path = bundle_path / "manifest.json"
+                if manifest_path.exists():
+                    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                    
+                    # Load metrics for document count
+                    metrics_path = bundle_path / "metrics.json"
+                    doc_count = 0
+                    if metrics_path.exists():
+                        metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+                        doc_count = metrics.get("run_summary", {}).get("total_documents", 0)
+                    
+                    runs.append({
+                        "run_id": run_id,
+                        "created_at": manifest.get("started_at", "Unknown"),
+                        "doc_count": doc_count,
+                        "status": "completed",  # All existing bundles are completed
+                        "topic": manifest.get("topic", "Unknown"),
+                        "bundle_dir": str(bundle_path)
+                    })
+                else:
+                    # Fallback for bundles without manifest
+                    runs.append({
+                        "run_id": run_id,
+                        "created_at": "Unknown",
+                        "doc_count": 0,
+                        "status": "unknown",
+                        "topic": "Unknown",
+                        "bundle_dir": str(bundle_path)
+                    })
+            except Exception as e:
+                logger.warning(f"Error loading run {run_id}: {e}")
+                # Fallback for corrupted bundles
+                runs.append({
+                    "run_id": run_id,
+                    "created_at": "Unknown",
+                    "doc_count": 0,
+                    "status": "error",
+                    "topic": "Unknown",
+                    "bundle_dir": str(bundle_path)
+                })
+        
+        return runs[:max(0, limit)]
 
     def open_bundle(self, run_id: str) -> Dict[str, Any]:
         bundle = self.runs_dir / f"{run_id}.veritasrun"

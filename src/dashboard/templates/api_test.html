@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}API Test - Living Truth Engine{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">API Test Page</h1>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Health Test -->
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">Health Test</h2>
+            <button id="test-health" class="btn-primary mb-4">Test Health</button>
+            <pre id="health-result" class="bg-gray-100 p-4 rounded text-sm overflow-auto max-h-64"></pre>
+        </div>
+
+        <!-- Runs Test -->
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">Runs Test</h2>
+            <button id="test-runs" class="btn-primary mb-4">Test Runs</button>
+            <pre id="runs-result" class="bg-gray-100 p-4 rounded text-sm overflow-auto max-h-64"></pre>
+        </div>
+
+        <!-- Tools Test -->
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">Tools Test</h2>
+            <button id="test-tools" class="btn-primary mb-4">Test Tools</button>
+            <pre id="tools-result" class="bg-gray-100 p-4 rounded text-sm overflow-auto max-h-64"></pre>
+        </div>
+
+        <!-- Contract Test -->
+        <div class="card">
+            <h2 class="text-xl font-semibold mb-4">Contract Test</h2>
+            <button id="test-contract" class="btn-primary mb-4">Test Contract</button>
+            <pre id="contract-result" class="bg-gray-100 p-4 rounded text-sm overflow-auto max-h-64"></pre>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Test Health
+        document.getElementById('test-health').addEventListener('click', async function () {
+            try {
+                const result = await LTE_API.apiGet('/api/health');
+                document.getElementById('health-result').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('health-result').textContent = `Error: ${error.message}`;
+            }
+        });
+
+        // Test Runs
+        document.getElementById('test-runs').addEventListener('click', async function () {
+            try {
+                const result = await LTE_API.apiGet('/api/runs');
+                document.getElementById('runs-result').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('runs-result').textContent = `Error: ${error.message}`;
+            }
+        });
+
+        // Test Tools
+        document.getElementById('test-tools').addEventListener('click', async function () {
+            try {
+                const result = await LTE_API.apiGet('/api/tools');
+                document.getElementById('tools-result').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('tools-result').textContent = `Error: ${error.message}`;
+            }
+        });
+
+        // Test Contract
+        document.getElementById('test-contract').addEventListener('click', async function () {
+            try {
+                const result = await LTE_API.apiGet('/api/contract');
+                document.getElementById('contract-result').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('contract-result').textContent = `Error: ${error.message}`;
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Living Truth Engine is a Flowise-based NotebookLM clone designed for survivor testimony analysis and evidence corroboration. This document outlines the project structure and organization.
+The Living Truth Engine is a Langflow-based NotebookLM clone designed for survivor testimony analysis and evidence corroboration. This document outlines the project structure and organization.
 
 ## Directory Structure
 
@@ -17,8 +17,8 @@ LivingTruthEngine/
 ├── .cursorrules                      # Cursor AI behavior rules
 ├── .env                             # Environment variables
 ├── living_venv/                     # Python virtual environment
-├── flowise_mcp_server.py            # MCP server implementation
-├── living_truth_full_flow.json      # Flowise graph configuration
+├── Langflow_mcp_server.py            # MCP server implementation
+├── living_truth_full_flow.json      # Langflow graph configuration
 ├── README.md                        # Project documentation
 ├── sources/                         # Document storage
 │   ├── documents/                   # Text documents
@@ -31,15 +31,15 @@ LivingTruthEngine/
 │   └── reports/                     # Generated reports
 └── logs/                            # Application logs
     ├── mcp_server.log              # MCP server logs
-    └── flowise.log                 # Flowise logs
+    └── Langflow.log                 # Langflow logs
 ```
 
 ## Core Components
 
-### 1. Flowise Integration
-- **`flowise_mcp_server.py`**: MCP server for Cursor integration
-- **`living_truth_full_flow.json`**: Flowise graph configuration
-- **Flowise UI**: Web interface at http://localhost:3000
+### 1. Langflow Integration
+- **`Langflow_mcp_server.py`**: MCP server for Cursor integration
+- **`living_truth_full_flow.json`**: Langflow graph configuration
+- **Langflow UI**: Web interface at http://localhost:7860
 
 ### 2. Environment Management
 - **`living_venv/`**: Python virtual environment
@@ -60,9 +60,9 @@ LivingTruthEngine/
 
 ### Environment Configuration (`.env`)
 ```env
-FLOWISE_API_ENDPOINT=http://localhost:3000
-FLOWISE_API_KEY=your_flowise_api_key
-FLOWISE_CHATFLOW_ID=your_chatflow_id
+Langflow_API_ENDPOINT=http://localhost:7860
+Langflow_API_KEY=your_Langflow_api_key
+Langflow_CHATFLOW_ID=your_chatflow_id
 LANGCHAIN_API_KEY=your_langsmith_key
 SERP_API_KEY=your_serpapi_key
 POSTGRES_HOST=localhost
@@ -91,7 +91,7 @@ TTS_CONFIG_PATH=en_US-lessac-medium.json
 ### Backend
 - **Python 3.13**: Core programming language
 - **LangChain**: AI/ML framework
-- **Flowise**: Visual AI workflow builder
+- **Langflow**: Visual AI workflow builder
 - **PostgreSQL**: Database with PGVector extension
 
 ### AI Models
@@ -118,7 +118,7 @@ Sources → LangChain Processing → PGVector Storage
 
 ### 2. Query Processing
 ```
-User Query → MCP Server → Flowise Graph → AI Models → Results
+User Query → MCP Server → Langflow Graph → AI Models → Results
 ```
 
 ### 3. Output Generation

@@ -1,7 +1,7 @@
 {
   "project": {
     "name": "Living Truth Engine",
-    "description": "Flowise-based NotebookLM clone for survivor testimony analysis",
+    "description": "Langflow-based NotebookLM clone for survivor testimony analysis",
     "version": "1.0.0"
   },
   "environment": {
@@ -27,7 +27,7 @@
     "node": {
       "version": "18.15.0+",
       "global_packages": [
-        "flowise"
+        "Langflow"
       ]
     },
     "database": {
@@ -39,10 +39,10 @@
     }
   },
   "services": {
-    "flowise": {
-      "url": "http://localhost:3000",
-      "api_endpoint": "http://localhost:3000/api/v1",
-      "dashboard": "http://localhost:3000"
+    "Langflow": {
+      "url": "http://localhost:7860",
+      "api_endpoint": "http://localhost:7860/api/v1",
+      "dashboard": "http://localhost:7860"
     },
     "lm_studio": {
       "url": "http://localhost:1234",
@@ -60,9 +60,9 @@
     }
   },
   "mcp": {
-    "server": "flowise_mcp_server",
+    "server": "Langflow_mcp_server",
     "tools": [
-      "query_flowise",
+      "query_Langflow",
       "get_status",
       "fix_flow"
     ],
@@ -104,7 +104,7 @@
     "context": {
       "project_type": "ai_analysis_system",
       "primary_language": "python",
-      "framework": "flowise_langchain",
+      "framework": "Langflow_langchain",
       "database": "postgresql_pgvector"
     },
     "behavior": {
@@ -118,7 +118,7 @@
     "environment_variables": {
       "file": ".env",
       "sensitive_keys": [
-        "FLOWISE_API_KEY",
+        "Langflow_API_KEY",
         "LANGCHAIN_API_KEY",
         "SERP_API_KEY",
         "POSTGRES_PASSWORD"

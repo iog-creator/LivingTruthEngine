@@ -4,7 +4,9 @@ langchain-openai
 langchain-community
 sentence-transformers
 yt_dlp
+youtube-transcript-api
 spacy
+toml
 plotly
 psycopg2-binary
 dash
@@ -31,7 +33,10 @@ beautifulsoup4
 lxml
 pytesseract
 unstructured[all-docs]
+trafilatura
+readability-lxml
 pdfplumber
+PyMuPDF
 PyPDF2
 python-docx
 nltk

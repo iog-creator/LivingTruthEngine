@@ -474,7 +474,8 @@ def update_refresh_button(n_clicks):
     return "Refresh Data"
 
 # Create ASGI app for uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.websockets import WebSocket, WebSocketDisconnect
 from fastapi.middleware.wsgi import WSGIMiddleware
 from fastapi.responses import RedirectResponse
 
@@ -490,11 +491,185 @@ def dashboard_meta():
         "title": "Living Truth Engine - Enhanced Dashboard"
     }
 
+# Phase 6 compatibility: expose /health at root path for smoke tests
+@fastapi_app.get("/health")
+def dashboard_health():
+    return {"status": "healthy", "service": "unified_dashboard"}
+
 # Mount Dash app as WSGI middleware at root
 fastapi_app.mount("/", WSGIMiddleware(app.server))
 
 # Add health check endpoint (this won't work if mounted at root)
 # We'll use a different approach - add it to the Dash app itself
+
+# API additions for Phase 8.2
+def _get_hub_server():
+    """Lazy-load and cache the MCP Hub Server instance."""
+    if not hasattr(_get_hub_server, "_hub"):
+        try:
+            from src.mcp_servers.mcp_hub_server import MCPHubServer
+            _get_hub_server._hub = MCPHubServer()
+        except Exception:
+            _get_hub_server._hub = None
+    return _get_hub_server._hub
+
+
+@fastapi_app.get("/api/health")
+def api_health():
+    return {"status": "healthy", "service": "unified_dashboard"}
+
+
+@fastapi_app.get("/api/runs")
+def api_list_runs():
+    try:
+        hub = _get_hub_server()
+        if hub:
+            result = hub.execute_tool("list_veritas_runs", {"limit": 20})
+            return {"status": "ok", "data": json.loads(result)}
+        # Fallback to filesystem listing
+        runs_dir = Path("data/outputs/runs")
+        runs = []
+        if runs_dir.exists():
+            runs = [p.name[:-11] for p in runs_dir.glob("*.veritasrun") if p.is_dir()]
+        return {"status": "ok", "data": {"runs": runs}}
+    except Exception as e:
+        return {"status": "error", "error": {"code": "list_failed", "msg": str(e)}}
+
+
+@fastapi_app.post("/api/runs/youtube/start")
+async def api_start_youtube_run(request: Request):
+    """Start a YouTube analysis run via MCP with toggle propagation and human-friendly naming."""
+    try:
+        data = await request.json()
+        channel_url = (data.get("channel_url") or "").strip()
+        limit = int(data.get("limit") or 10)
+        max_depth = int(data.get("max_depth") or 1)
+        ocr = bool(data.get("ocr") or False)
+        js_render = bool(data.get("js_render") or False)
+        selection = data.get("selection", "oldest")
+        transcript_pref = data.get("transcript_pref", "yt_api")
+
+        human_name = f"{channel_url or 'YouTube'} — {limit} videos — depth {max_depth}"
+        params = {
+            "topic": human_name,
+            "channel_url": channel_url,
+            "selection": selection,
+            "max_videos": limit,
+            "crawl_depth": max_depth,
+            "transcript_pref": transcript_pref,
+            "ocr_mode": ("auto_retry" if ocr else "off"),
+            "sources": ["youtube", "web"] if js_render else ["youtube"],
+            "human_name": human_name,
+        }
+
+        hub = _get_hub_server()
+        if not hub:
+            return {"status": "error", "error": {"code": "mcp_unavailable", "msg": "MCP server not available"}}
+
+        # Emit activity start
+        try:
+            from src.api.ai_activity import bus as activity_bus
+            import asyncio as _asyncio
+            _asyncio.create_task(activity_bus.emit("llm", "working", {"stage": "start_run"}))
+        except Exception:
+            pass
+
+        result = hub.execute_tool("start_veritas_run", params)
+        return {"status": "ok", "data": json.loads(result)}
+    except Exception as e:
+        try:
+            from src.api.ai_activity import bus as activity_bus
+            import asyncio as _asyncio
+            _asyncio.create_task(activity_bus.emit("llm", "error", {"error": str(e)}))
+        except Exception:
+            pass
+        return {"status": "error", "error": {"code": "start_failed", "msg": str(e)}}
+
+
+@fastapi_app.post("/api/execute")
+async def api_execute_tool(request: Request):
+    try:
+        data = await request.json()
+        tool_name = data.get("tool_name")
+        params = data.get("params", {})
+        if not tool_name:
+            return {"status": "error", "error": {"code": "invalid_request", "msg": "tool_name is required"}}
+        hub = _get_hub_server()
+        if not hub:
+            return {"status": "error", "error": {"code": "mcp_unavailable", "msg": "MCP server not available"}}
+        result = hub.execute_tool(tool_name, params)
+        # Attempt to parse JSON responses
+        try:
+            parsed = json.loads(result)
+        except Exception:
+            parsed = result
+        return {"status": "ok", "data": parsed}
+    except Exception as e:
+        return {"status": "error", "error": {"code": "execute_failed", "msg": str(e)}}
+
+
+@fastapi_app.post("/api/ai/chat")
+async def api_ai_chat(request: Request):
+    try:
+        data = await request.json()
+        message = (data.get("message") or "").strip()
+        context_run_id = (data.get("context_run_id") or "").strip()
+        if not message:
+            return {"status": "error", "error": {"code": "invalid_request", "msg": "message is required"}}
+
+        hub = _get_hub_server()
+        if not hub:
+            return {"status": "error", "error": {"code": "mcp_unavailable", "msg": "MCP server not available"}}
+
+        try:
+            from src.api.ai_activity import bus as activity_bus
+            import asyncio as _asyncio
+            _asyncio.create_task(activity_bus.emit("llm", "inference", {"context_run_id": context_run_id}))
+        except Exception:
+            pass
+
+        tool_name = "generate_lm_studio_text"
+        params = {"prompt": message}
+        result = hub.execute_tool(tool_name, params)
+
+        try:
+            from src.api.ai_activity import bus as activity_bus
+            import asyncio as _asyncio
+            _asyncio.create_task(activity_bus.emit("llm", "done", {"context_run_id": context_run_id}))
+        except Exception:
+            pass
+
+        # Try parse JSON
+        try:
+            parsed = json.loads(result)
+        except Exception:
+            parsed = result
+        return {"status": "ok", "data": parsed}
+    except Exception as e:
+        try:
+            from src.api.ai_activity import bus as activity_bus
+            import asyncio as _asyncio
+            _asyncio.create_task(activity_bus.emit("llm", "error", {"error": str(e)}))
+        except Exception:
+            pass
+        return {"status": "error", "error": {"code": "chat_failed", "msg": str(e)}}
+
+
+@fastapi_app.websocket("/ws/ai-activity")
+async def ai_activity_ws(websocket: WebSocket):
+    await websocket.accept()
+    try:
+        from src.api.ai_activity import bus as activity_bus
+        async for event in activity_bus.subscribe():
+            await websocket.send_json({"ai_type": event.ai_type, "status": event.status, "meta": event.meta})
+    except WebSocketDisconnect:
+        return
+    except Exception as e:
+        try:
+            await websocket.send_json({"ai_type": "system", "status": "error", "meta": {"msg": str(e)}})
+        except Exception:
+            pass
+        await websocket.close()
 
 if __name__ == '__main__':
     app.run_server(debug=True, host='0.0.0.0', port=8050) 

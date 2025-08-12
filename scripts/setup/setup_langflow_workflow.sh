@@ -118,9 +118,9 @@ if ! wait_for_service "Langflow" 7860; then
     exit 1
 fi
 
-# Wait for Flowise
-if ! wait_for_service "Flowise" 3000; then
-    print_error "Flowise failed to start"
+# Wait for Langflow
+if ! wait_for_service "Langflow" 3000; then
+    print_error "Langflow failed to start"
     exit 1
 fi
 
@@ -145,9 +145,9 @@ if ! check_service_health "LM Studio" "http://localhost:1234/v1/models"; then
     exit 1
 fi
 
-# Check Flowise health
-if ! check_service_health "Flowise" "http://localhost:3000/"; then
-    print_error "Flowise health check failed"
+# Check Langflow health
+if ! check_service_health "Langflow" "http://localhost:7860/"; then
+    print_error "Langflow health check failed"
     exit 1
 fi
 
@@ -175,7 +175,7 @@ echo ""
 echo -e "${BLUE}Service Information:${NC}"
 echo "======================"
 echo -e "${GREEN}Langflow:${NC} http://localhost:7860 (admin/admin)"
-echo -e "${GREEN}Flowise:${NC} http://localhost:3000"
+echo -e "${GREEN}Langflow:${NC} http://localhost:7860"
 echo -e "${GREEN}LM Studio:${NC} http://localhost:1234"
 echo -e "${GREEN}MCP Server:${NC} http://localhost:8000"
 echo -e "${GREEN}PostgreSQL:${NC} localhost:5432"

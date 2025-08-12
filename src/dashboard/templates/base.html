@@ -160,6 +160,91 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- AI Activity Panel -->
+    <div id="ai-activity-panel"
+        class="fixed top-4 left-4 z-40 bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-80">
+        <div class="space-y-3">
+            <!-- Activity Indicators -->
+            <div class="space-y-2">
+                <div class="flex items-center space-x-2">
+                    <div id="ai-llm-indicator" class="w-4 h-4 rounded-full bg-gray-300" title="LLM"></div>
+                    <span class="text-xs font-medium text-gray-700">LLM (llm model)</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div id="ai-embedder-indicator" class="w-4 h-4 rounded-full bg-gray-300" title="Embedder"></div>
+                    <span class="text-xs font-medium text-gray-700">EMBEDDING (embedding model)</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div id="ai-ocr-indicator" class="w-4 h-4 rounded-full bg-gray-300" title="OCR"></div>
+                    <span class="text-xs font-medium text-gray-700">OCR (text extraction)</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div id="ai-js-indicator" class="w-4 h-4 rounded-full bg-gray-300" title="JavaScript"></div>
+                    <span class="text-xs font-medium text-gray-700">JS (processing)</span>
+                </div>
+            </div>
+
+            <!-- What I'm Doing -->
+            <div class="border-t pt-2">
+                <div class="flex items-center space-x-2">
+                    <div id="ai-current-activity" class="w-4 h-4 rounded-full bg-blue-300 animate-pulse"
+                        title="Current Activity"></div>
+                    <span class="text-xs font-medium text-gray-700">WHAT I'M DOING</span>
+                    <i class="fas fa-sync-alt text-xs text-blue-500"></i>
+                </div>
+                <div id="ai-activity-text" class="text-xs text-gray-600 mt-1">Idle</div>
+            </div>
+
+            <!-- Progress Steps -->
+            <div class="border-t pt-2">
+                <div class="flex items-center space-x-2">
+                    <div id="ai-progress-indicator" class="w-4 h-4 rounded-full bg-gray-300" title="Progress"></div>
+                    <span class="text-xs font-medium text-gray-700">PROGRESS STEPS</span>
+                    <i class="fas fa-gem text-xs text-orange-500"></i>
+                </div>
+                <div class="flex space-x-1 mt-1">
+                    <div id="progress-step-1" class="w-2 h-2 rounded-full bg-blue-400"></div>
+                    <div id="progress-step-2" class="w-2 h-2 rounded-full bg-gray-300"></div>
+                    <div id="progress-step-3" class="w-2 h-2 rounded-full bg-gray-300"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Dock -->
+    <div id="chat-dock"
+        class="hidden fixed bottom-4 right-4 z-40 bg-white rounded-lg shadow-lg border border-gray-200 w-80 max-h-96">
+        <div class="flex items-center justify-between p-3 border-b border-gray-200">
+            <h3 class="text-sm font-medium text-gray-900">AI Chat</h3>
+            <div class="flex items-center space-x-2">
+                <button id="chat-minimize" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-minus text-sm"></i>
+                </button>
+                <button id="chat-close" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+        </div>
+        <div class="p-3">
+            <div id="chat-messages" class="space-y-2 max-h-64 overflow-y-auto mb-3">
+                <!-- Chat messages will appear here -->
+            </div>
+            <div class="flex space-x-2">
+                <input type="text" id="chat-input" placeholder="Ask a question..."
+                    class="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                <button id="chat-send" class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Toggle Button -->
+    <button id="chat-toggle"
+        class="fixed bottom-4 right-4 z-30 bg-blue-600 text-white rounded-full w-12 h-12 shadow-lg hover:bg-blue-700 flex items-center justify-center">
+        <i class="fas fa-comments"></i>
+    </button>
+
     <!-- Toast Container -->
     <div id="toast-container"></div>
 
@@ -226,33 +311,309 @@
             showToast('An error occurred. Please try again.', 'error');
         });
 
-        // API helper function
-        async function apiCall(endpoint, method = 'GET', data = null) {
+        // Typed API Helper
+        function validateEnvelope(response, path) {
+            if (!response || typeof response !== 'object') {
+                throw new Error(`Invalid response format for ${path}`);
+            }
+
+            // Envelope format validation - all endpoints must use {status, data?, error?}
+            if (!('status' in response)) {
+                throw new Error(`Missing 'status' field in response for ${path}`);
+            }
+
+            if (response.status === 'ok' && !('data' in response)) {
+                throw new Error(`Missing 'data' field in successful response for ${path}`);
+            }
+
+            if (response.status === 'error' && !('error' in response)) {
+                throw new Error(`Missing 'error' field in error response for ${path}`);
+            }
+
+            return response;
+        }
+
+        async function api(path, options = {}) {
+            const url = path.startsWith('http') ? path : `${window.location.origin}${path}`;
+
+            // Default headers
+            const headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                ...options.headers
+            };
+
+            const fetchOptions = {
+                ...options,
+                headers
+            };
+
             try {
-                const options = {
-                    method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                    }
-                };
+                const response = await fetch(url, fetchOptions);
 
-                if (data) {
-                    options.body = JSON.stringify(data);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
 
-                const response = await fetch(endpoint, options);
                 const result = await response.json();
+                const validated = validateEnvelope(result, path);
 
-                if (result.status === 'error') {
-                    throw new Error(result.error.msg || 'API call failed');
+                if (validated.status === 'error') {
+                    const errorMsg = validated.error?.msg || validated.error?.message || 'API call failed';
+                    throw new Error(errorMsg);
                 }
 
-                return result.data;
+                return validated.data || validated;
+
             } catch (error) {
-                showToast(error.message, 'error');
+                console.error(`API call failed for ${path}:`, error);
                 throw error;
             }
         }
+
+        async function apiGet(path) {
+            return api(path, { method: 'GET' });
+        }
+
+        async function apiPost(path, data) {
+            return api(path, {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+        }
+
+        async function apiPut(path, data) {
+            return api(path, {
+                method: 'PUT',
+                body: JSON.stringify(data)
+            });
+        }
+
+        async function apiDelete(path) {
+            return api(path, { method: 'DELETE' });
+        }
+
+        // Export for use in other scripts
+        window.LTE_API = {
+            api,
+            apiGet,
+            apiPost,
+            apiPut,
+            apiDelete,
+            validateEnvelope
+        };
+
+
+
+        // AI Activity Panel
+        class AIActivityPanel {
+            constructor() {
+                this.indicators = {
+                    llm: document.getElementById('ai-llm-indicator'),
+                    embedder: document.getElementById('ai-embedder-indicator'),
+                    ocr: document.getElementById('ai-ocr-indicator'),
+                    js: document.getElementById('ai-js-indicator')
+                };
+                this.currentActivity = document.getElementById('ai-current-activity');
+                this.activityText = document.getElementById('ai-activity-text');
+                this.progressIndicator = document.getElementById('ai-progress-indicator');
+                this.progressSteps = [
+                    document.getElementById('progress-step-1'),
+                    document.getElementById('progress-step-2'),
+                    document.getElementById('progress-step-3')
+                ];
+                this.connectWebSocket();
+            }
+
+            connectWebSocket() {
+                const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                const wsUrl = `${protocol}//${window.location.host}/ws/ai-activity`;
+
+                this.ws = new WebSocket(wsUrl);
+                this.ws.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+
+                    // Update individual AI component indicators
+                    if (data.ai_type && data.status) {
+                        this.updateIndicator(data.ai_type, data.status);
+                    }
+
+                    // Update current activity
+                    if (data.current_activity) {
+                        this.updateCurrentActivity(data.current_activity);
+                    }
+
+                    // Update progress steps
+                    if (data.progress_step !== undefined) {
+                        this.updateProgressSteps(data.progress_step, data.total_steps || 3);
+                    }
+                };
+
+                this.ws.onclose = () => {
+                    // Reconnect after 5 seconds
+                    setTimeout(() => this.connectWebSocket(), 5000);
+                };
+            }
+
+            updateIndicator(aiType, status) {
+                const indicator = this.indicators[aiType];
+                if (!indicator) return;
+
+                // Remove all status classes
+                indicator.className = 'w-4 h-4 rounded-full';
+
+                // Add appropriate status class with color coding from diagram
+                if (status === 'inference' || status === 'working') {
+                    // Pink/Reddish for LLM, Orange for Embedding, Light Blue for others
+                    if (aiType === 'llm') {
+                        indicator.classList.add('bg-pink-400', 'animate-pulse');
+                    } else if (aiType === 'embedder') {
+                        indicator.classList.add('bg-orange-400', 'animate-pulse');
+                    } else {
+                        indicator.classList.add('bg-blue-400', 'animate-pulse');
+                    }
+                } else if (status === 'done') {
+                    indicator.classList.add('bg-green-500');
+                } else if (status === 'error') {
+                    indicator.classList.add('bg-red-500');
+                } else {
+                    indicator.classList.add('bg-gray-300');
+                }
+            }
+
+            updateCurrentActivity(activity) {
+                if (this.activityText) {
+                    this.activityText.textContent = activity || 'Idle';
+                }
+                if (this.currentActivity) {
+                    if (activity && activity !== 'Idle') {
+                        this.currentActivity.className = 'w-4 h-4 rounded-full bg-blue-400 animate-pulse';
+                    } else {
+                        this.currentActivity.className = 'w-4 h-4 rounded-full bg-blue-300';
+                    }
+                }
+            }
+
+            updateProgressSteps(currentStep, totalSteps = 3) {
+                this.progressSteps.forEach((step, index) => {
+                    if (index < currentStep) {
+                        step.className = 'w-2 h-2 rounded-full bg-blue-400';
+                    } else {
+                        step.className = 'w-2 h-2 rounded-full bg-gray-300';
+                    }
+                });
+
+                if (this.progressIndicator) {
+                    if (currentStep > 0) {
+                        this.progressIndicator.className = 'w-4 h-4 rounded-full bg-pink-400 animate-pulse';
+                    } else {
+                        this.progressIndicator.className = 'w-4 h-4 rounded-full bg-gray-300';
+                    }
+                }
+            }
+        }
+
+        // Chat Dock
+        class ChatDock {
+            constructor() {
+                this.messages = [];
+                this.currentRunId = null;
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                document.getElementById('chat-toggle').addEventListener('click', () => {
+                    this.toggle();
+                });
+
+                document.getElementById('chat-close').addEventListener('click', () => {
+                    this.hide();
+                });
+
+                document.getElementById('chat-minimize').addEventListener('click', () => {
+                    this.minimize();
+                });
+
+                document.getElementById('chat-send').addEventListener('click', () => {
+                    this.sendMessage();
+                });
+
+                document.getElementById('chat-input').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendMessage();
+                    }
+                });
+            }
+
+            toggle() {
+                const dock = document.getElementById('chat-dock');
+                const toggle = document.getElementById('chat-toggle');
+
+                if (dock.classList.contains('hidden')) {
+                    dock.classList.remove('hidden');
+                    toggle.classList.add('hidden');
+                } else {
+                    dock.classList.add('hidden');
+                    toggle.classList.remove('hidden');
+                }
+            }
+
+            hide() {
+                document.getElementById('chat-dock').classList.add('hidden');
+                document.getElementById('chat-toggle').classList.remove('hidden');
+            }
+
+            minimize() {
+                // For now, just hide
+                this.hide();
+            }
+
+            async sendMessage() {
+                const input = document.getElementById('chat-input');
+                const message = input.value.trim();
+                if (!message) return;
+
+                // Add user message
+                this.addMessage('user', message);
+                input.value = '';
+
+                // Send to API
+                try {
+                    const result = await LTE_API.apiPost('/api/ai/chat', {
+                        message: message,
+                        context_run_id: this.currentRunId
+                    });
+                    this.addMessage('assistant', result);
+                } catch (error) {
+                    this.addMessage('error', 'Failed to send message: ' + error.message);
+                }
+            }
+
+            addMessage(role, content) {
+                const messagesContainer = document.getElementById('chat-messages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `text-sm ${role === 'user' ? 'text-right' : 'text-left'}`;
+
+                const bubble = document.createElement('div');
+                bubble.className = `inline-block max-w-xs px-3 py-2 rounded-lg ${role === 'user' ? 'bg-blue-600 text-white' :
+                    role === 'error' ? 'bg-red-100 text-red-800' :
+                        'bg-gray-100 text-gray-800'
+                    }`;
+                bubble.textContent = content;
+
+                messageDiv.appendChild(bubble);
+                messagesContainer.appendChild(messageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            setContextRunId(runId) {
+                this.currentRunId = runId;
+            }
+        }
+
+        // Initialize components
+        const aiActivityPanel = new AIActivityPanel();
+        const chatDock = new ChatDock();
     </script>
 
     {% block scripts %}{% endblock %}

@@ -348,6 +348,30 @@ class ProvenancePipeline:
             json.dump(provenance_data["suspects"], f, indent=2, ensure_ascii=False)
         
         logger.info(f"Provenance data saved to {output_dir}")
+
+        # Phase 6 compatibility: also write source_hashes.json and merkle_roots.json
+        try:
+            # Build a synthetic mapping of doc_id -> text hash if available
+            files_map: Dict[str, str] = {}
+            for doc_id, proof in provenance_data.get("proofs", {}).items():
+                # Prefer included text_hash or similar field; otherwise hash proof json
+                text_hash = proof.get("text_hash") if isinstance(proof, dict) else None
+                if not text_hash:
+                    import hashlib, json as _json
+                    text_hash = hashlib.sha256(_json.dumps(proof, sort_keys=True).encode("utf-8")).hexdigest()
+                files_map[f"proofs/{doc_id}.json"] = text_hash
+
+            (proofs_dir / "source_hashes.json").write_text(
+                json.dumps({"files": files_map}, indent=2, ensure_ascii=False), encoding="utf-8"
+            )
+            (proofs_dir / "merkle_roots.json").write_text(
+                json.dumps({"root": provenance_data.get("merkle", {}).get("root"),
+                            "count": provenance_data.get("merkle", {}).get("leaf_count", len(files_map))},
+                           indent=2, ensure_ascii=False),
+                encoding="utf-8"
+            )
+        except Exception as e:
+            logger.warning(f"Failed to write Phase 6 compatibility proofs: {e}")
     
     def verify_provenance(self, bundle_path: Path) -> Dict[str, Any]:
         """Verify provenance data in a bundle"""

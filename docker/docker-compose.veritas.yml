@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   veritas_api:
     build:
@@ -30,7 +29,6 @@ services:
       - ../data:/app/data
     depends_on:
       - veritas_api
-      - redis
     networks:
       - living-truth-network
 

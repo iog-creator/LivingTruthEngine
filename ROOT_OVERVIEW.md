@@ -4,7 +4,7 @@ This file gives another AI or developer everything needed to understand and run 
 
 ## What it is
 - Unified dashboard for survivor testimony analysis and evidence discovery
-- Phase 8.1 complete with quick start UI and robust fallbacks
+- Phase 8.3 complete with strict MCP-only operation and health gates
 
 ## Run it
 ```bash
@@ -35,19 +35,18 @@ All endpoints return `{status, data, error}`.
 - Advanced toggles: OCR Required, JavaScript Render, HF Burst
 - Optional: Run Label, Save To Directory
 
-## Fallbacks
-- Inside the container, if MCP tools are not reachable, the dashboard falls back to:
-  - Listing runs from `data/runs/`
-  - `status.json` for run details
-  - `corpus.jsonl` for corpus data
-  - `config/tool_registry.json` for tool listing
+## Health Gates
+- System requires all dependencies to be healthy before starting runs
+- Check `/api/health/full` for detailed health status
+- All endpoints use strict MCP-only operation (no filesystem fallbacks)
 
 ## Health & Service URLs
 - Dashboard: http://localhost:8050/api/health
+- Dashboard (Full): http://localhost:8050/api/health/full
 - Langflow: http://localhost:7860/health
 - LM Studio: http://localhost:1234/v1/models
 - Neo4j: http://localhost:7474/
-- Redis: `redis-cli ping`
+- Redis: `redis-cli -p 6380 ping`
 
 ## Quick API examples
 ```bash
@@ -72,5 +71,5 @@ curl -s http://localhost:8050/api/execute -H 'Content-Type: application/json' \
 
 ## Read next
 - README.md (full project overview)
-- PHASE_8_1_COMPLETION_SUMMARY.md (what shipped)
+- PHASE_8_3_PLAN.md (current implementation)
 - .cursor/rules/ (rules AI should follow)

@@ -23,21 +23,21 @@ source living_venv/bin/activate
 ./quick_start.sh
 ```
 
-3. **Access Flowise**:
-- Open http://localhost:3000
+3. **Access Langflow**:
+- Open http://localhost:7860
 - Import `living_truth_full_flow.json`
 - Get the chatflow ID and update `.env`
 
 4. **Test Integration**:
 ```bash
-echo '{"method": "tools.list", "params": []}' | python flowise_mcp_server.py
+echo '{"method": "tools.list", "params": []}' | python langflow_mcp_server.py
 ```
 
 ## 🏗️ Architecture
 
 ### Core Components
 
-#### **Flowise (Port 3000)**
+#### **Langflow (Port 7860)**
 - AI workflow orchestration platform
 - Handles complex multi-step analysis workflows
 - Manages chatflows for survivor testimony analysis
@@ -45,7 +45,7 @@ echo '{"method": "tools.list", "params": []}' | python flowise_mcp_server.py
 
 #### **MCP Server**
 - Model Context Protocol server for Cursor IDE integration
-- Provides tools for querying Flowise workflows
+- Provides tools for querying Langflow workflows
 - Handles evidence extraction and analysis
 - Manages survivor testimony processing
 
@@ -64,7 +64,7 @@ echo '{"method": "tools.list", "params": []}' | python flowise_mcp_server.py
 ### Data Flow
 
 ```
-User Query → MCP Server → Flowise → Analysis Pipeline → Results
+User Query → MCP Server → Langflow → Analysis Pipeline → Results
      ↓
 PostgreSQL ← Embeddings ← Document Processing ← Sources
      ↓
@@ -78,10 +78,10 @@ Dashboard ← Visualization ← Confidence Metrics ← Results
 The system uses the following key environment variables (configured in `.env`):
 
 ```bash
-# Flowise Configuration
-FLOWISE_API_ENDPOINT=http://localhost:3000
-FLOWISE_API_KEY=kkUVM9tTVKzL9btjElkJwn2fWQiXGQy1J_BvV3Mw-14
-FLOWISE_CHATFLOW_ID=9f8013d8-351a-4bd9-a973-fab86df45491
+# Langflow Configuration
+LANGFLOW_API_ENDPOINT=http://localhost:7860
+LANGFLOW_API_KEY=your_langflow_api_key
+LANGFLOW_WORKFLOW_ID=your_workflow_id
 
 # LangChain Configuration
 LANGCHAIN_API_KEY=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
@@ -126,14 +126,14 @@ TTS_CONFIG_PATH=en_US-lessac-medium.json
 
 # Additional Configuration
 NODE_ENV=development
-FLOWISE_PORT=3000
-FLOWISE_HOST=0.0.0.0
+LANGFLOW_PORT=7860
+LANGFLOW_HOST=0.0.0.0
 ```
 
 ### Service URLs
 
 Once running, services are available at:
-- **Flowise**: http://localhost:3000
+- **Langflow**: http://localhost:7860
 - **Dashboard**: http://localhost:8050
 - **PostgreSQL**: localhost:5432
 
@@ -143,8 +143,8 @@ Once running, services are available at:
 
 The MCP server provides three main tools:
 
-#### 1. `query_flowise`
-Query the Flowise chatflow for survivor testimony analysis.
+#### 1. `query_langflow`
+Query the Langflow workflow for survivor testimony analysis.
 
 **Parameters:**
 - `query` (string, required): Query string or YouTube URL
@@ -153,7 +153,7 @@ Query the Flowise chatflow for survivor testimony analysis.
 
 **Example:**
 ```bash
-echo '{"method": "tools.call", "params": {"name": "query_flowise", "arguments": {"query": "Survivor testimony patterns", "anonymize": true, "output_type": "summary"}}}' | node flowise-mcp-server.js
+echo '{"method": "tools.call", "params": {"name": "query_langflow", "arguments": {"query": "Survivor testimony patterns", "anonymize": true, "output_type": "summary"}}}' | node langflow-mcp-server.js
 ```
 
 #### 2. `get_status`
@@ -161,18 +161,18 @@ Get system status including chatflows, sources, and confidence metrics.
 
 **Example:**
 ```bash
-echo '{"method": "tools.call", "params": {"name": "get_status", "arguments": {}}}' | node flowise-mcp-server.js
+echo '{"method": "tools.call", "params": {"name": "get_status", "arguments": {}}}' | node langflow-mcp-server.js
 ```
 
 #### 3. `fix_flow`
-Request updates to the Flowise graph.
+Request updates to the Langflow workflow.
 
 **Parameters:**
 - `fix_request` (string, required): Description of fix or update needed
 
 **Example:**
 ```bash
-echo '{"method": "tools.call", "params": {"name": "fix_flow", "arguments": {"fix_request": "Add node for web research"}}}' | node flowise-mcp-server.js
+echo '{"method": "tools.call", "params": {"name": "fix_flow", "arguments": {"fix_request": "Add node for web research"}}}' | node langflow-mcp-server.js
 ```
 
 ### Docker Management
@@ -189,7 +189,7 @@ sudo docker-compose down
 
 #### View Logs
 ```bash
-sudo docker-compose logs flowise
+sudo docker-compose logs langflow
 ```
 
 #### Check Status
@@ -242,20 +242,20 @@ sudo netstat -tulpn | grep :3000
 
 #### 3. API Key Issues
 - Verify API keys in `.env` file
-- Check Flowise authentication
+- Check Langflow authentication
 - Ensure chatflow ID is correct
 
 #### 4. MCP Server Connection
 ```bash
 # Test MCP server
-echo '{"method": "tools.list", "params": []}' | node flowise-mcp-server.js
+echo '{"method": "tools.list", "params": []}' | node langflow-mcp-server.js
 ```
 
 ### Health Checks
 
-#### Flowise Status
+#### Langflow Status
 ```bash
-curl -H "Authorization: Bearer $FLOWISE_API_KEY" http://localhost:3000/api/v1/chatflows
+curl -H "Authorization: Bearer $LANGFLOW_API_KEY" http://localhost:7860/api/v1/workflows
 ```
 
 #### Database Connection
@@ -265,7 +265,7 @@ psql -h localhost -U postgres -d living_truth_engine
 
 #### MCP Server Test
 ```bash
-python flowise_mcp_server.py
+python langflow_mcp_server.py
 ```
 
 ## 📁 Project Structure
@@ -278,9 +278,9 @@ LivingTruthEngine/
 ├── setup_docker.sh            # Automated setup script
 ├── quick_start.sh             # Quick start script
 ├── dashboard.py               # Dash web dashboard
-├── flowise_mcp_server.py      # MCP server implementation
-├── flowise-mcp-server.js      # Node.js wrapper for MCP server
-├── living_truth_full_flow.json # Flowise workflow
+├── langflow_mcp_server.py      # MCP server implementation
+├── langflow-mcp-server.js      # Node.js wrapper for MCP server
+├── living_truth_full_flow.json # Langflow workflow
 ├── living_truth_config.json   # Application configuration
 ├── .env                       # Environment variables
 ├── .cursor/                   # Cursor IDE configuration
@@ -292,7 +292,7 @@ LivingTruthEngine/
 ├── docs/                      # Documentation
 ├── scripts/                   # Utility scripts
 ├── models/                    # AI models
-└── .flowise/                  # Flowise data
+└── .langflow/                  # Langflow data
 ```
 
 ## 🔐 Security
@@ -360,7 +360,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🙏 Acknowledgments
 
-- **Flowise**: For the workflow orchestration platform
+- **Langflow**: For the workflow orchestration platform
 - **LangChain**: For the AI framework and tools
 - **Qwen Models**: For the language models
 - **PostgreSQL**: For the database system

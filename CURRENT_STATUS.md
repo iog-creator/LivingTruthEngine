@@ -4,7 +4,7 @@
 
 The Living Truth Engine is an AI-powered system for survivor testimony corroboration and evidence analysis. It combines multiple technologies to provide comprehensive analysis capabilities, using multiple sources (including but not limited to Biblical references) to find supporting evidence and make connections.
 
-## ✅ **Current Working State**
+## ✅ **Current Working State - Phase 8.3.1 Complete**
 
 ### **All Services Operational**
 
@@ -20,7 +20,7 @@ All services are running successfully in the `LivingTruthEngine` project:
    - Caching and session management
    - Responding to ping commands
 
-3. **✅ PostgreSQL**: `living-truth-postgres` - port 5432 (healthy)
+3. **✅ PostgreSQL**: `living-truth-postgres` - port 5434→5432 (healthy)
    - Primary database with langflow database
    - Database: langflow (with proper permissions)
    - User: langflow (with full privileges)
@@ -40,11 +40,12 @@ All services are running successfully in the `LivingTruthEngine` project:
    - Core analysis engine
    - API endpoints available
 
-7. **✅ Dash Dashboard**: `living-truth-dashboard` - port 8050 (healthy)
-   - Interactive visualizations for survivor testimony analysis
+7. **✅ Unified Dashboard**: `living-truth-dashboard` - port 8050 (healthy)
+   - Unified guided interface for survivor testimony analysis
    - Web interface: http://localhost:8050
-   - Health check: `{"status":"healthy","service":"dashboard"}`
-   - Features: Network graphs, timeline data, statistics, Job Runs tab
+   - Health check: `{"status":"healthy","service":"unified_dashboard"}`
+   - Features: Quick start interface, run management, analysis tools, AI activity panel, chat dock
+   - Phase 8.3.1: All deliverables complete - run naming, AI activity, chat dock, toggles, header polish
 
 8. **✅ Phase 7 Veritas Generalist Ingestion**: Fully implemented and tested
    - **✅ VeritasRunner**: Generalist ingestion runner with bundle creation
@@ -57,7 +58,7 @@ All services are running successfully in the `LivingTruthEngine` project:
 #### **MCP Hub Server (Cursor Integration)**
 **✅ MCP Hub Server**: Single consolidated server solving 63-tool limit issue
 - **Meta-Tools (15 total)**: Well under Cursor's 40-tool limit
-- **Underlying Tools**: 63 tools across 8 servers accessible via hub routing
+- **Underlying Tools**: 99 tools across 8 servers accessible via hub routing
 - **Architecture**: Proxy/Gateway pattern with dynamic tool loading
 - **Registry**: `config/tool_registry.json` with complete tool definitions
 - **Deployment**: Running locally (not in Docker) for stability
@@ -194,7 +195,7 @@ redis-cli ping  # Redis
 ### **✅ Successfully Completed**
 1. **Moved all containers to LivingTruthEngine group** as requested
 2. **Fixed Langflow database issues** and got it fully operational
-3. **Removed Flowise completely** as requested
+3. **Removed Langflow completely** as requested
 4. **Updated all documentation** to reflect current working state
 5. **All MCP servers working** with proper configuration
 6. **PostgreSQL v17** with langflow database and proper permissions
@@ -261,7 +262,7 @@ redis-cli ping  # Redis
 
 ### **Configuration Requirements**
 - **Langflow API endpoint**: http://localhost:7860 (not 3100)
-- **PostgreSQL port**: 5432 (default)
+- **PostgreSQL port**: 5434→5432 (default)
 - **Neo4j ports**: 7474/7687
 - **All services must be in LivingTruthEngine group**
 

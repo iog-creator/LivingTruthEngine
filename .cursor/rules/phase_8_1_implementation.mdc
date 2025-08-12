@@ -1,3 +1,8 @@
+---
+description: Unified guided dashboard operational with all primary requirements met. Langflow integration planned for Phase 8.2.
+alwaysApply: false
+---
+**Status**: ✅ **PHASE 8.1 CORE COMPLETE** - 
 # Phase 8.1 Implementation - Unified Guided Dashboard
 
 ## Description
@@ -47,7 +52,33 @@ Transform the current technical dashboard into a **single, coherent, beginner-fr
 
 ### **4. Analyze Tab** ✅ **COMPLETE**
 - **Left Column**: Bundle picker + document list
-- **Right Column**: 5 result tabs:
+- **Right Column**: 5 result tabYou are working on the Living Truth Engine.
+
+Principles
+- Simplicity first. One change at a time. One source of truth.
+- Never assume “it works.” Prove it with the bring-up + smoke pipeline before you touch UI.
+- If a step fails, STOP. Fix that step. Re-run the pipeline. Only then proceed.
+
+Workflow you must follow (every change)
+1) Run bring-up + smoke:
+   bash scripts/bring_up.sh && bash scripts/smoke_youtube.sh
+   - If either script fails, do NOT code. Diagnose and fix the specific failing step.
+2) When the scripts pass, wire the UI to the already-proven endpoints. No direct container/service calls from the browser.
+3) Add/adjust the smallest possible test to prove your change. Re-run the two scripts.
+4) Update docs (README/Phase plan) and paste the script outputs in the PR under “Bring-up & Smoke evidence.”
+
+Contracts (must not break)
+- Dashboard API returns {status, data, error}.
+- Start runs via: POST /api/runs/youtube/start (only; no alternate paths).
+- Health is checked via /api/health (and /api/health/full if present).
+- Tools are discovered via /api/tools.
+- No hidden fallbacks: any transcript fallback to auto-subs must be explicit in metrics/results text.
+
+What not to do
+- Don’t modify multiple subsystems in one PR.
+- Don’t invent new endpoints when a documented one exists.
+- Don’t claim success without pasting the outputs of both scripts.
+s:
   - Summary
   - Entities
   - Claims
@@ -207,8 +238,5 @@ src/dashboard/
 
 ---
 
-**Status**: ✅ **PHASE 8.1 CORE COMPLETE** - Unified guided dashboard operational with all primary requirements met. Langflow integration planned for Phase 8.2.
-description:
-globs:
-alwaysApply: false
----
+
+

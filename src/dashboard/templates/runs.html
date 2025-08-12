@@ -36,6 +36,9 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Name
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Run ID
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -54,7 +57,7 @@
                 </thead>
                 <tbody id="runs-table-body" class="bg-white divide-y divide-gray-200">
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                             <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
                             <p>Loading runs...</p>
                         </td>
@@ -172,7 +175,7 @@
     // Load runs from API
     async function loadRuns() {
         try {
-            const runs = await apiCall('/api/runs');
+            const runs = await LTE_API.apiGet('/api/runs');
             displayRuns(runs);
         } catch (error) {
             console.error('Failed to load runs:', error);
@@ -199,6 +202,14 @@
         tbody.innerHTML = runs.map(run => `
             <tr class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <div class="flex items-center space-x-2">
+                        <span class="run-name" data-run-id="${run.run_id}">${run.human_name || 'Unnamed Run'}</span>
+                        <button onclick="renameRun('${run.run_id}', '${run.human_name || ''}')" class="text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-edit text-xs"></i>
+                        </button>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono text-xs">
                     ${run.run_id || 'Unknown'}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -243,6 +254,25 @@
                 return 'bg-red-100 text-red-800';
             default:
                 return 'bg-gray-100 text-gray-800';
+        }
+    }
+
+    // Rename run
+    async function renameRun(runId, currentName) {
+        const newName = prompt('Enter a new name for this run:', currentName);
+        if (!newName || newName.trim() === '') return;
+
+        try {
+            await LTE_API.apiPut(`/api/runs/${runId}`, { human_name: newName.trim() });
+
+            // Update the display
+            const nameElement = document.querySelector(`[data-run-id="${runId}"]`);
+            if (nameElement) {
+                nameElement.textContent = newName.trim();
+            }
+            showToast('Run renamed successfully', 'success');
+        } catch (error) {
+            showToast('Failed to rename run: ' + error.message, 'error');
         }
     }
 
@@ -299,7 +329,7 @@
                 case 'manifest':
                 case 'metrics':
                 case 'merkle':
-                    const result = await apiCall(`/api/runs/${currentRunId}`);
+                    const result = await LTE_API.apiGet(`/api/runs/${currentRunId}`);
                     content = JSON.stringify(result, null, 2);
                     break;
 
@@ -323,7 +353,7 @@
         try {
             showToast('Downloading corpus...', 'info');
 
-            const corpus = await apiCall(`/api/runs/${currentRunId}/corpus`);
+            const corpus = await LTE_API.apiGet(`/api/runs/${currentRunId}/corpus`);
 
             // Create download link
             const blob = new Blob([JSON.stringify(corpus, null, 2)], { type: 'application/json' });

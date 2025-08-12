@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>LTE Debug UI</title>
+    <style>
+        body {
+            font-family: ui-sans-serif;
+            margin: 20px
+        }
+
+        pre {
+            white-space: pre-wrap;
+            border: 1px solid #ddd;
+            padding: 12px;
+            border-radius: 8px
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Living Truth Engine — Debug UI</h1>
+    <button id="run">Run Proof-of-Life</button>
+    <pre id="log"></pre>
+    <script>
+        const base = (window.BASE_URL || 'http://localhost:8050');
+        const E = (id) => document.getElementById(id);
+        const log = (m) => E('log').textContent += m + "\n";
+
+        async function get(path, init) {
+            const r = await fetch(base + path, { headers: { 'Accept': 'application/json' }, ...init });
+            const j = await r.json().catch(() => ({ status: 'fail', error: 'bad json' }));
+            // Envelope format validation - all endpoints must use {status, data?, error?}
+            if ('status' in j && ('data' in j || 'error' in j)) {
+                return j;
+            }
+            throw new Error('envelope mismatch ' + path);
+        }
+
+        async function run() {
+            E('log').textContent = '';
+            try {
+                log('GET /api/health');
+                log(JSON.stringify(await get('/api/health'), null, 2));
+                log('GET /api/health/full');
+                log(JSON.stringify(await get('/api/health/full'), null, 2));
+                log('GET /api/runs');
+                const runs = await get('/api/runs'); log(JSON.stringify(runs, null, 2));
+                const rid = runs?.data?.[0]?.run_id;
+                if (rid) {
+                    log('POST /api/analyze/summary');
+                    log(JSON.stringify(await get('/api/analyze/summary', { method: 'POST', body: JSON.stringify({ run_id: rid }), headers: { 'Content-Type': 'application/json' } }), null, 2));
+                    log('POST /api/analyze/claims');
+                    log(JSON.stringify(await get('/api/analyze/claims', { method: 'POST', body: JSON.stringify({ run_id: rid }), headers: { 'Content-Type': 'application/json' } }), null, 2));
+                } else {
+                    log('No runs found; skipping analyze endpoints.');
+                }
+                log('GET /api/tools');
+                log(JSON.stringify(await get('/api/tools'), null, 2));
+                log('\nPoL SUCCESS ✅');
+            } catch (e) {
+                log('\nPoL FAIL ❌ ' + (e?.message || e));
+            }
+        }
+        E('run').onclick = run;
+    </script>
+</body>
+
+</html>

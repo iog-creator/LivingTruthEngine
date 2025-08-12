@@ -14,6 +14,15 @@ def on_start():
     structlog.configure(wrapper_class=structlog.make_filtering_bound_logger(20))
     log.info("api.startup")
 
+@app.get("/health")
+def health():
+    try:
+        # Simple ping to redis to confirm connectivity
+        r.ping()
+        return {"status": "ok", "service": "veritas_api"}
+    except Exception as e:
+        return {"status": "error", "error": str(e)}
+
 @app.post("/jobs", response_model=JobStatus)
 def create(req: RunRequest):
     job_id = create_job(req.model_dump())
