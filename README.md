@@ -1,263 +1,290 @@
-# Living Truth Engine
+# Living Truth Engine - Phase 9: Multi-Source Expansion & Advanced Evidence Linking
 
-A comprehensive system for survivor testimony analysis and evidence discovery using advanced AI and MCP (Model Context Protocol) integration.
+## 🎯 **Phase 9 Objective**
 
-## 🚀 **Current Status: FULLY OPERATIONAL**
+Expand the system beyond a single YouTube channel to support **multiple simultaneous sources** (websites, PDFs, images, and other channels), add **cross-document linking and visualization**, and integrate more **AI-assisted verification workflows**.
 
-### **✅ What's Working**
-- **Real AI Analysis**: Desktop LM Studio integration with actual LLM generation (no pattern matching)
-- **Advanced Visualization**: Interactive 3D network graphs with entity extraction
-- **Complete Analysis Pipeline**: Single-button orchestration of entire workflow
+## 🚀 **Current Status: Phase 9 Development Repository**
+
+This repository contains the **Phase 9 development branch** of the Living Truth Engine, focused on:
+
+### **✅ Phase 8.3 Foundation (Complete)**
+- **Real AI Integration**: Desktop LM Studio on port 1234 for actual LLM generation
+- **Advanced Visualization**: Interactive 3D network graphs with Plotly
+- **Complete Analysis Pipeline**: Single 'Start Complete Analysis' button orchestrates entire workflow
 - **Modern Single-File UI**: Clean, responsive interface with dark theme
-- **AI Chat Interface**: Real-time chat with AI using your local models
-- **Health Monitoring**: Comprehensive service health gates with real-time monitoring
-- **MCP Integration**: Full MCP server integration with 20+ tools available
-- **Systematic Testing**: All critical tests passing with comprehensive verification
+- **System Integration**: Docker networking, MCP server with 20+ tools, health gates
+- **Documentation & Rules**: Updated README.md, cursor rules, comprehensive documentation
 
-### **🎯 Key Features**
-- **Real AI-Powered Analysis**: Actual LLM generation for summaries and claims extraction
-- **Advanced 3D Visualization**: Interactive network graphs with dynamic entity extraction
-- **Complete Analysis Pipeline**: Single button orchestrates document ingestion → AI analysis → visualization
-- **Modern UI**: Dark theme, responsive design, real-time status updates
-- **Multi-Model Support**: qwen/qwen3-8b, meta/llama-3.3-70b, mistralai/devstral-small-2505, etc.
-- **Health Gates**: Automatic service monitoring with fail-fast behavior
-- **No Fallbacks**: Clean error handling without silent failures
+### **🎯 Phase 9 Goals (In Development)**
+- **Multi-source ingestion**: Multiple YouTube channels, domain URLs, PDF repositories in one job
+- **Advanced link discovery**: Detect named entities, claims, and references across different sources
+- **Evidence graph view**: Interactive 2D/3D graph showing connections between docs, entities, and claims
+- **AI-assisted verification**: Auto-flag suspicious claims, suggest corroborating/contradicting documents
+- **Flexible run configuration**: Choose per-source parameters (max depth, OCR/JS toggles)
+- **Improved run metadata**: Store and display cross-source relationships in manifest
 
-## 🏃‍♂️ **Quick Start**
+## 🏗️ **Architecture**
 
-### **1. Start the System**
+### **Service Architecture**
+```
+┌─────────────────┐
+│ Cursor AI       │
+└─────────────────┘
+        │ (15 meta-tools)
+        ▼
+┌─────────────────┐
+│ MCP Hub Server  │
+│ (Registry: 99+  │
+│  tools)         │
+└─────────────────┘
+        │ (Proxy calls)
+        ▼
+┌─────────────────┬─────────────────┬─────────────────┐
+│ Living Truth   │ Langflow MCP    │ Other Servers   │
+│ FastMCP Server │ Server          │ (GitHub, DB,    │
+│ (22 tools)     │ (12 tools)      │ HF, DevDocs,    │
+│                │                 │ Rulego, Solver) │
+└─────────────────┴─────────────────┴─────────────────┘
+        │                       │
+        ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐
+│ Unified Dashboard│    │   PostgreSQL    │
+│   (Port 8050)   │    │   (Port 5432)   │
+│                 │    │                 │
+│ • Guided UI     │    │ • Data Storage  │
+│ • Multi-Source  │    │ • Langflow DB   │
+│ • Evidence Graph│    │ • Analysis Data │
+│ • Verification  │    │                 │
+└─────────────────┘    └─────────────────┘
+        │
+        ▼
+┌─────────────────┐
+│   Langflow      │
+│   (Port 7860)   │
+│                 │
+│ • Multi-Agent   │
+│ • Python Native │
+│ • Workflow UI   │
+└─────────────────┘
+```
+
+## 📁 **Project Structure**
+
+```
+LivingTruthEngine-Phase9/
+├── docker/                    # Docker configuration
+│   ├── docker-compose.yml    # Service orchestration
+│   └── .dockerignore         # Build exclusions
+├── scripts/                   # Automation scripts
+│   ├── setup/                # Setup and configuration
+│   ├── testing/              # Test automation
+│   └── deployment/           # Deployment scripts
+├── src/                      # Source code
+│   ├── mcp_servers/          # MCP server implementations
+│   ├── analysis/             # Analysis modules
+│   ├── ingestion_general/    # Multi-source ingestion
+│   └── utils/                # Utility functions
+├── data/                     # Data storage
+│   ├── sources/              # Input data sources
+│   ├── outputs/              # Analysis outputs
+│   └── logs/                 # Application logs
+├── config/                   # Configuration files
+│   ├── tool_registry.json   # MCP Hub Server tool registry
+│   └── source_registry.toml # Phase 9: Multi-source registry
+├── tests/                    # Test suite
+├── docs/                     # Documentation
+└── .cursor/                  # Cursor IDE configuration
+    ├── rules/                # Development rules
+    └── mcp.json             # MCP Hub Server configuration
+```
+
+## 🔧 **Technology Stack**
+
+### **Core Technologies**
+- **Python 3.13**: Primary programming language
+- **PostgreSQL 17**: Database system with langflow database
+- **Neo4j 5.15.0**: Graph database for relationship analysis
+- **Redis 7.2**: Caching and session management
+- **Docker**: Containerization platform
+- **Docker Compose v2**: Service orchestration
+
+### **AI and ML**
+- **LangChain**: AI framework for LLM integration
+- **Hugging Face**: Model hosting and inference
+- **OpenAI**: Language model API
+- **SpaCy**: Natural language processing (Phase 9: NER models)
+
+### **MCP Integration**
+- **MCP Hub Server**: Consolidated tool gateway with 15 meta-tools
+- **Tool Registry**: Central registry of 99 tools across 8 servers
+- **FastMCP**: Framework for MCP server implementation
+- **Dynamic Loading**: On-demand tool loading for efficiency
+- **Piper TTS**: Text-to-speech synthesis
+- **Dash/Plotly**: Interactive data visualizations
+
+## 🚀 **Quick Start**
+
+### **1. Environment Setup**
+```bash
+# Clone the repository
+git clone <repository-url>
+cd LivingTruthEngine-Phase9
+
+# Activate virtual environment
+source living_venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### **2. Start Services**
 ```bash
 # Start all services
 docker compose -f docker/docker-compose.yml up -d
 
-# Verify health
-curl -s http://localhost:8050/api/health/full | jq .
+# Verify services are running
+curl http://localhost:8050/api/health
 ```
 
-### **2. Access the Modern UI**
-Open your browser to: `http://localhost:8050/static/ui_status_chat.html`
+### **3. Access the Modern UI**
+- **Dashboard**: http://localhost:8050/static/ui_status_chat.html
+- **Langflow**: http://localhost:7860
+- **API Health**: http://localhost:8050/api/health/full
 
-**This is the new single-file UI with:**
-- **🎨 Modern Design**: Dark theme with grid background and colored status cards
-- **📊 Status Stack**: Real-time LLM, Embedding, and Progress indicators
-- **🤖 AI Chat**: Direct chat with LM Studio models
-- **🚀 Complete Analysis**: Single button orchestrates entire workflow
-- **🎨 Advanced Visualization**: Interactive 3D network graphs
-- **📋 Run Management**: Browse and select analysis runs
+## 📋 **Phase 9 Implementation Plan**
 
-### **3. Key UI Features**
+### **1. Multi-Source Runner Backend**
+- [ ] Update `VeritasRunner` to accept multiple source configs
+- [ ] Implement source adapters (`youtube_adapter`, `web_fetcher`, `pdf_extractor`)
+- [ ] Merge docs into unified corpus with per-source tags
 
-#### **Complete Analysis Pipeline**
-- **"Start Complete Analysis"**: Single button orchestrates entire workflow
-- **Step-by-Step Progress**: Visual indicators for each stage
-- **Real-time Updates**: Live status and progress tracking
-- **Comprehensive Results**: AI summary, claims, and visualization in one view
+### **2. Source Registry**
+- [ ] Create `config/source_registry.toml` with reusable source presets
+- [ ] Implement source list management from Dashboard
 
-#### **AI Integration**
-- **Real LLM Generation**: Uses desktop LM Studio on port 1234
-- **AI Chat**: Direct conversation with AI models
-- **AI Summary**: Real AI-powered document summarization
-- **AI Claims**: AI-powered claim extraction and categorization
+### **3. Entity & Claim Linking**
+- [ ] Enhance canonicalization to extract named entities (NER model)
+- [ ] Implement claims extraction (subject-predicate-object triples)
+- [ ] Create `links.json` in bundle with cross-document edges
 
-#### **Advanced Visualization**
-- **3D Network Graphs**: Interactive Plotly-based visualizations
-- **Entity Extraction**: JavaScript-based entity identification
-- **Dynamic Generation**: Real-time graph creation from analysis data
-- **HTML Rendering**: Proper visualization serving and embedding
+### **4. Evidence Graph**
+- [ ] Implement `/api/graph/{run_id}` endpoint
+- [ ] Create interactive 2D/3D evidence graph view
+- [ ] Add filtering by entity type, date, confidence
 
-#### **Status Management**
-- **Real-time Indicators**: Live updates during processing
-- **Progress Tracking**: Visual feedback for each stage
-- **Error Handling**: Clear error messages and recovery
-- **System Health**: Comprehensive service monitoring
+### **5. AI-Assisted Verification**
+- [ ] Implement `verify_claims_in_run(run_id)` MCP tool
+- [ ] Add corroboration/contradiction detection
+- [ ] Create `verification.json` in bundles
 
-## 🔧 **System Architecture**
+### **6. Dashboard Changes**
+- [ ] Update "New Run" form for multiple source selection
+- [ ] Add per-source parameter controls
+- [ ] Implement Evidence Graph tab in Analyze section
+- [ ] Add claim verification panel
 
-### **Services**
-- **Dashboard**: Port 8050 - Main UI and API interface
-- **Desktop LM Studio**: Port 1234 - Real AI model inference (primary)
-- **Docker LM Studio**: Port 1235 - Backup embedding models
-- **Langflow**: Port 7860 - Workflow orchestration
-- **Neo4j**: Port 7474 - Graph database
-- **Redis**: Port 6379 - Caching and session management
-
-### **Network Configuration**
-```yaml
-# Docker to Desktop LM Studio communication
-services:
-  dashboard:
-    environment:
-      - LM_STUDIO_ENDPOINT=http://host.docker.internal:1234
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-```
-
-### **Health Gates**
-The system monitors all critical services:
-- ✅ **Dashboard**: UI and API interface status
-- ✅ **MCP Server**: Tool availability and execution
-- ✅ **LM Studio**: AI model availability and connectivity
-- ✅ **Langflow**: Workflow service health
-- ✅ **Neo4j**: Database connectivity
-- ✅ **Redis**: Cache service status
-
-## 🧠 **AI Analysis Capabilities**
-
-### **Real LLM Generation**
-- **No Pattern Matching**: All analysis uses actual LLM calls
-- **Structured Output**: JSON-formatted responses for consistency
-- **Error Handling**: Graceful fallbacks if AI service unavailable
-- **Confidence Scores**: AI-generated confidence metrics
-
-### **Document Analysis**
-- **AI Summary**: Real AI-powered document summarization with key points and sentiment
-- **AI Claims**: AI-powered claim extraction with categorization and confidence
-- **Entity Extraction**: JavaScript-based entity identification from documents
-- **Visualization**: Dynamic graph generation from analysis results
-
-### **Available Models**
-- qwen/qwen3-8b (primary for analysis)
-- meta/llama-3.3-70b
-- mistralai/devstral-small-2505
-- microsoft/phi-4-reasoning-plus
-- deepseek/deepseek-r1-0528-qwen3-8b
-- google/gemma-3-12b
-- And 10+ more models...
-
-## 📊 **API Endpoints**
-
-### **Health & Status**
-- `GET /api/health` - Basic health check
-- `GET /api/health/full` - Comprehensive health gates
-- `GET /api/contract` - API contract specification
-
-### **Analysis**
-- `POST /api/execute` - Execute MCP tools
-- `GET /api/tools` - List available tools
-- `GET /api/runs` - List analysis runs
-- `POST /api/ai/chat` - AI chat interface
-- `GET /api/runs/{run_id}/corpus` - Get run corpus data
-- `GET /api/runs/{run_id}/transcript/{doc_index}` - Get full transcript
-
-### **Visualization**
-- `GET /api/visualizations` - List available visualization files
-- `GET /api/visualizations/{filename}` - Serve specific HTML visualization
-
-### **UI**
-- `GET /static/ui_status_chat.html` - Modern single-file UI (primary)
-- `GET /` - Legacy comprehensive dashboard (alternative)
+### **7. Enhanced Manifest Schema**
+- [ ] Update `manifest.json` schema with `sources` array
+- [ ] Add `links` reference to links.json
+- [ ] Add `verification` reference to verification.json
 
 ## 🧪 **Testing**
 
-### **Run All Tests**
+### **Run Tests**
 ```bash
-# Health gates and system tests
-pytest tests/test_health_gates.py tests/test_no_fallbacks.py -v
+# Functional tests
+pytest tests/test_no_fallbacks.py tests/test_health_gates.py -v
 
-# Expected output: All tests passing
+# Phase 9 specific tests
+pytest tests/test_multi_source.py tests/test_evidence_graph.py -v
 ```
 
-### **Manual Testing**
+### **Verification Scripts**
 ```bash
-# Test health gates
-curl -s http://localhost:8050/api/health/full | jq .
+# Bring-up and smoke tests
+bash scripts/bring_up.sh && bash scripts/smoke_youtube.sh
 
-# Test LM Studio
-curl -s http://localhost:1234/v1/models | jq '.data | length'
-
-# Test AI chat
-curl -s -X POST http://localhost:8050/api/ai/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message":"Hello, how are you?"}' | jq .
-
-# Test UI accessibility
-curl -s http://localhost:8050/static/ui_status_chat.html | head -5
-
-# Test complete workflow
-bash scripts/smoke_envelope.sh
-```
-
-## 📈 **Performance**
-
-### **Response Times**
-- Health checks: <2s
-- AI analysis: 5-30s (depending on model and text length)
-- UI loading: <1s
-- Service startup: <60s
-- Visualization generation: 10-30s
-
-### **Reliability**
-- Health gates prevent operation when services are down
-- Real AI generation with no pattern matching fallbacks
-- Graceful error handling with descriptive messages
-- No silent failures or hidden fallbacks
-
-## 🔍 **Troubleshooting**
-
-### **Common Issues**
-1. **LM Studio not responding**: Check if desktop LM Studio is running on port 1234
-2. **Health gates failing**: Check Docker container status with `docker ps`
-3. **UI not loading**: Verify dashboard container is running on port 8050
-4. **Visualization blank**: Check entity extraction and graph data generation
-5. **AI chat not working**: Verify LM Studio model availability
-
-### **Logs**
-```bash
-# Dashboard logs
-docker logs living-truth-dashboard
-
-# MCP server logs
-tail -f data/outputs/logs/living_truth_fastmcp.log
-
-# Health check
-bash scripts/smoke_envelope.sh
+# Multi-source verification
+bash scripts/smoke_multi_source.sh
 ```
 
 ## 📚 **Documentation**
 
-- [Phase 8.3 New UI Completion](PHASE_8_3_NEW_UI_COMPLETION.md)
-- [System Integration Status](.cursor/rules/system_integration_status.mdc)
-- [AI Integration Patterns](.cursor/rules/ai_integration.mdc)
-- [Visualization System](.cursor/rules/visualization_system.mdc)
-- [Complete Analysis Pipeline](.cursor/rules/complete_analysis_pipeline.mdc)
-- [Development Workflow](.cursor/rules/workflow.mdc)
+- **PHASE_9_PLAN.md**: Detailed implementation plan
+- **PHASE_8_3_NEW_UI_COMPLETION.md**: Phase 8.3 completion summary
+- **CONSOLIDATED_COMPLETION_SUMMARY.md**: Overall project status
+- **.cursor/rules/**: Development rules and guidelines
 
-## 🤝 **Contributing**
+## 🔍 **API Endpoints**
 
-This project follows strict development workflows:
-1. **Build → Verify → Iterate**: All changes must pass health gates
-2. **Systematic Testing**: Each component tested before moving to next
-3. **No Fallbacks**: Explicit error handling only, no silent failures
-4. **Documentation**: Complete usage instructions and cursor rules updated with each change
+### **Health & Status**
+- `GET /api/health` - Basic health check
+- `GET /api/health/full` - Comprehensive health check
+- `GET /api/tools` - Available MCP tools
 
-## 🎯 **Key Achievements**
+### **Runs Management**
+- `GET /api/runs` - List all runs
+- `GET /api/runs/{id}` - Get run details
+- `GET /api/runs/{id}/corpus` - Get run corpus
+- `POST /api/runs/youtube/start` - Start YouTube analysis
 
-### **Real AI Integration**
-- ✅ **No Pattern Matching**: All analysis uses actual LLM generation
-- ✅ **Desktop LM Studio**: Direct integration with port 1234
-- ✅ **AI Tools**: `analyze_veritas_summary`, `analyze_veritas_claims`, `generate_lm_studio_text`
-- ✅ **Structured Output**: JSON-formatted AI responses
+### **Analysis & Execution**
+- `POST /api/execute` - Execute MCP tools
+- `POST /api/ai/chat` - AI chat interface
+- `GET /api/visualizations/{run_id}` - Get visualizations
 
-### **Advanced Visualization**
-- ✅ **3D Network Graphs**: Interactive Plotly visualizations
-- ✅ **Entity Extraction**: JavaScript-based entity identification
-- ✅ **Dynamic Generation**: Real-time graph creation from analysis data
-- ✅ **HTML Rendering**: Proper visualization serving and embedding
+### **Phase 9 Endpoints (In Development)**
+- `GET /api/graph/{run_id}` - Evidence graph data
+- `POST /api/runs/multi-source/start` - Start multi-source analysis
+- `GET /api/verification/{run_id}` - Claim verification results
 
-### **Complete Analysis Pipeline**
-- ✅ **Single Button**: "Start Complete Analysis" orchestrates entire workflow
-- ✅ **Step-by-Step Progress**: Visual indicators for each stage
-- ✅ **Comprehensive Results**: Summary, claims, and visualization in one view
-- ✅ **Real-time Updates**: Live status and progress tracking
+## 🛠️ **Development Guidelines**
 
-### **Modern UI**
-- ✅ **Single File**: Complete UI in `ui_status_chat.html`
-- ✅ **Dark Theme**: Modern design with grid background
-- ✅ **Responsive**: Works on desktop and mobile
-- ✅ **Status Stack**: Real-time system status indicators
+### **Code Standards**
+- **Type Hints**: Required for all Python functions
+- **Docstrings**: Comprehensive documentation
+- **Naming**: Consistent snake_case for Python, camelCase for JavaScript
+- **Error Handling**: Explicit error handling with logging
+- **Testing**: 90%+ code coverage required
+
+### **Phase 9 Specific Guidelines**
+- **Multi-source First**: All new features must support multiple sources
+- **Evidence Linking**: Prioritize cross-document relationship discovery
+- **AI Verification**: Integrate AI-assisted claim verification
+- **Graph Visualization**: Focus on interactive evidence graphs
+
+## 🚨 **Troubleshooting**
+
+### **Common Issues**
+1. **Service Startup**: Port conflicts, missing dependencies
+2. **Database Issues**: Connection problems, data corruption
+3. **MCP Server**: Configuration errors, tool availability
+4. **Performance**: Resource constraints, slow queries
+5. **Security**: Permission issues, authentication problems
+
+### **Recovery Procedures**
+- **Service Restart**: Automated restart procedures
+- **Data Recovery**: Backup and restore procedures
+- **Configuration Reset**: Reset to known good state
+- **Environment Reset**: Complete environment rebuild
+
+## 📊 **Quality Metrics**
+
+### **Code Quality**
+- **Type Coverage**: 100% type hints
+- **Documentation**: 100% docstring coverage
+- **Test Coverage**: >90% code coverage
+- **Linting**: Zero linting errors
+- **Security**: No security vulnerabilities
+
+### **System Performance**
+- **Uptime**: 99%+ service availability
+- **Response Time**: <2s for API calls
+- **Resource Usage**: <80% CPU/memory utilization
+- **Build Time**: <5 minutes for full build
+- **Deployment**: <2 minutes for deployment
 
 ---
 
-**Status**: ✅ **FULLY OPERATIONAL** - All systems operational with real AI analysis, advanced visualization, and complete analysis pipeline.
-
-**🎯 Use the modern UI at http://localhost:8050/static/ui_status_chat.html for the full experience!** 
+**This repository represents the Phase 9 development branch of the Living Truth Engine, focused on multi-source expansion and advanced evidence linking capabilities.** 

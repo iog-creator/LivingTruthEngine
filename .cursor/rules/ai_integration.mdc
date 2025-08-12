@@ -1,4 +1,9 @@
-# AI Integration Patterns
+---
+description: This AI integration provides real LLM capabilities throughout the Living Truth Engine, enabling sophisticated analysis and interactive features.
+globs:
+alwaysApply: false
+--- 
+#AI Integration Patterns
 
 ## Overview
 The Living Truth Engine integrates with desktop LM Studio for real AI analysis, providing actual LLM generation instead of pattern matching.
@@ -312,8 +317,4 @@ async function startCompleteAnalysis() {
 - **Interactive Chat**: Real-time AI conversation
 - **Content Generation**: AI-assisted content creation
 
-**This AI integration provides real LLM capabilities throughout the Living Truth Engine, enabling sophisticated analysis and interactive features.**
-description:
-globs:
-alwaysApply: false
----
+

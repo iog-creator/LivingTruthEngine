@@ -8,7 +8,12 @@ Alright — here’s a **Phase 9 plan** in the same structured format we’ve be
 
 Expand the system beyond a single YouTube channel to support **multiple simultaneous sources** (websites, PDFs, images, and other channels), add **cross-document linking and visualization**, and integrate more **AI-assisted verification workflows**.
 
----
+## **Repository Status**
+
+**Repository**: `LivingTruthEngine-Phase9`  
+**Branch**: `main`  
+**Foundation**: Phase 8.3 complete (real AI integration, advanced visualization, modern UI)  
+**Status**: Ready for Phase 9 development
 
 ## **Scope (What Ships)**
 
@@ -34,8 +39,6 @@ Expand the system beyond a single YouTube channel to support **multiple simultan
 * **Improved run metadata**:
 
   * Store and display cross-source relationships in manifest.
-
----
 
 ## **Implementation Steps**
 
@@ -130,15 +133,11 @@ Expand the system beyond a single YouTube channel to support **multiple simultan
   * Dashboard multi-source UI works.
   * Graph and claim panels display correctly.
 
----
-
 ## **Dependencies**
 
 * `spacy` or `transformers` NER model for entity extraction.
 * Graph library for frontend (D3.js or Plotly).
 * If OCR/JS still optional, reuse Phase 8 flags.
-
----
 
 ## **Docs & Rules**
 
@@ -149,6 +148,27 @@ Expand the system beyond a single YouTube channel to support **multiple simultan
   * Claim verification workflow.
 * `.cursor/rules/current_working_state.mdc` updated for new features.
 * Add `PHASE_9_COMPLETION_SUMMARY.md` (template below).
+
+## **Development Workflow**
+
+### **Phase 9 Development Rules**
+1. **Multi-source First**: All new features must support multiple sources
+2. **Evidence Linking**: Prioritize cross-document relationship discovery
+3. **AI Verification**: Integrate AI-assisted claim verification
+4. **Graph Visualization**: Focus on interactive evidence graphs
+5. **Backward Compatibility**: Maintain Phase 8.3 functionality
+
+### **Testing Strategy**
+- **Unit Tests**: Each component tested individually
+- **Integration Tests**: Multi-source workflow testing
+- **End-to-End Tests**: Complete pipeline verification
+- **Performance Tests**: Graph generation and visualization performance
+
+### **Documentation Requirements**
+- **API Documentation**: All new endpoints documented
+- **UI Documentation**: New dashboard features explained
+- **Configuration Guides**: Source registry and parameter setup
+- **Troubleshooting**: Common issues and solutions
 
 ---
 
@@ -182,6 +202,4 @@ When complete, verify:
 
 ---
 
-If we do Phase 8.2 → Phase 9 in order, you’ll end up with a **dashboard that not only runs YouTube ingestion but also maps cross-source evidence visually and verifies claims**.
-
-Do you want me to also include **the AI activity visualization & chat control from 8.2** into this Phase 9 graph so that the user can see **which AI model worked on which part of the evidence**? That would make the graph dynamic.
+**Phase 9 will transform the system from single YouTube channel analysis to comprehensive multi-source evidence linking and verification.**

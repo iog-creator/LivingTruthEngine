@@ -1,3 +1,9 @@
+---
+description: This complete analysis pipeline provides a seamless, orchestrated workflow for comprehensive document analysis with AI-powered insights and interactive visualizations.
+globs:
+alwaysApply: false
+---
+
 # Complete Analysis Pipeline
 
 ## Overview
@@ -235,8 +241,4 @@ function addStatus(message, type = 'info') {
 - **Visualization**: Independent graph creation
 - **Result Display**: Flexible result presentation
 
-**This complete analysis pipeline provides a seamless, orchestrated workflow for comprehensive document analysis with AI-powered insights and interactive visualizations.**
-description:
-globs:
-alwaysApply: false
----
+

@@ -1,3 +1,10 @@
+---
+description: System Integration Status
+globs:
+alwaysApply: false
+---
+
+
 # System Integration Status
 
 ## Overview
@@ -192,7 +199,4 @@ The Living Truth Engine is **FULLY OPERATIONAL** with:
 
 **Last Verified**: $(date)
 **Status**: ✅ **FULLY OPERATIONAL**
-description:
-globs:
-alwaysApply: false
----
+

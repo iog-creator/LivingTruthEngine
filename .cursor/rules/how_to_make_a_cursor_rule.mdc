@@ -1,12 +1,7 @@
 ---
-alwaysApply: true
 description: Rule for How To Make A Cursor Rule
-globs:
-- '**/*'
+alwaysApply: false
 ---
-
-
-
 # How to Build Cursor Rules - Complete Guide
 
 ## Description

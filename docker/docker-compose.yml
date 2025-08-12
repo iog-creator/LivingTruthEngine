@@ -298,7 +298,7 @@ services:
       - ../data:/app/data
     environment:
       - PYTHONPATH=/app:/app/src
-      - LM_STUDIO_ENDPOINT=http://host.docker.internal:1234
+      - LM_STUDIO_ENDPOINT=http://host.docker.internal:1234/v1
     extra_hosts:
       - "host.docker.internal:host-gateway"
     command: ["uvicorn","dashboard.unified_dashboard:main","--host","0.0.0.0","--port","8050"]

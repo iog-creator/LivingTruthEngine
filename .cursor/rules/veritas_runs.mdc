@@ -1,7 +1,7 @@
 ---
+description: veritas ingestion runner
 alwaysApply: false
 ---
-
 # Veritas Generalist Ingestion Runner - Development Guidelines
 
 ## Overview

@@ -1,3 +1,6 @@
+# Living Truth Engine - Phase 9 Repository
+# Comprehensive .gitignore for Python, Docker, and development files
+
 # Python
 __pycache__/
 *.py[cod]
@@ -16,85 +19,65 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
 
-# Virtual environments
+# PyInstaller
+*.manifest
+*.spec
 
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
 
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-
-
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Logs
-*.log
-logs/
-mcp_server.log
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-
-# Docker
-.dockerignore
-
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Temporary files
-*.tmp
-*.temp
-*.bak
-*.backup
-
-# Model files
-models/
-*.onnx
-*.bin
-*.safetensors
-
-# Flowise data
-.flowise/
-
-# Node modules (if any)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Coverage reports
+# Unit test / coverage reports
 htmlcov/
 .tox/
+.nox/
 .coverage
 .coverage.*
 .cache
 nosetests.xml
 coverage.xml
 *.cover
+*.py,cover
 .hypothesis/
 .pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
 
 # pyenv
 .python-version
@@ -102,15 +85,30 @@ coverage.xml
 # pipenv
 Pipfile.lock
 
+# poetry
+poetry.lock
+
+# pdm
+.pdm.toml
+
 # PEP 582
 __pypackages__/
 
-# Celery
+# Celery stuff
 celerybeat-schedule
 celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
 # Spyder project settings
 .spyderproject
@@ -126,27 +124,116 @@ celerybeat.pid
 .mypy_cache/
 .dmypy.json
 dmypy.json
-env_config.txt
 
-ven.txt
+# Pyre type checker
+.pyre/
 
-# Data files
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# PyCharm
+.idea/
+
+# VS Code
+.vscode/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Data and outputs
 data/outputs/
 data/logs/
-data/runs/
-data/sources/analysis/
-data/sources/backups/
-data/sources/devdocs/
-data/sources/keyframes/
-data/sources/organized/
+data/sources/
+data/processed/
+data/visualizations/
+*.veritasrun/
+*.jsonl
+*.json.bak
 
-# Large video files
-data/sources/*.mp4
-data/sources/*.webm
-data/sources/*.part
-data/sources/videos/
-*.mp4
-*.webm
-*.avi
-*.mov
-*.mkv
+# Model files
+models/
+*.onnx
+*.bin
+*.safetensors
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+log/
+
+# Configuration secrets
+config/secrets.toml
+config/api_keys.toml
+.env.local
+.env.production
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Test artifacts
+test_artifacts/
+test_outputs/
+test_data/
+
+# Coverage reports
+htmlcov/
+.coverage
+coverage.xml
+
+# Performance profiling
+*.prof
+*.profile
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache directories
+.cache/
+cache/
+__pycache__/
+
+# Node.js (if using any frontend tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local development
+local/
+dev/
+development/
+
+# Phase 9 specific
+source_registry.local.toml
+multi_source_test_data/
+evidence_graph_cache/
+verification_results/
+
+# Secret files
+Archive_Legacy/ven.txt
+env_config.txt
+data/.flowise/

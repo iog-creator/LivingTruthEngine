@@ -1,3 +1,10 @@
+---
+description: This visualization system provides sophisticated 3D network analysis capabilities integrated seamlessly with the Living Truth Engine's AI analysis pipeline.
+globs:
+alwaysApply: false
+---
+
+
 # Visualization System Integration
 
 ## Overview
@@ -214,8 +221,4 @@ return f"✅ 3D network visualization created successfully\nOutput file: {filena
 - **Visualization Display**: Show existing visualizations
 - **Data Export**: Save visualization data for reuse
 
-**This visualization system provides sophisticated 3D network analysis capabilities integrated seamlessly with the Living Truth Engine's AI analysis pipeline.**
-description:
-globs:
-alwaysApply: false
----
+

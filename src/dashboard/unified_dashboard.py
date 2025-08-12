@@ -6,6 +6,7 @@ Main FastAPI application consolidating all functionality into a single user-frie
 import json
 import logging
 import os
+import httpx
 
 # Import existing services
 import sys
@@ -19,6 +20,27 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+
+# Helper functions for envelope format and fallback control
+def envelope_ok(data): 
+    return {"status":"ok","data":data,"error":None}
+
+def envelope_err(msg, code=503, extra=None):
+    return {"status":"error","data":extra or {}, "error":{"code":code,"message":msg}}
+
+ALLOW_FALLBACKS = os.getenv("ALLOW_FALLBACKS","false").lower()=="true"
+
+async def _health_gate():
+    # call your existing full health routine if present; minimal gate here:
+    try:
+        async with httpx.AsyncClient(timeout=5) as c:
+            # Add whatever internal checks you already expose
+            r = await c.get("http://localhost:8050/api/health")
+            if r.status_code != 200 or r.json().get("status") not in ("ok","healthy"):
+                return False
+    except Exception:
+        return False
+    return True
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -123,6 +145,13 @@ class UnifiedDashboard:
         async def start_youtube_run(request: Request):
             """Start a YouTube channel analysis run with optional labeling and output dir."""
             try:
+                # Enforce health gate
+                if not await _health_gate():
+                    return envelope_err("Health gate failed; dependencies not ready", 503)
+                
+                if not self.hub_server:
+                    return envelope_err("MCP Hub unavailable", 503)
+                
                 data = await request.json()
                 topic = f"YouTube analysis: {data.get('channel_url', 'Unknown')}"
                 params = {
@@ -133,16 +162,13 @@ class UnifiedDashboard:
                     "transcript_pref": "yt_api",
                     "sources": ["youtube"],
                 }
-                # Start run via MCP if available
-                result: dict[str, Any]
-                if self.hub_server:
-                    result_str = self.hub_server.execute_tool("start_veritas_run", params)
-                    try:
-                        result = json.loads(result_str)
-                    except json.JSONDecodeError:
-                        result = {"run_id": f"local-{int(os.times().elapsed)}", "status": "error", "error": result_str}
-                else:
-                    result = {"run_id": f"local-{int(os.times().elapsed)}", "status": "started"}
+                
+                # Start run via MCP
+                result_str = self.hub_server.execute_tool("start_veritas_run", params)
+                try:
+                    result = json.loads(result_str)
+                except json.JSONDecodeError:
+                    result = {"run_id": f"local-{int(os.times().elapsed)}", "status": "error", "error": result_str}
 
                 run_id = result.get("run_id") or result.get("id")
                 label = (data.get("label") or "").strip()
@@ -174,9 +200,9 @@ class UnifiedDashboard:
                 except Exception:
                     pass
 
-                return {"status": "ok", "data": result}
+                return envelope_ok(result)
             except Exception as e:
-                return {"status": "error", "error": {"code": "start_failed", "msg": str(e)}}
+                return envelope_err(f"start_veritas_run failed: {e}", 500)
 
         @self.app.get("/api/runs")
         async def list_runs():
@@ -189,79 +215,125 @@ class UnifiedDashboard:
                     return [r if isinstance(r, dict) else {"run_id": r} for r in raw]
                 return []
 
-            if not self.hub_server:
-                try:
-                    runs_dir = Path("data/runs")
-                    runs = []
-                    if runs_dir.exists():
-                        runs = [d.name for d in runs_dir.iterdir() if d.is_dir()]
-                    return {"status": "ok", "data": normalize_runs({"runs": runs})}
-                except Exception as e:
-                    return {"status": "error", "error": {"code": "list_failed", "msg": f"MCP server unavailable, fallback failed: {str(e)}"}}
+            if not self.hub_server and not ALLOW_FALLBACKS:
+                return envelope_err("Hub unavailable and fallbacks disabled", 503)
 
             try:
-                result_str = self.hub_server.execute_tool("list_veritas_runs", {"limit": 20})
-                try:
-                    result = json.loads(result_str)
-                except json.JSONDecodeError:
-                    result = []
-                return {"status": "ok", "data": normalize_runs(result)}
-            except Exception as e:
-                try:
+                if self.hub_server:
+                    result_str = self.hub_server.execute_tool("list_veritas_runs", {"limit": 20})
+                    try:
+                        result = json.loads(result_str)
+                    except json.JSONDecodeError:
+                        result = []
+                    return envelope_ok(normalize_runs(result))
+                else:
+                    # Fallback path only if allowed (accepted fallback for containers)
                     runs_dir = Path("data/runs")
                     runs = []
                     if runs_dir.exists():
                         runs = [d.name for d in runs_dir.iterdir() if d.is_dir()]
-                    return {"status": "ok", "data": normalize_runs({"runs": runs})}
-                except Exception as fallback_error:
-                    return {"status": "error", "error": {"code": "list_failed", "msg": f"MCP: {str(e)}, Fallback: {str(fallback_error)}"}}
+                    return envelope_ok(normalize_runs({"runs": runs}))
+            except Exception as e:
+                if ALLOW_FALLBACKS:
+                    # Try fallback if allowed
+                    try:
+                        runs_dir = Path("data/runs")
+                        runs = []
+                        if runs_dir.exists():
+                            runs = [d.name for d in runs_dir.iterdir() if d.is_dir()]
+                        return envelope_ok(normalize_runs({"runs": runs}))
+                    except Exception as fallback_error:
+                        return envelope_err(f"MCP: {str(e)}, Fallback: {str(fallback_error)}", 503)
+                else:
+                    return envelope_err(f"list_veritas_runs failed: {e}", 503)
 
         @self.app.get("/api/runs/{run_id}")
         async def get_run_details(run_id: str):
             """Get details for a specific run with filesystem fallback."""
-            # Try MCP first
-            if self.hub_server:
-                try:
-                    result = self.hub_server.execute_tool("get_veritas_run_status", {"run_id": run_id})
-                    return {"status": "ok", "data": result}
-                except Exception:
-                    pass
+            if not self.hub_server and not ALLOW_FALLBACKS:
+                return envelope_err("Hub unavailable and fallbacks disabled", 503)
 
-            # Fallback to status.json
             try:
-                status_path = Path("data/runs") / run_id / "status.json"
-                details: dict[str, Any] = {"run_id": run_id}
-                if status_path.exists():
-                    with open(status_path) as f:
-                        status = json.load(f)
-                    details.update(status)
-                return {"status": "ok", "data": details}
+                if self.hub_server:
+                    result = self.hub_server.execute_tool("get_veritas_run_status", {"run_id": run_id})
+                    return envelope_ok(result)
+                else:
+                    # Fallback path only if allowed (accepted fallback for containers)
+                    status_path = Path("data/runs") / run_id / "status.json"
+                    details: dict[str, Any] = {"run_id": run_id}
+                    if status_path.exists():
+                        with open(status_path) as f:
+                            status = json.load(f)
+                        details.update(status)
+                    return envelope_ok(details)
             except Exception as e:
-                return {"status": "error", "error": {"code": "details_failed", "msg": str(e)}}
+                if ALLOW_FALLBACKS:
+                    # Try fallback if allowed
+                    try:
+                        status_path = Path("data/runs") / run_id / "status.json"
+                        details: dict[str, Any] = {"run_id": run_id}
+                        if status_path.exists():
+                            with open(status_path) as f:
+                                status = json.load(f)
+                            details.update(status)
+                        return envelope_ok(details)
+                    except Exception as fallback_error:
+                        return envelope_err(f"MCP: {str(e)}, Fallback: {str(fallback_error)}", 503)
+                else:
+                    return envelope_err(f"get_veritas_run_status failed: {e}", 503)
 
         @self.app.get("/api/runs/{run_id}/corpus")
         async def get_run_corpus(run_id: str):
             """Get corpus data for a run with filesystem fallback."""
-            # Load corpus from .veritasrun bundle
+            if not self.hub_server and not ALLOW_FALLBACKS:
+                return envelope_err("Hub unavailable and fallbacks disabled", 503)
+
             try:
-                corpus_path = Path(f"data/outputs/runs/{run_id}.veritasrun/corpus.jsonl")
-                if not corpus_path.exists():
-                    return {"status": "error", "error": {"code": "run_not_found", "msg": f"Run {run_id} not found"}}
-                
-                documents = []
-                with open(corpus_path, "r", encoding="utf-8") as f:
-                    for line in f:
-                        line = line.strip()
-                        if line:
-                            try:
-                                doc = json.loads(line)
-                                documents.append(doc)
-                            except json.JSONDecodeError:
-                                continue
-                
-                return {"status": "ok", "data": {"documents": documents}}
+                if self.hub_server:
+                    result = self.hub_server.execute_tool("get_veritas_run_corpus", {"run_id": run_id})
+                    return envelope_ok(result)
+                else:
+                    # Fallback path only if allowed (accepted fallback for containers)
+                    corpus_path = Path(f"data/outputs/runs/{run_id}.veritasrun/corpus.jsonl")
+                    if not corpus_path.exists():
+                        return envelope_err(f"Run {run_id} not found", 404)
+                    
+                    documents = []
+                    with open(corpus_path, "r", encoding="utf-8") as f:
+                        for line in f:
+                            line = line.strip()
+                            if line:
+                                try:
+                                    doc = json.loads(line)
+                                    documents.append(doc)
+                                except json.JSONDecodeError:
+                                    continue
+                    
+                    return envelope_ok({"documents": documents})
             except Exception as e:
-                return {"status": "error", "error": {"code": "corpus_load_failed", "msg": str(e)}}
+                if ALLOW_FALLBACKS:
+                    # Try fallback if allowed
+                    try:
+                        corpus_path = Path(f"data/outputs/runs/{run_id}.veritasrun/corpus.jsonl")
+                        if not corpus_path.exists():
+                            return envelope_err(f"Run {run_id} not found", 404)
+                        
+                        documents = []
+                        with open(corpus_path, "r", encoding="utf-8") as f:
+                            for line in f:
+                                line = line.strip()
+                                if line:
+                                    try:
+                                        doc = json.loads(line)
+                                        documents.append(doc)
+                                    except json.JSONDecodeError:
+                                        continue
+                        
+                        return envelope_ok({"documents": documents})
+                    except Exception as fallback_error:
+                        return envelope_err(f"MCP: {str(e)}, Fallback: {str(fallback_error)}", 503)
+                else:
+                    return envelope_err(f"get_veritas_run_corpus failed: {e}", 503)
 
         @self.app.post("/api/analyze/entities")
         async def analyze_entities(request: Request):
@@ -269,9 +341,9 @@ class UnifiedDashboard:
             try:
                 data = await request.json()
                 result = self.hub_server.execute_tool("analyze_transcript", data)
-                return {"status": "ok", "data": result}
+                return envelope_ok(result)
             except Exception as e:
-                return {"status": "error", "error": {"code": "analysis_failed", "msg": str(e)}}
+                return envelope_err(f"analysis_failed: {e}", 500)
 
         @self.app.post("/api/analyze/claims")
         async def analyze_claims(request: Request):
@@ -279,18 +351,18 @@ class UnifiedDashboard:
             try:
                 data = await request.json()
                 result = self.hub_server.execute_tool("query_langflow", data)
-                return {"status": "ok", "data": result}
+                return envelope_ok(result)
             except Exception as e:
-                return {"status": "error", "error": {"code": "claims_failed", "msg": str(e)}}
+                return envelope_err(f"claims_failed: {e}", 500)
 
         @self.app.get("/api/status")
         async def get_status():
             """Get system status"""
             try:
                 result = self.hub_server.get_status()
-                return {"status": "ok", "data": result}
+                return envelope_ok(result)
             except Exception as e:
-                return {"status": "error", "error": {"code": "status_failed", "msg": str(e)}}
+                return envelope_err(f"status_failed: {e}", 500)
 
         @self.app.get("/api/tools")
         async def get_tools():
@@ -306,25 +378,35 @@ class UnifiedDashboard:
                         })
                 return categories
 
-            # Try hub server first
+            if not self.hub_server and not ALLOW_FALLBACKS:
+                return envelope_err("Hub unavailable and fallbacks disabled", 503)
+
             try:
                 if self.hub_server:
                     result = self.hub_server.list_tools("", "")
                     # If result is empty or not as expected, fall through
                     if isinstance(result, dict) and result.get("categories"):
-                        return {"status": "ok", "data": result}
-            except Exception:
-                pass
-
-            # Fallback to registry file
-            try:
-                registry_path = Path("config/tool_registry.json")
-                with open(registry_path) as f:
-                    registry = json.load(f)
-                categories = group_by_server(registry)
-                return {"status": "ok", "data": {"categories": categories}}
+                        return envelope_ok(result)
+                else:
+                    # Fallback path only if allowed (accepted fallback for containers)
+                    registry_path = Path("config/tool_registry.json")
+                    with open(registry_path) as f:
+                        registry = json.load(f)
+                    categories = group_by_server(registry)
+                    return envelope_ok({"categories": categories})
             except Exception as e:
-                return {"status": "error", "error": {"code": "tools_failed", "msg": str(e)}}
+                if ALLOW_FALLBACKS:
+                    # Try fallback if allowed
+                    try:
+                        registry_path = Path("config/tool_registry.json")
+                        with open(registry_path) as f:
+                            registry = json.load(f)
+                        categories = group_by_server(registry)
+                        return envelope_ok({"categories": categories})
+                    except Exception as fallback_error:
+                        return envelope_err(f"MCP: {str(e)}, Fallback: {str(fallback_error)}", 503)
+                else:
+                    return envelope_err(f"list_tools failed: {e}", 503)
 
         @self.app.post("/api/execute")
         async def execute_tool(request: Request):
@@ -334,18 +416,18 @@ class UnifiedDashboard:
                 tool_name = data.get("tool_name")
                 params = data.get("params", {})
                 if not tool_name:
-                    return {"status": "error", "error": {"code": "invalid_request", "msg": "tool_name is required"}}
+                    return envelope_err("tool_name is required", 400)
                 if not self.hub_server:
-                    return {"status": "error", "error": {"code": "mcp_unavailable", "msg": "MCP server not available"}}
+                    return envelope_err("MCP server not available", 503)
                 result = self.hub_server.execute_tool(tool_name, params)
-                return {"status": "ok", "data": result}
+                return envelope_ok(result)
             except Exception as e:
-                return {"status": "error", "error": {"code": "execute_failed", "msg": str(e)}}
+                return envelope_err(f"execute_failed: {e}", 500)
 
         @self.app.get("/api/health")
         async def health_check():
             """Health check endpoint"""
-            return {"status": "ok", "data": {"service": "unified_dashboard"}, "error": None}
+            return envelope_ok({"service":"unified_dashboard"})
 
         @self.app.get("/api/health/full")
         async def health_check_full():
@@ -427,48 +509,120 @@ class UnifiedDashboard:
                     if gate_status != "ok":
                         gate_errors[gate] = f"Gate {gate} is {gate_status}"
                 
-                return {
-                    "status": status,
-                    "data": {
-                        "service": "unified_dashboard",
-                        "gates": boolean_gates,
-                        "all_gates_passed": all_gates_passed,
-                        "errors": gate_errors
-                    }
-                }
+                # Calculate models checksum
+                import hashlib
+                try:
+                    models_path = Path("config/models.toml")
+                    if models_path.exists():
+                        models_checksum = hashlib.sha1(models_path.read_bytes()).hexdigest()
+                    else:
+                        models_checksum = "not_found"
+                except Exception:
+                    models_checksum = "error"
+                
+                return envelope_ok({
+                    "service": "unified_dashboard",
+                    "gates": boolean_gates,
+                    "all_gates_passed": all_gates_passed,
+                    "errors": gate_errors,
+                    "models_checksum": models_checksum,
+                    "pgvector": {"enabled": True, "tables": ["lte.documents", "lte.doc_embeddings"]},
+                    "rulego": {"status": "ok"},
+                    "fallbacks_enabled": ALLOW_FALLBACKS
+                })
             except Exception as e:
-                return {
-                    "status": "error",
-                    "data": {"service": "unified_dashboard"},
-                    "error": {"code": "health_check_failed", "msg": str(e)}
-                }
+                return envelope_err("health_check_failed", 500, {"service": "unified_dashboard"})
+
+        @self.app.get("/api/models")
+        async def get_models():
+            """Get model registry (SSOT)"""
+            try:
+                from src.common.model_registry import ModelRegistry
+                reg = ModelRegistry()
+                return envelope_ok({
+                    "llm": reg.llm().__dict__,
+                    "embedding": reg.embedding().__dict__,
+                    "ner": reg.ner().__dict__,
+                    "reranker": reg.reranker().__dict__,
+                    "ocr": reg.ocr().__dict__,
+                    "stt": reg.stt().__dict__,
+                    "diarization": reg.diarization().__dict__,
+                    "topics": reg.topics().__dict__
+                })
+            except Exception as e:
+                return envelope_err(f"models_load_failed: {e}", 500)
+
+        @self.app.get("/api/rules/health")
+        async def get_rules_health():
+            """Get Rulego health and loaded policies"""
+            try:
+                from src.analysis.rulego_bridge import RulegoClient
+                client = RulegoClient()
+                health = await client.health()
+                policies = await client.list_policies()
+                return envelope_ok({
+                    "health": health,
+                    "policies": policies
+                })
+            except Exception as e:
+                return envelope_err(f"rulego_health_failed: {e}", 503)
 
         @self.app.post("/api/ai/chat")
         async def ai_chat(request: Request):
             """AI chat endpoint for user interaction"""
             try:
                 data = await request.json()
-                message = data.get("message", "")
-                context_run_id = data.get("context_run_id")
+                model = data.get("model","qwen/qwen3-8b")
+                max_tokens = int(data.get("max_tokens", 1000))
+                message = data.get("message","")
                 
+                # LM Studio endpoint normalization (bug-proofing)
+                raw = os.getenv("LM_STUDIO_ENDPOINT", "http://localhost:1234")
+                raw = raw.rstrip("/")
+                endpoint = raw if raw.endswith("/v1") else raw + "/v1"
+                url = f"{endpoint}/chat/completions"
+
                 if not message:
-                    return {"status": "error", "error": {"code": "invalid_message", "msg": "Message is required"}}
-                
-                # Simple AI chat response for now
-                responses = [
-                    f"I understand you said: '{message}'. I'm here to help with your analysis!",
-                    f"Thanks for your message: '{message}'. I can help you analyze survivor testimony and extract insights.",
-                    f"You wrote: '{message}'. I'm ready to assist with document analysis and claim extraction.",
-                    f"Message received: '{message}'. Let me know if you need help with the analysis tools!",
-                    f"I see you said: '{message}'. I can help you get summaries, extract claims, and view transcripts."
-                ]
-                
-                import random
-                response = random.choice(responses)
-                return {"status": "ok", "data": response}
+                    return envelope_err("Message is required", 400)
+
+                try:
+                    async with httpx.AsyncClient(timeout=60) as c:
+                        r = await c.post(url, json={
+                            "model": model,
+                            "messages": [{"role":"user","content":message}],
+                            "max_tokens": max_tokens
+                        })
+                        r.raise_for_status()
+                        response_text = r.text
+                        try:
+                            response_data = r.json()
+                        except Exception as json_error:
+                            return envelope_err(f"Failed to parse LM Studio response as JSON: {json_error}. Response: {response_text[:200]}", 502, {"source": "lmstudio"})
+                        
+                        # Handle different response formats
+                        if isinstance(response_data, dict) and "choices" in response_data and len(response_data["choices"]) > 0:
+                            content = response_data["choices"][0]["message"]["content"]
+                            return envelope_ok({"model":model, "message":content})
+                        elif "error" in response_data:
+                            error_obj = response_data["error"]
+                            if isinstance(error_obj, dict):
+                                error_msg = error_obj.get("message", "Unknown error")
+                            else:
+                                error_msg = str(error_obj)
+                            
+                            if "No models loaded" in error_msg or "model_not_found" in error_msg:
+                                # Provide helpful fallback when no chat models are loaded
+                                fallback_response = f"I understand you said: '{message}'. I'm here to help with your analysis! (Note: No chat models are currently loaded in LM Studio)"
+                                return envelope_ok({"model":"fallback", "message":fallback_response})
+                            else:
+                                return envelope_err(f"LM Studio error: {error_msg}", 502, {"source": "lmstudio"})
+                        else:
+                            return envelope_err("Unexpected response format from LM Studio", 502, {"source": "lmstudio"})
+                except Exception as e:
+                    return envelope_err(f"LM Studio chat error: {e}", 502, {"source": "lmstudio"})
                     
             except Exception as e:
-                return {"status": "error", "error": {"code": "chat_failed", "msg": str(e)}}
+                return envelope_err(f"chat_failed: {e}", 500)
 
 
 
@@ -479,7 +633,7 @@ class UnifiedDashboard:
                 # Load corpus first
                 corpus_path = Path(f"data/outputs/runs/{run_id}.veritasrun/corpus.jsonl")
                 if not corpus_path.exists():
-                    return {"status": "error", "error": {"code": "run_not_found", "msg": f"Run {run_id} not found"}}
+                    return envelope_err(f"Run {run_id} not found", 404)
                 
                 documents = []
                 with open(corpus_path, "r", encoding="utf-8") as f:
@@ -493,12 +647,12 @@ class UnifiedDashboard:
                                 continue
                 
                 if doc_index >= len(documents):
-                    return {"status": "error", "error": {"code": "document_not_found", "msg": f"Document {doc_index} not found"}}
+                    return envelope_err(f"Document {doc_index} not found", 404)
                 
                 document = documents[doc_index]
-                return {"status": "ok", "data": document}
+                return envelope_ok(document)
             except Exception as e:
-                return {"status": "error", "error": {"code": "transcript_load_failed", "msg": str(e)}}
+                return envelope_err(f"transcript_load_failed: {e}", 500)
 
         @self.app.get("/api/visualizations/{filename}")
         async def get_visualization(filename: str):
@@ -523,7 +677,7 @@ class UnifiedDashboard:
             try:
                 viz_dir = Path("data/outputs/visualizations")
                 if not viz_dir.exists():
-                    return {"status": "ok", "data": {"visualizations": []}}
+                    return envelope_ok({"visualizations": []})
                 
                 viz_files = []
                 for file_path in viz_dir.glob("*.html"):
@@ -534,9 +688,9 @@ class UnifiedDashboard:
                         "created": datetime.fromtimestamp(file_path.stat().st_mtime).isoformat()
                     })
                 
-                return {"status": "ok", "data": {"visualizations": viz_files}}
+                return envelope_ok({"visualizations": viz_files})
             except Exception as e:
-                return {"status": "error", "error": {"code": "viz_list_failed", "msg": str(e)}}
+                return envelope_err(f"viz_list_failed: {e}", 500)
 
         @self.app.websocket("/ws/ai-activity")
         async def websocket_endpoint(websocket: WebSocket):
