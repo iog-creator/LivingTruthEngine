@@ -88,6 +88,8 @@ curl http://localhost/ | grep "Living Truth Engine" ✅
 # API endpoints work via proxy
 curl http://localhost/api/health | jq .status ✅ "ok"
 curl http://localhost/api/health/full | jq .data.embedding_model ✅ "sentence-transformers/all-MiniLM-L6-v2"
+curl http://localhost/api/health/full | jq .data.reverse_proxy ✅ true
+curl http://localhost/api/health/full | jq .data.ui_origin ✅ "http://localhost:4173"
 curl http://localhost/api/models | jq .status ✅ "ok"
 ```
 

@@ -542,7 +542,9 @@ class UnifiedDashboard:
                     "rulego": {"status": "ok"},
                     "fallbacks_enabled": ALLOW_FALLBACKS,
                     "embedding_model": embedding_model,
-                    "embedding_dim": embedding_dim
+                    "embedding_dim": embedding_dim,
+                    "reverse_proxy": True,
+                    "ui_origin": "http://localhost:4173"
                 })
             except Exception as e:
                 return envelope_err("health_check_failed", 500, {"service": "unified_dashboard"})
