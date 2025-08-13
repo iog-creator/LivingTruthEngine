@@ -1,0 +1,52 @@
+# Use modern Python base image
+FROM python:3.12-slim
+
+# Install system dependencies with cleanup
+RUN apt-get update && apt-get install -y \
+    curl \
+    postgresql-client \
+    python3-tk \
+    tk-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements and install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir fastapi uvicorn && \
+    python -m spacy download en_core_web_sm
+
+# Copy application code
+COPY src/ ./src/
+COPY config/ ./config/
+COPY scripts/ ./scripts/
+COPY main.py ./
+COPY .env* ./
+
+# Create necessary directories with proper permissions
+RUN mkdir -p data/sources data/outputs/logs data/outputs/visualizations && \
+    chmod 755 data/sources data/outputs/logs data/outputs/visualizations
+
+# Expose API port
+EXPOSE 8050
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app
+ENV PORT=8050
+
+# Use non-root user for security
+RUN useradd -m -u 1000 appuser && \
+    chown -R appuser:appuser /app
+USER appuser
+
+# Health check for API service
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8050/api/health || exit 1
+
+# Run the unified dashboard API server
+CMD ["python", "-m", "uvicorn", "src.dashboard.unified_dashboard:app", "--host", "0.0.0.0", "--port", "8050"]

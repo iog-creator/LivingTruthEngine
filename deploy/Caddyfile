@@ -1,0 +1,22 @@
+:80 {
+  @api path /api/* /docs /openapi.json
+  handle @api {
+    reverse_proxy localhost:8050
+  }
+
+  handle {
+    reverse_proxy localhost:4173
+  }
+
+  encode zstd gzip
+  header {
+    # tighten later; keep skeleton permissive for local
+    Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" {env.HSTS?0}
+  }
+
+  log {
+    output stdout
+    format console
+    level INFO
+  }
+}

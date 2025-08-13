@@ -1,0 +1,82 @@
+version: "3.9"
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    environment:
+      - PORT=8050
+    expose:
+      - "8050"
+    depends_on:
+      - postgres
+      - redis
+      - neo4j
+    networks:
+      - lte-network
+
+  ui:
+    working_dir: /app/ui
+    image: node:20-alpine
+    command: sh -c "npm ci && npm run build && npm run preview"
+    volumes:
+      - ./:/app
+    expose:
+      - "4173"
+    networks:
+      - lte-network
+
+  proxy:
+    image: caddy:2.7
+    ports:
+      - "80:80"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+    depends_on:
+      - api
+      - ui
+    networks:
+      - lte-network
+
+  # Existing services (keep as-is)
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: living_truth_engine
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/initdb:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - lte-network
+
+  redis:
+    image: redis:7.2-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - lte-network
+
+  neo4j:
+    image: neo4j:5.15.0
+    environment:
+      NEO4J_AUTH: neo4j/pass
+      NEO4J_PLUGINS: '["apoc"]'
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j_data:/data
+    networks:
+      - lte-network
+
+volumes:
+  postgres_data:
+  neo4j_data:
+
+networks:
+  lte-network:
+    driver: bridge
