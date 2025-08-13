@@ -1,0 +1,37 @@
+---
+description: Single source of truth for the engineering loop
+alwaysApply: true
+globs: ["**/*"]
+---
+
+# Core Workflow (BUILD → VERIFY → ITERATE)
+
+## 1) BUILD
+- `docker compose -f docker/docker-compose.yml up -d --build`
+- Rebuild any changed services; no UI edits unless the phase explicitly says so.
+
+## 2) VERIFY
+- Run health gates: `bash scripts/proof_of_life.sh` (Phase 8) + `bash scripts/p9_1_smoke.sh`
+- Run tests: `pytest -q`; exit on first failure.
+- **Bundle Check**: Verify `.veritasrun` folder exists with `manifest.json`, `corpus.jsonl`, `merkle.json`, `metrics.json`
+- **Documentation**: Update docs (`README.md`, `PHASE_*`, `CONSOLIDATED_COMPLETION_SUMMARY.md`)
+
+## 3) ITERATE
+- Fix only the failing step; re-run BUILD & VERIFY.
+- Update docs & rules before merging.
+- **Commit with message**: `phaseX.Y: <brief change> [verified]`
+- **Paste test outputs** in PR or chat for traceability
+
+# Envelope & Error Codes
+- All API replies: `{status, data?, error?}`; use 503 deps-down, 502 upstream model error, 500 internal.
+
+# Fallback Exceptions (allowed)
+- YouTube captions/transcripts fallback when MCP fetch fails.
+- Reranker CPU execution when GPU is occupied (log the switch).
+- Local dev data only when `ALLOW_FALLBACKS=true` (dev).
+- In-memory search fallback if pgvector is unavailable (dev only).
+(These exceptions are allowed and MUST be logged; no other fallbacks.)
+
+# UI Targeting
+- Do NOT modify `src/dashboard/static/ui_status_chat.html` unless a phase plan explicitly says so.
+- Main dashboard `/` edits allowed only when the phase defines them.

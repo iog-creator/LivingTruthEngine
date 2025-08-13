@@ -1,0 +1,10 @@
+---
+description: Unified testing & error handling standards
+alwaysApply: true
+globs: ["tests/**","scripts/**","src/**"]
+---
+
+- Smoke: `scripts/p9_1_smoke.sh`
+- Envelope lint: assert `status` present; `error` on non-2xx paths.
+- Health gates: LM Studio, Langflow, MCP Hub, Rulego, pgvector.
+- No flaky tests; mark @skip only with issue link.

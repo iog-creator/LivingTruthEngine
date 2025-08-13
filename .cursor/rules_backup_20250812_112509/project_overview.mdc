@@ -1,0 +1,272 @@
+---
+description: This rule provides a comprehensive overview of the Living Truth Engine project, including architecture, components, and development guidelines.
+alwaysApply: false
+---
+
+## 🎯 **Project Overview**
+
+### **Living Truth Engine**
+The Living Truth Engine is an AI-powered system for survivor testimony corroboration and evidence analysis. It combines multiple technologies to provide comprehensive analysis capabilities, using multiple sources (including but not limited to Biblical references) to find supporting evidence and make connections.
+
+### **Core Components**
+- **Langflow**: Primary AI workflow orchestration platform
+- **PostgreSQL**: Primary database for data storage with langflow database
+- **Neo4j**: Graph database for relationship analysis
+- **Redis**: Caching and session management
+- **Unified Dashboard**: Guided interface for all operations (Phase 8.1 complete)
+- **MCP Hub Server**: Consolidated tool gateway providing access to all 63 tools via 15 meta-tools
+- **Python Backend**: Core analysis and processing logic
+- **Docker**: Containerized deployment and development
+
+## 🏗️ **Architecture**
+
+### **Service Architecture**
+```
+┌─────────────────┐
+│ Cursor AI       │
+└─────────────────┘
+        │ (15 meta-tools)
+        ▼
+┌─────────────────┐
+│ MCP Hub Server  │
+│ (Registry: 63+  │
+│  tools)         │
+└─────────────────┘
+        │ (Proxy calls)
+        ▼
+┌─────────────────┬─────────────────┬─────────────────┐
+│ Living Truth   │ Langflow MCP    │ Other Servers   │
+│ FastMCP Server │ Server          │ (GitHub, DB,    │
+│ (22 tools)     │ (12 tools)      │ HF, DevDocs,    │
+│                │                 │ Rulego, Solver) │
+└─────────────────┴─────────────────┴─────────────────┘
+        │                       │
+        ▼                       ▼
+┌─────────────────┐    ┌─────────────────┐
+│ Unified Dashboard│    │   PostgreSQL    │
+│   (Port 8050)   │    │   (Port 5432)   │
+│                 │    │                 │
+│ • Guided UI     │    │ • Data Storage  │
+│ • Quick Start   │    │ • Langflow DB   │
+│ • Analysis      │    │ • Analysis Data │
+└─────────────────┘    └─────────────────┘
+        │
+        ▼
+┌─────────────────┐
+│   Langflow      │
+│   (Port 7860)   │
+│                 │
+│ • Multi-Agent   │
+│ • Python Native │
+│ • Workflow UI   │
+└─────────────────┘
+```
+
+### **Data Flow**
+1. **Input**: Transcripts, videos, documents
+2. **Processing**: AI analysis, pattern recognition
+3. **Storage**: PostgreSQL database
+4. **Output**: Analysis reports, visualizations, summaries
+
+## 📁 **Project Structure**
+
+### **Directory Organization**
+```
+LivingTruthEngine/
+├── docker/                    # Docker configuration
+│   ├── docker-compose.yml    # Service orchestration
+│   └── .dockerignore         # Build exclusions
+├── scripts/                   # Automation scripts
+│   ├── setup/                # Setup and configuration
+│   ├── testing/              # Test automation
+│   └── deployment/           # Deployment scripts
+├── src/                      # Source code
+│   ├── mcp_servers/          # MCP server implementations
+│   ├── analysis/             # Analysis modules
+│   └── utils/                # Utility functions
+├── data/                     # Data storage
+│   ├── sources/              # Input data sources
+│   ├── outputs/              # Analysis outputs
+│   └── logs/                 # Application logs
+├── config/                   # Configuration files
+│   └── tool_registry.json   # MCP Hub Server tool registry
+├── tests/                    # Test suite
+├── docs/                     # Documentation
+└── .cursor/                  # Cursor IDE configuration
+    ├── rules/                # Development rules
+    └── mcp.json             # MCP Hub Server configuration
+```
+
+## 🔧 **Technology Stack**
+
+### **Core Technologies**
+- **Python 3.13**: Primary programming language
+- **PostgreSQL 17**: Database system with langflow database
+- **Neo4j 5.15.0**: Graph database for relationship analysis
+- **Redis 7.2**: Caching and session management
+- **Docker**: Containerization platform
+- **Docker Compose v2**: Service orchestration
+
+### **AI and ML**
+- **LangChain**: AI framework for LLM integration
+- **Hugging Face**: Model hosting and inference
+- **OpenAI**: Language model API
+- **SpaCy**: Natural language processing
+
+### **MCP Integration**
+- **MCP Hub Server**: Consolidated tool gateway with 15 meta-tools
+- **Tool Registry**: Central registry of 63 tools across 8 servers
+- **FastMCP**: Framework for MCP server implementation
+- **Dynamic Loading**: On-demand tool loading for efficiency
+- **Piper TTS**: Text-to-speech synthesis
+- **Dash/Plotly**: Interactive data visualizations
+
+#### **MCP Hub Server Components Table**
+| Component | Description | Location |
+|-----------|-------------|----------|
+| Tool Registry | JSON for all tools | config/tool_registry.json (.bak for backup) |
+| Meta-Tools | 15 exposed functions | src/mcp_servers/mcp_hub_server.py |
+| Proxy Logic | Dynamic execution | importlib in execute_tool() |
+| Underlying Servers | 8 servers with 63 tools | src/mcp_servers/*.py |
+| Performance Monitoring | Timing and warnings | Built into execute_tool() |
+| Backup System | Automatic backup/recovery | Built into load_registry() |
+| Registry Validation | Enhanced error reporting | Built into validate_registry() |
+| Tool Management | CRUD operations | build_tool, update_tool, delete_tool |
+| Performance Alerts | Warn on >2s executions | logger in execute_tool |
+| Registry Recovery | Test backup and recovery | test_registry_recovery |
+
+#### **Testing Integration**
+- Run functional tests: `./scripts/testing/functional_tests.py` (aim for 100%; integrate timing checks in tests for <1s)
+- Test MCP Hub Server: `python3 src/mcp_servers/mcp_hub_server.py`
+- Validate registry: Use `validate_registry()` function from @mcp_server_integration.mdc
+- Performance monitoring: Use `measure_tool_performance()` for response time tracking
+- Registry recovery testing: Use `test_registry_recovery()` for backup validation
+- Enhanced validation: Test with invalid parameter types to verify constraints
+
+### **Development Tools**
+- **Cursor IDE**: AI-assisted development environment
+- **MCP**: Model Context Protocol for tool integration
+- **FastAPI**: Web framework for APIs
+- **Uvicorn**: ASGI server
+
+## 📋 **Development Guidelines**
+
+### **Code Standards**
+- **Type Hints**: Required for all Python functions
+- **Docstrings**: Comprehensive documentation
+- **Naming**: Consistent snake_case for Python, camelCase for JavaScript
+- **Error Handling**: Explicit error handling with logging
+- **Testing**: 90%+ code coverage required
+
+### **Docker Best Practices**
+- **Docker Compose v2**: Modern syntax, no version field
+- **Security**: Non-root users, read-only volumes
+- **Performance**: BuildKit, slim base images, layer optimization
+- **Health Checks**: Comprehensive monitoring
+- **Networking**: Explicit network configuration
+
+### **System Management**
+- **Environment**: Virtual environment for all Python operations
+- **Automation**: Scripts for common operations
+- **Monitoring**: Health checks and logging
+- **Updates**: Regular system component updates
+- **Backup**: Data backup and recovery procedures
+
+## 🚀 **Development Workflow**
+
+### **Daily Development**
+1. **Environment Setup**: Activate virtual environment
+2. **Service Start**: Start Docker services
+3. **Development**: Code with AI assistance
+4. **Testing**: Run tests and validation
+5. **Documentation**: Update docs as needed
+
+### **Weekly Maintenance**
+1. **System Updates**: Update components
+2. **Resource Cleanup**: Remove unused Docker resources
+3. **Configuration Validation**: Verify all configurations
+4. **Performance Review**: Monitor system performance
+
+### **Monthly Review**
+1. **Security Updates**: Check for security patches
+2. **Documentation Review**: Update project documentation
+3. **Rule Updates**: Review and update cursor rules
+4. **Architecture Review**: Assess system architecture
+
+## 🎯 **Key Features**
+
+### **Analysis Capabilities**
+- **Transcript Analysis**: Pattern recognition in survivor testimony
+- **Multi-Source Evidence Analysis**: Connecting survivor stories with supporting evidence from various sources
+- **Biblical References**: One source among many for finding supporting evidence and connections
+- **Entity Recognition**: Named entity extraction and linking
+- **Relationship Mapping**: Network analysis of relationships and connections
+- **Visualization**: Interactive 3D and 2D visualizations
+
+### **Integration Features**
+- **MCP Tools**: Comprehensive tool integration
+- **API Endpoints**: RESTful API for external access
+- **Web Interface**: Langflow-based workflow editor
+- **Data Import**: Multiple input format support
+- **Export Options**: Various output formats
+
+## 📊 **Quality Metrics**
+
+### **Code Quality**
+- **Type Coverage**: 100% type hints
+- **Documentation**: 100% docstring coverage
+- **Test Coverage**: >90% code coverage
+- **Linting**: Zero linting errors
+- **Security**: No security vulnerabilities
+
+### **System Performance**
+- **Uptime**: 99%+ service availability
+- **Response Time**: <2s for API calls
+- **Resource Usage**: <80% CPU/memory utilization
+- **Build Time**: <5 minutes for full build
+- **Deployment**: <2 minutes for deployment
+
+## 🔍 **Monitoring and Logging**
+
+### **Health Monitoring**
+- **Service Health**: Docker health checks
+- **API Health**: Endpoint monitoring
+- **Database Health**: Connection monitoring
+- **Resource Monitoring**: CPU, memory, disk usage
+- **Error Tracking**: Comprehensive error logging
+
+### **Logging Strategy**
+- **Application Logs**: Structured logging with levels
+- **Access Logs**: API access and usage tracking
+- **Error Logs**: Detailed error information
+- **Performance Logs**: Response time and resource usage
+- **Audit Logs**: Security and compliance tracking
+
+## 🛠️ **Troubleshooting**
+
+### **Common Issues**
+1. **Service Startup**: Port conflicts, missing dependencies
+2. **Database Issues**: Connection problems, data corruption
+3. **MCP Server**: Configuration errors, tool availability
+4. **Performance**: Resource constraints, slow queries
+5. **Security**: Permission issues, authentication problems
+
+### **Recovery Procedures**
+- **Service Restart**: Automated restart procedures
+- **Data Recovery**: Backup and restore procedures
+- **Configuration Reset**: Reset to known good state
+- **Environment Reset**: Complete environment rebuild
+- **Emergency Procedures**: Critical issue response
+
+---
+
+**This overview provides the foundation for understanding and working with the Living Truth Engine project.**
+
+## 📚 **Related Rules**
+- **@mcp_hub_server.mdc** - Detailed MCP Hub Server architecture and usage
+- **@mcp_server_integration.mdc** - MCP server integration patterns and best practices
+- **@current_working_state.mdc** - Current system status and operational details
+- **@coding_standards.mdc** - Code quality and development standards
+- **@development_workflow.mdc** - Development workflow and best practices
+- **@docker_best_practices.mdc** - Docker configuration and deployment
+- **@system_management.mdc** - System management and automation

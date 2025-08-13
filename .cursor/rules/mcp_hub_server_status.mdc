@@ -170,13 +170,5 @@ mcp_mcp_hub_server_delete_tool("old_tool")
 - **Scalable**: Easy to add new tools and categories
 
 ## 📚 **Related Rules**
-- **@current_working_state.mdc** - Overall system status
-- **@mcp_hub_server.mdc** - Detailed hub server architecture
-- **@mcp_server_integration.mdc** - Integration patterns and best practices
-- **@project_overview.mdc** - Project architecture overview
-
-## 📚 **Related Rules**
-- **@current_working_state.mdc** - Overall system status
-- **@mcp_hub_server.mdc** - Detailed hub server architecture
 - **@mcp_server_integration.mdc** - Integration patterns and best practices
 - **@project_overview.mdc** - Project architecture overview

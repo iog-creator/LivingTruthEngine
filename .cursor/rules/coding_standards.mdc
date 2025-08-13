@@ -1,7 +1,10 @@
 ---
+alwaysApply: true
 description: Rule for Coding Standards
-alwaysApply: false
+globs:
+- '**/*'
 ---
+
 # Coding Standards for AI-Assisted Development
 
 ## Description

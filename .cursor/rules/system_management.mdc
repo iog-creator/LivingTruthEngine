@@ -248,5 +248,5 @@ docker compose -f docker/docker-compose.yml up -d
 **Follow these system management practices to ensure reliable, efficient, and maintainable operations.**
 
 @coding_standards.mdc
-@development_workflow.mdc
+@core_workflow.mdc
 @docker_best_practices.mdc

@@ -520,6 +520,18 @@ class UnifiedDashboard:
                 except Exception:
                     models_checksum = "error"
                 
+                # Get embedding model info from SSOT
+                try:
+                    from src.common.model_registry import ModelRegistry
+                    reg = ModelRegistry()
+                    embedding_spec = reg.embedding()
+                    embedding_model = embedding_spec.name
+                    embedding_dim = embedding_spec.extra.get('dim')
+                except Exception as e:
+                    logger.warning(f"Failed to get embedding model info: {e}")
+                    embedding_model = "unknown"
+                    embedding_dim = None
+
                 return envelope_ok({
                     "service": "unified_dashboard",
                     "gates": boolean_gates,
@@ -528,7 +540,9 @@ class UnifiedDashboard:
                     "models_checksum": models_checksum,
                     "pgvector": {"enabled": True, "tables": ["lte.documents", "lte.doc_embeddings"]},
                     "rulego": {"status": "ok"},
-                    "fallbacks_enabled": ALLOW_FALLBACKS
+                    "fallbacks_enabled": ALLOW_FALLBACKS,
+                    "embedding_model": embedding_model,
+                    "embedding_dim": embedding_dim
                 })
             except Exception as e:
                 return envelope_err("health_check_failed", 500, {"service": "unified_dashboard"})
@@ -567,6 +581,119 @@ class UnifiedDashboard:
             except Exception as e:
                 return envelope_err(f"rulego_health_failed: {e}", 503)
 
+        # Multi-Source Ingestion Endpoints (Phase 9_2)
+        @self.app.post("/api/multisource/start")
+        async def start_multi_source_ingest(request: Request):
+            """Start multi-source ingestion job with health gates"""
+            try:
+                # Enforce health gate
+                if not await _health_gate():
+                    return envelope_err("Health gate failed; dependencies not ready", 503)
+                
+                data = await request.json()
+                sources = data.get("sources", [])
+                params = data.get("params", {})
+                
+                if not sources:
+                    return envelope_err("sources list is required", 400)
+                
+                # Validate source types
+                valid_sources = ["youtube", "web", "pdf"]
+                invalid_sources = [s for s in sources if s not in valid_sources]
+                if invalid_sources:
+                    return envelope_err(f"Invalid source types: {invalid_sources}. Valid types: {valid_sources}", 400)
+                
+                # Import and start multi-source job
+                from src.runners.multisource_runner import multi_source_runner
+                job_id = await multi_source_runner.start_job(sources, params)
+                
+                return envelope_ok({
+                    "job_id": job_id,
+                    "sources": sources,
+                    "status": "started"
+                })
+                
+            except ValueError as e:
+                # Health gate failure
+                return envelope_err(str(e), 503)
+            except Exception as e:
+                return envelope_err(f"multi_source_ingest_failed: {e}", 500)
+
+        @self.app.get("/api/multisource/jobs/{job_id}")
+        async def get_multi_source_job_status(job_id: str):
+            """Get status of multi-source ingestion job"""
+            try:
+                from src.runners.multisource_runner import multi_source_runner
+                status = await multi_source_runner.get_job_status(job_id)
+                
+                if status is None:
+                    return envelope_err(f"Job {job_id} not found", 404)
+                
+                return envelope_ok(status)
+                
+            except Exception as e:
+                return envelope_err(f"get_job_status_failed: {e}", 500)
+
+        @self.app.get("/api/multisource/jobs")
+        async def list_multi_source_jobs():
+            """List all multi-source ingestion jobs"""
+            try:
+                from src.runners.multisource_runner import multi_source_runner
+                jobs = []
+                
+                for job_id, job in multi_source_runner.active_jobs.items():
+                    jobs.append({
+                        "job_id": job_id,
+                        "status": job.status,
+                        "sources": [s.source_type for s in job.sources],
+                        "created_at": job.created_at.isoformat(),
+                        "completed_at": job.completed_at.isoformat() if job.completed_at else None,
+                        "job_label": job.job_label,
+                        "error": job.error
+                    })
+                
+                return envelope_ok({"jobs": jobs})
+                
+            except Exception as e:
+                return envelope_err(f"list_jobs_failed: {e}", 500)
+
+        @self.app.post("/api/search")
+        async def search_documents(request: Request):
+            """Search documents using pgvector"""
+            try:
+                data = await request.json()
+                query = data.get("query", "")
+                job_id = data.get("job_id")
+                k = data.get("k", 10)
+                
+                if not query:
+                    return envelope_err("query is required", 400)
+                
+                if not job_id:
+                    return envelope_err("job_id is required", 400)
+                
+                from src.runners.multisource_runner import multi_source_runner
+                
+                # For now, return mock search results since embedder is not available
+                # In Phase 9.3, this will be replaced with real pgvector search
+                mock_results = [
+                    {
+                        "id": "mock_doc_1",
+                        "text": f"Mock document matching query: {query}",
+                        "meta": {"source_type": "youtube", "job_id": job_id}
+                    }
+                ]
+                
+                return envelope_ok({
+                    "query": query,
+                    "job_id": job_id,
+                    "results": mock_results,
+                    "note": "Mock search results (real pgvector search in Phase 9.3)"
+                })
+                
+            except Exception as e:
+                return envelope_err(f"search_failed: {e}", 500)
+
         @self.app.post("/api/ai/chat")
         async def ai_chat(request: Request):
             """AI chat endpoint for user interaction"""
@@ -579,7 +706,11 @@ class UnifiedDashboard:
                 # LM Studio endpoint normalization (bug-proofing)
                 raw = os.getenv("LM_STUDIO_ENDPOINT", "http://localhost:1234")
                 raw = raw.rstrip("/")
-                endpoint = raw if raw.endswith("/v1") else raw + "/v1"
+                # Only add /v1 if it's not already present
+                if "/v1" in raw:
+                    endpoint = raw
+                else:
+                    endpoint = raw + "/v1"
                 url = f"{endpoint}/chat/completions"
 
                 if not message:
@@ -691,6 +822,155 @@ class UnifiedDashboard:
                 return envelope_ok({"visualizations": viz_files})
             except Exception as e:
                 return envelope_err(f"viz_list_failed: {e}", 500)
+
+        # Phase 9.3: Graph API endpoints
+        @self.app.get("/api/graph/{run_id}")
+        async def get_graph(run_id: str):
+            """Get graph data for a specific run."""
+            try:
+                # Enforce health gate
+                if not await _health_gate():
+                    return envelope_err("Health gate failed; dependencies not ready", 503)
+                
+                from src.storage.pgvector_store import PgVectorStore
+                from src.config.living_truth_config import LivingTruthConfig
+                
+                # Initialize pgvector store
+                config = LivingTruthConfig()
+                dsn = f"postgresql://postgres:pass@postgres:5432/living_truth_engine"
+                pgvector_store = PgVectorStore(dsn, embedder=None)
+                
+                # Get graph snapshot
+                graph = pgvector_store.get_graph_snapshot(run_id)
+                if not graph:
+                    return envelope_err(f"Graph not found for run {run_id}", 404)
+                
+                return envelope_ok(graph)
+                
+            except Exception as e:
+                return envelope_err(f"get_graph failed: {e}", 500)
+        
+        @self.app.post("/api/graph/{run_id}/build")
+        async def build_graph(run_id: str):
+            """Build graph for a specific run using the linking pipeline."""
+            try:
+                # Enforce health gate
+                if not await _health_gate():
+                    return envelope_err("Health gate failed; dependencies not ready", 503)
+                
+                from src.analysis.linking_pipeline import LinkingPipeline
+                from src.storage.pgvector_store import PgVectorStore
+                from src.config.living_truth_config import LivingTruthConfig
+                
+                # Initialize components
+                config = LivingTruthConfig()
+                dsn = f"postgresql://postgres:pass@postgres:5432/living_truth_engine"
+                pgvector_store = PgVectorStore(dsn, embedder=None)
+                linking_pipeline = LinkingPipeline(config, pgvector_store)
+                
+                # Get documents for this run
+                documents = pgvector_store.get_documents_by_run(run_id)
+                if not documents:
+                    return envelope_err(f"No documents found for run {run_id}", 404)
+                
+                # Process run through linking pipeline
+                results = linking_pipeline.process_run(run_id, documents)
+                
+                if results.get('status') == 'failed':
+                    return envelope_err(f"Graph building failed: {results.get('error')}", 500)
+                
+                return envelope_ok({"run_id": run_id, "results": results})
+                
+            except Exception as e:
+                return envelope_err(f"build_graph failed: {e}", 500)
+        
+        @self.app.get("/api/claims/{run_id}")
+        async def get_claims(run_id: str):
+            """Get claims for a specific run with link counts and corroboration labels."""
+            try:
+                # Enforce health gate
+                if not await _health_gate():
+                    return envelope_err("Health gate failed; dependencies not ready", 503)
+                
+                from src.storage.pgvector_store import PgVectorStore
+                from src.config.living_truth_config import LivingTruthConfig
+                
+                # Initialize pgvector store
+                config = LivingTruthConfig()
+                dsn = f"postgresql://postgres:pass@postgres:5432/living_truth_engine"
+                pgvector_store = PgVectorStore(dsn, embedder=None)
+                
+                # Get claims with link information
+                claims = pgvector_store.get_claims_by_run(run_id)
+                claim_links = pgvector_store.get_claim_links_by_run(run_id)
+                
+                # Get graph snapshot for corroboration labels
+                graph = pgvector_store.get_graph_snapshot(run_id)
+                corroboration_results = graph.get('findings', {}).get('corroboration', []) if graph else []
+                
+                # Create lookup for corroboration results
+                corroboration_lookup = {result.get('claim_id'): result for result in corroboration_results}
+                
+                # Add link counts and corroboration labels to claims
+                for claim in claims:
+                    claim['link_count'] = len([l for l in claim_links 
+                                             if l['left_claim_id'] == claim['id'] or 
+                                                l['right_claim_id'] == claim['id']])
+                    
+                    # Add corroboration label
+                    corroboration = corroboration_lookup.get(claim['id'])
+                    if corroboration:
+                        claim['corroboration_label'] = corroboration.get('label', 'unknown')
+                        claim['corroboration_confidence'] = corroboration.get('confidence', 0.0)
+                    else:
+                        claim['corroboration_label'] = 'unknown'
+                        claim['corroboration_confidence'] = 0.0
+                
+                return envelope_ok({
+                    "run_id": run_id,
+                    "claims": claims,
+                    "total_claims": len(claims),
+                    "total_links": len(claim_links)
+                })
+                
+            except Exception as e:
+                return envelope_err(f"get_claims failed: {e}", 500)
+        
+        @self.app.get("/api/entities/{run_id}")
+        async def get_entities(run_id: str):
+            """Get entities for a specific run with link counts and types."""
+            try:
+                # Enforce health gate
+                if not await _health_gate():
+                    return envelope_err("Health gate failed; dependencies not ready", 503)
+                
+                from src.storage.pgvector_store import PgVectorStore
+                from src.config.living_truth_config import LivingTruthConfig
+                
+                # Initialize pgvector store
+                config = LivingTruthConfig()
+                dsn = f"postgresql://postgres:pass@postgres:5432/living_truth_engine"
+                pgvector_store = PgVectorStore(dsn, embedder=None)
+                
+                # Get entities with link information
+                entities = pgvector_store.get_entities_by_run(run_id)
+                entity_links = pgvector_store.get_entity_links_by_run(run_id)
+                
+                # Add link counts to entities
+                for entity in entities:
+                    entity['link_count'] = len([l for l in entity_links 
+                                              if l['left_entity_id'] == entity['id'] or 
+                                                 l['right_entity_id'] == entity['id']])
+                
+                return envelope_ok({
+                    "run_id": run_id,
+                    "entities": entities,
+                    "total_entities": len(entities),
+                    "total_links": len(entity_links)
+                })
+                
+            except Exception as e:
+                return envelope_err(f"get_entities failed: {e}", 500)
 
         @self.app.websocket("/ws/ai-activity")
         async def websocket_endpoint(websocket: WebSocket):

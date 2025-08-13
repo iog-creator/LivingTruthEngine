@@ -1,7 +1,10 @@
 ---
-description: veritas ingestion runner
-alwaysApply: false
+alwaysApply: true
+description: Rule for Veritas Runs
+globs:
+- '**/*'
 ---
+
 # Veritas Generalist Ingestion Runner - Development Guidelines
 
 ## Overview

@@ -1,7 +1,10 @@
 ---
-description: This rule provides a comprehensive overview of the Living Truth Engine project, including architecture, components, and development guidelines.
-alwaysApply: false
+alwaysApply: true
+description: Rule for Project Overview
+globs:
+- '**/*'
 ---
+
 
 ## 🎯 **Project Overview**
 
@@ -263,10 +266,8 @@ LivingTruthEngine/
 **This overview provides the foundation for understanding and working with the Living Truth Engine project.**
 
 ## 📚 **Related Rules**
-- **@mcp_hub_server.mdc** - Detailed MCP Hub Server architecture and usage
 - **@mcp_server_integration.mdc** - MCP server integration patterns and best practices
-- **@current_working_state.mdc** - Current system status and operational details
 - **@coding_standards.mdc** - Code quality and development standards
-- **@development_workflow.mdc** - Development workflow and best practices
+- **@core_workflow.mdc** - Development workflow and best practices
 - **@docker_best_practices.mdc** - Docker configuration and deployment
 - **@system_management.mdc** - System management and automation

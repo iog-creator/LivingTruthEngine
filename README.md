@@ -1,5 +1,8 @@
 # Living Truth Engine - Phase 9: Multi-Source Expansion & Advanced Evidence Linking
 
+> 📚 **Project History**: See the full, append‑only log in  
+> `docs/project_master_log.md`
+
 ## 🎯 **Phase 9 Objective**
 
 Expand the system beyond a single YouTube channel to support **multiple simultaneous sources** (websites, PDFs, images, and other channels), add **cross-document linking and visualization**, and integrate more **AI-assisted verification workflows**.
@@ -16,6 +19,13 @@ This repository contains the **Phase 9 development branch** of the Living Truth 
 - **System Integration**: Docker networking, MCP server with 20+ tools, health gates
 - **Documentation & Rules**: Updated README.md, cursor rules, comprehensive documentation
 
+### **✅ Phase 9.2.5: Rule System Rehabilitation (Complete)**
+- **Consolidated Workflow**: Single `core_workflow.mdc` replaces conflicting workflow rules
+- **MCP-First Rule Management**: Automated rule validation, archiving, and template application
+- **Explicit Fallback Exceptions**: Clear guidance on allowed vs. forbidden fallbacks
+- **Standardized Completion**: Automated phase completion summaries with health status
+- **Archived Stale Rules**: Moved outdated and conflicting rules to `.cursor/rules/archive/`
+
 ### **🎯 Phase 9 Goals (In Development)**
 - **Multi-source ingestion**: Multiple YouTube channels, domain URLs, PDF repositories in one job
 - **Advanced link discovery**: Detect named entities, claims, and references across different sources
@@ -23,6 +33,27 @@ This repository contains the **Phase 9 development branch** of the Living Truth 
 - **AI-assisted verification**: Auto-flag suspicious claims, suggest corroborating/contradicting documents
 - **Flexible run configuration**: Choose per-source parameters (max depth, OCR/JS toggles)
 - **Improved run metadata**: Store and display cross-source relationships in manifest
+
+## 🔧 **Development Workflow**
+
+### **Core Workflow (BUILD → VERIFY → ITERATE)**
+All development follows the strict workflow defined in `.cursor/rules/core_workflow.mdc`:
+
+1. **BUILD**: `docker compose -f docker/docker-compose.yml up -d --build`
+2. **VERIFY**: Run health gates and smoke tests
+3. **ITERATE**: Fix failures and re-run from BUILD
+
+### **MCP-First Rule Management**
+- **Rule Validation**: `validate_cursor_rules()` - Check all .mdc files for proper frontmatter
+- **Rule Archiving**: `ruleset_archive_outdated()` - Move stale rules to archive/
+- **Template Application**: `ruleset_apply_templates()` - Ensure core rules exist
+- **Completion Summary**: `generate_phase_completion_summary()` - Auto-generate phase documentation
+
+### **Allowed Fallback Exceptions**
+- YouTube captions/transcripts fallback when MCP fetch fails
+- Reranker CPU execution when GPU is occupied (logged)
+- Local dev data only when `ALLOW_FALLBACKS=true`
+- In-memory search fallback if pgvector is unavailable (dev only)
 
 ## 🏗️ **Architecture**
 

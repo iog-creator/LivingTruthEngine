@@ -213,9 +213,4 @@ docker compose -f docker/docker-compose.yml logs -f
 **Follow these Docker best practices to ensure secure, efficient, and maintainable containerized applications.**
 
 @coding_standards.mdc
-@development_workflow.mdc
-
-**Follow these Docker best practices to ensure secure, efficient, and maintainable containerized applications.**
-
-@coding_standards.mdc
-@development_workflow.mdc
+@core_workflow.mdc

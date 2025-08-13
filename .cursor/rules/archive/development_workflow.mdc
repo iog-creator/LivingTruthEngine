@@ -22,7 +22,7 @@ This rule defines the development workflow optimized for AI assistance, includin
 # Reference: @how_to_make_a_cursor_rule.mdc
 
 # ✅ Create workspace-specific configurations
-# Reference: @mcp_server_guide_troubshooting.mdc
+# Reference: @mcp_server_integration.mdc
 ```
 
 ### **2. Code Generation**

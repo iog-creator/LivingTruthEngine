@@ -1,0 +1,12 @@
+---
+description: Consolidated Docker practices & health checks
+alwaysApply: true
+globs: ["docker/**","scripts/**","src/**"]
+---
+
+# Compose Rules
+- Healthchecks for all services; fail fast if any gate fails.
+- Use `host.docker.internal:1234/v1` for LM Studio from containers.
+
+# Init DB (pgvector)
+- Mount `docker/initdb/` to Postgres; `002_pgvector.sql` must exist.

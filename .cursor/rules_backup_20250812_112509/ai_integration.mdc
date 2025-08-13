@@ -1,0 +1,320 @@
+---
+description: This AI integration provides real LLM capabilities throughout the Living Truth Engine, enabling sophisticated analysis and interactive features.
+globs:
+alwaysApply: false
+--- 
+#AI Integration Patterns
+
+## Overview
+The Living Truth Engine integrates with desktop LM Studio for real AI analysis, providing actual LLM generation instead of pattern matching.
+
+## 🎯 **Key Components**
+
+### **LM Studio Integration**
+- **Desktop Version**: Port 1234 for real AI generation
+- **Docker Version**: Port 1235 for containerized inference
+- **Network Configuration**: `host.docker.internal:1234` for container-to-desktop communication
+- **Model**: `qwen/qwen3-8b` for text generation
+
+### **MCP Tools**
+- **`analyze_veritas_summary`**: Real AI-powered document summarization
+- **`analyze_veritas_claims`**: AI-powered claim extraction and categorization
+- **`generate_lm_studio_text`**: Direct LLM text generation
+- **`create_3d_network_visualization`**: AI-enhanced visualization generation
+
+### **API Endpoints**
+- **`/api/ai/chat`**: Direct chat with LM Studio models
+- **`/api/execute`**: Execute MCP tools with AI capabilities
+- **`/api/health/full`**: System health including AI service status
+
+## 🔧 **Configuration**
+
+### **Docker Configuration**
+```yaml
+# docker/docker-compose.yml
+services:
+  dashboard:
+    environment:
+      - LM_STUDIO_ENDPOINT=http://host.docker.internal:1234
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  
+  lm-studio:
+    ports:
+      - "1235:1234"  # Docker version on different port
+```
+
+### **Environment Variables**
+```bash
+# .env
+LM_STUDIO_ENDPOINT=http://localhost:1234  # Desktop version
+DOCKER_ENVIRONMENT=false  # Use localhost vs container names
+```
+
+## 🚀 **Usage Patterns**
+
+### **Real AI Analysis**
+```python
+def _generate_ai_summary(self, text: str, title: str) -> dict:
+    """Generate AI-powered summary using real LLM generation."""
+    try:
+        prompt = f"""Please analyze this survivor testimony and provide a comprehensive summary.
+
+Title: {title}
+Text: {text[:2000]}
+
+Please provide:
+1. A concise summary (2-3 sentences)
+2. 3-5 key points
+3. Overall sentiment (Positive/Negative/Neutral)
+
+Format your response as JSON:
+{{
+    "summary": "brief summary here",
+    "key_points": ["point 1", "point 2", "point 3"],
+    "sentiment": "Positive/Negative/Neutral"
+}}"""
+
+        response = requests.post(
+            f"{self.lm_studio_endpoint}/v1/chat/completions",
+            headers={"Content-Type": "application/json"},
+            json={
+                "model": "qwen/qwen3-8b",
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 500,
+                "temperature": 0.7
+            },
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            content = result['choices'][0]['message']['content']
+            
+            # Parse JSON response
+            try:
+                parsed = json.loads(content)
+                return {
+                    "summary": parsed.get("summary", "AI analysis completed"),
+                    "key_points": parsed.get("key_points", []),
+                    "sentiment": parsed.get("sentiment", "Neutral")
+                }
+            except json.JSONDecodeError:
+                return self._fallback_summary(text, title)
+        else:
+            return self._fallback_summary(text, title)
+            
+    except Exception as e:
+        logger.error(f"Error generating AI summary: {e}")
+        return self._fallback_summary(text, title)
+```
+
+### **AI Chat Integration**
+```python
+@self.app.post("/api/ai/chat")
+async def ai_chat(request: dict):
+    """Chat with AI using LM Studio."""
+    try:
+        message = request.get("message", "")
+        model = request.get("model", "qwen/qwen3-8b")
+        max_tokens = request.get("max_tokens", 1000)
+        
+        # Call MCP tool for AI generation
+        result = await self.execute_mcp_tool(
+            "generate_lm_studio_text",
+            {
+                "prompt": message,
+                "model": model,
+                "max_tokens": max_tokens,
+                "temperature": 0.7
+            }
+        )
+        
+        return {"status": "ok", "data": result}
+    except Exception as e:
+        return {"status": "error", "error": {"code": "ai_chat_failed", "msg": str(e)}}
+```
+
+### **Frontend AI Integration**
+```javascript
+// AI Chat
+async function sendChatMessage() {
+    const message = CHAT_INPUT.value.trim();
+    if (!message) return;
+    
+    try {
+        addStatus('🤖 AI processing...', 'info');
+        const result = await apiCall('/api/ai/chat', 'POST', {
+            message: message,
+            model: 'qwen/qwen3-8b',
+            max_tokens: 1000
+        });
+        
+        addStatus('✅ AI response received', 'success');
+        OUTPUT.innerHTML = `<h3>🤖 AI Chat Response</h3><pre>${JSON.stringify(result, null, 2)}</pre>`;
+        
+    } catch (error) {
+        addStatus('❌ AI chat failed', 'error');
+        OUTPUT.innerHTML = `<h3>❌ AI Chat Error</h3><pre>${error}</pre>`;
+    }
+}
+
+// Complete Analysis Pipeline
+async function startCompleteAnalysis() {
+    try {
+        addStatus('🚀 Starting complete analysis pipeline...', 'info');
+        
+        // Step 1: Start the analysis
+        const analysisData = { channel_url: channelUrl, limit: 1, sort: 'oldest', max_depth: 1 };
+        await apiCall('/api/runs/youtube/start', 'POST', analysisData);
+        
+        // Step 2: Generate AI Summary
+        const summaryResult = await apiCall('/api/execute', 'POST', { 
+            tool_name: 'analyze_veritas_summary', 
+            params: { run_id: latestRun.run_id } 
+        });
+        
+        // Step 3: Generate AI Claims
+        const claimsResult = await apiCall('/api/execute', 'POST', { 
+            tool_name: 'analyze_veritas_claims', 
+            params: { run_id: latestRun.run_id } 
+        });
+        
+        // Step 4: Create visualization
+        const vizResult = await apiCall('/api/execute', 'POST', { 
+            tool_name: 'create_3d_network_visualization', 
+            params: { graph_data: graphData } 
+        });
+        
+        addStatus('✅ Complete analysis finished!', 'success');
+        
+    } catch (error) {
+        addStatus('❌ Analysis failed', 'error');
+        OUTPUT.innerHTML = `<h3>❌ Analysis Error</h3><pre>${error}</pre>`;
+    }
+}
+```
+
+## 📊 **AI Features**
+
+### **Real LLM Generation**
+- **No Pattern Matching**: All analysis uses actual LLM calls
+- **Structured Output**: JSON-formatted responses for consistency
+- **Error Handling**: Graceful fallbacks if AI service unavailable
+- **Confidence Scores**: AI-generated confidence metrics
+
+### **Document Analysis**
+- **Summarization**: AI-powered document summaries
+- **Claim Extraction**: Identifies and categorizes claims
+- **Sentiment Analysis**: Determines overall sentiment
+- **Key Points**: Extracts important information
+
+### **Interactive Chat**
+- **Direct Communication**: Real-time chat with AI models
+- **Context Awareness**: Maintains conversation context
+- **Model Selection**: Choose different AI models
+- **Parameter Control**: Adjust temperature, max tokens
+
+## 🔗 **API Integration**
+
+### **AI Endpoints**
+- **`/api/ai/chat`**: Direct chat with LM Studio
+- **`/api/execute`**: Execute AI-powered MCP tools
+- **`/api/health/full`**: AI service health status
+
+### **Response Format**
+```python
+# Success Response
+{
+    "status": "ok",
+    "data": "AI-generated content or analysis results"
+}
+
+# Error Response
+{
+    "status": "error",
+    "error": {
+        "code": "ai_service_unavailable",
+        "msg": "LM Studio connection failed"
+    }
+}
+```
+
+## 🧪 **Testing**
+
+### **AI Service Testing**
+- **Connection Test**: Verify LM Studio accessibility
+- **Model Availability**: Check for required models
+- **Response Validation**: Ensure proper JSON responses
+- **Error Handling**: Test with invalid requests
+
+### **Integration Testing**
+- **MCP Tool Execution**: Test AI tools via `/api/execute`
+- **Chat Functionality**: Verify real-time chat
+- **Analysis Pipeline**: Test complete AI workflow
+- **Performance**: Check response times
+
+## 🚨 **Common Issues**
+
+### **Connection Refused**
+- **Cause**: LM Studio not running or wrong port
+- **Solution**: Start desktop LM Studio on port 1234
+- **Prevention**: Health checks before AI operations
+
+### **Model Not Found**
+- **Cause**: Required model not loaded in LM Studio
+- **Solution**: Load `qwen/qwen3-8b` model
+- **Prevention**: Model availability checks
+
+### **Timeout Errors**
+- **Cause**: Long generation times or network issues
+- **Solution**: Increase timeout values
+- **Prevention**: Progress indicators and timeouts
+
+### **JSON Parse Errors**
+- **Cause**: AI returns malformed JSON
+- **Solution**: Implement fallback parsing
+- **Prevention**: Structured prompts and validation
+
+## 📋 **Best Practices**
+
+### **Service Management**
+- **Health Checks**: Regular AI service monitoring
+- **Error Recovery**: Graceful fallbacks for failures
+- **Resource Limits**: Prevent excessive API calls
+- **Caching**: Cache results when appropriate
+
+### **Prompt Engineering**
+- **Structured Output**: Request JSON format for consistency
+- **Clear Instructions**: Specific, unambiguous prompts
+- **Context Provision**: Include relevant background
+- **Error Handling**: Specify fallback behavior
+
+### **Performance**
+- **Async Operations**: Non-blocking AI calls
+- **Batch Processing**: Group related requests
+- **Timeout Management**: Reasonable timeouts
+- **Resource Monitoring**: Track API usage
+
+### **User Experience**
+- **Progress Indicators**: Show AI processing status
+- **Error Messages**: Clear feedback for failures
+- **Response Formatting**: Consistent output display
+- **Loading States**: Visual feedback during processing
+
+## 🔄 **Workflow Integration**
+
+### **Complete Analysis Pipeline**
+1. **Document Ingestion**: Process source documents
+2. **AI Analysis**: Generate summaries and claims
+3. **Entity Extraction**: Identify key entities
+4. **Visualization**: Create interactive graphs
+5. **Results Display**: Present comprehensive analysis
+
+### **Individual AI Operations**
+- **Document Summarization**: AI-powered summaries
+- **Claim Extraction**: Identify and categorize claims
+- **Interactive Chat**: Real-time AI conversation
+- **Content Generation**: AI-assisted content creation
+
+

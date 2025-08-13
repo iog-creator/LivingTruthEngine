@@ -214,21 +214,4 @@ result = mcp_mcp_hub_server_execute_tool("component_tool", {"param": "test"})
 **This rule ensures systematic integration with MCP tool development for every component migrated from Living Truth Agent to LivingTruthEngine.**
 
 @mcp_server_integration.mdc
-@current_working_state.mdc
 @project_overview.mdc
-
-alwaysApply: false
----
-
-@project_overview.mdc
-
-alwaysApply: false
----
-
-@project_overview.mdc
-
-alwaysApply: false
----
-
-alwaysApply: false
----

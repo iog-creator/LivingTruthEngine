@@ -171,6 +171,182 @@
         </form>
     </div>
 
+    <!-- Multi-Source Ingestion Section (Phase 9_2) -->
+    <div class="card">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold text-gray-900">
+                <i class="fas fa-layer-group text-green-600 mr-2"></i>
+                Multi-Source Ingestion (Phase 9_2)
+            </h2>
+            <span class="px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">New</span>
+        </div>
+
+        <form id="multi-source-form" class="space-y-4">
+            <!-- Source Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-3">Select Sources</label>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <label
+                        class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" name="sources" value="youtube" class="mr-3" checked>
+                        <div>
+                            <div class="font-medium text-gray-900">YouTube</div>
+                            <div class="text-sm text-gray-500">Video transcripts & metadata</div>
+                        </div>
+                    </label>
+                    <label
+                        class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" name="sources" value="web" class="mr-3">
+                        <div>
+                            <div class="font-medium text-gray-900">Web</div>
+                            <div class="text-sm text-gray-500">Web page content & links</div>
+                        </div>
+                    </label>
+                    <label
+                        class="flex items-center p-3 border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" name="sources" value="pdf" class="mr-3">
+                        <div>
+                            <div class="font-medium text-gray-900">PDF</div>
+                            <div class="text-sm text-gray-500">Document content & structure</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Common Parameters -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="multi-limit" class="block text-sm font-medium text-gray-700 mb-2">
+                        Item Limit
+                    </label>
+                    <input type="number" id="multi-limit" name="limit" value="1" min="1" max="50"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <p class="text-xs text-gray-500 mt-1">Max items per source type</p>
+                </div>
+                <div>
+                    <label for="multi-depth" class="block text-sm font-medium text-gray-700 mb-2">
+                        Crawl Depth
+                    </label>
+                    <input type="number" id="multi-depth" name="max_depth" value="1" min="0" max="3"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                    <p class="text-xs text-gray-500 mt-1">How deep to follow links</p>
+                </div>
+                <div>
+                    <label for="multi-label" class="block text-sm font-medium text-gray-700 mb-2">
+                        Job Label (optional)
+                    </label>
+                    <input type="text" id="multi-label" name="label" placeholder="e.g., Multi-Source Demo"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                </div>
+            </div>
+
+            <!-- GPU Status Display -->
+            <div id="gpu-status" class="hidden p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-microchip text-green-600"></i>
+                    <div>
+                        <h4 class="font-medium text-gray-900">GPU Allocation Status</h4>
+                        <p id="gpu-message" class="text-sm text-gray-600">Checking GPU availability...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-4">
+                <div class="text-sm text-gray-600">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Process multiple source types in parallel with GPU/CPU-aware scheduling
+                </div>
+                <button type="submit" id="multi-start-btn" class="btn-primary bg-green-600 hover:bg-green-700" disabled>
+                    <i class="fas fa-play mr-2"></i>
+                    Start Multi-Source Job
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Multi-Source Jobs Status -->
+    <div class="card">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">
+            <i class="fas fa-tasks text-green-600 mr-2"></i>
+            Multi-Source Jobs
+        </h2>
+
+        <div id="multi-source-jobs" class="space-y-3">
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                <p>Loading multi-source jobs...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graph Analysis Section (Phase 9_3) -->
+    <div class="card">
+        <h2 class="text-xl font-semibold text-gray-900 mb-6">
+            <i class="fas fa-project-diagram text-blue-600 mr-2"></i>
+            Graph Analysis (Phase 9_3)
+        </h2>
+
+        <div class="space-y-4">
+            <!-- Graph Builder -->
+            <div class="p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <h3 class="font-medium text-gray-900 mb-3">Build Evidence Graph</h3>
+                <form id="graph-form" class="space-y-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="graph-run-id" class="block text-sm font-medium text-gray-700 mb-2">
+                                Run ID
+                            </label>
+                            <input type="text" id="graph-run-id" name="run_id"
+                                placeholder="Enter run ID to build graph for"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required>
+                        </div>
+                        <div class="flex items-end">
+                            <button type="submit" id="build-graph-btn" class="btn-primary">
+                                <i class="fas fa-cogs mr-2"></i>
+                                Build Graph
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Graph Viewer -->
+            <div class="p-4 border border-gray-200 rounded-lg">
+                <h3 class="font-medium text-gray-900 mb-3">Graph Viewer</h3>
+                <div id="graph-viewer" class="space-y-3">
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-project-diagram text-3xl mb-2"></i>
+                        <p>Enter a run ID and build a graph to view the evidence network</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Graph Stats -->
+            <div id="graph-stats" class="hidden p-4 border border-gray-200 rounded-lg bg-blue-50">
+                <h3 class="font-medium text-gray-900 mb-3">Graph Statistics</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div>
+                        <div class="text-2xl font-bold text-blue-600" id="graph-docs-count">0</div>
+                        <div class="text-sm text-gray-600">Documents</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-green-600" id="graph-entities-count">0</div>
+                        <div class="text-sm text-gray-600">Entities</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-purple-600" id="graph-claims-count">0</div>
+                        <div class="text-sm text-gray-600">Claims</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-orange-600" id="graph-links-count">0</div>
+                        <div class="text-sm text-gray-600">Links</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Recent Runs Section -->
     <div class="card">
         <h2 class="text-xl font-semibold text-gray-900 mb-6">
@@ -475,9 +651,294 @@
         }
     }
 
+    // Multi-Source Ingestion JavaScript (Phase 9_2)
+
+    // Load GPU status
+    async function loadGPUStatus() {
+        try {
+            const models = await LTE_API.apiGet('/api/models');
+            const gpuStatus = document.getElementById('gpu-status');
+            const gpuMessage = document.getElementById('gpu-message');
+
+            if (models.llm && models.llm.extra && models.llm.extra.device) {
+                gpuStatus.classList.remove('hidden');
+                const device = models.llm.extra.device;
+                const isGPU = device === 'cuda';
+                gpuMessage.textContent = `LLM: ${device.toUpperCase()}, Embedding: ${models.embedding?.extra?.device?.toUpperCase() || 'N/A'}, Reranker: ${models.reranker?.extra?.device?.toUpperCase() || 'N/A'}`;
+
+                if (isGPU) {
+                    gpuStatus.className = 'p-4 border border-green-200 rounded-lg bg-green-50';
+                    gpuStatus.querySelector('i').className = 'fas fa-microchip text-green-600';
+                } else {
+                    gpuStatus.className = 'p-4 border border-yellow-200 rounded-lg bg-yellow-50';
+                    gpuStatus.querySelector('i').className = 'fas fa-microchip text-yellow-600';
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load GPU status:', error);
+        }
+    }
+
+    // Handle multi-source form submission
+    document.getElementById('multi-source-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        console.log('Multi-source form submitted!');
+
+        const formData = new FormData(this);
+        const selectedSources = formData.getAll('sources');
+
+        if (selectedSources.length === 0) {
+            showToast('Please select at least one source type', 'error');
+            return;
+        }
+
+        const data = {
+            sources: selectedSources,
+            params: {
+                limit: parseInt(formData.get('limit')) || 1,
+                max_depth: parseInt(formData.get('max_depth')) || 1
+            }
+        };
+
+        if (formData.get('label')) {
+            data.params.label = formData.get('label');
+        }
+
+        try {
+            console.log('Starting multi-source ingestion...');
+            showToast('Starting multi-source ingestion...', 'info');
+
+            const result = await LTE_API.apiPost('/api/multisource/start', data);
+            console.log('Multi-source API call result:', result);
+
+            showToast('Multi-source ingestion started successfully!', 'success');
+
+            // Add activity step
+            addActivityStep(`Multi-source job started: ${selectedSources.join(', ')}`, 'success');
+
+            // Refresh multi-source jobs
+            loadMultiSourceJobs();
+
+        } catch (error) {
+            showToast('Failed to start multi-source ingestion: ' + error.message, 'error');
+        }
+    });
+
+    // Load multi-source jobs
+    async function loadMultiSourceJobs() {
+        try {
+            const resp = await LTE_API.apiGet('/api/multisource/jobs');
+            const jobs = resp.jobs || [];
+            displayMultiSourceJobs(jobs);
+        } catch (error) {
+            console.error('Failed to load multi-source jobs:', error);
+        }
+    }
+
+    // Display multi-source jobs
+    function displayMultiSourceJobs(jobs) {
+        const container = document.getElementById('multi-source-jobs');
+
+        if (!jobs || jobs.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-layer-group text-2xl mb-2"></i>
+                    <p>No multi-source jobs yet. Start your first job above!</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = jobs.map((job) => {
+            const sources = job.sources.join(', ');
+            const status = job.status || 'unknown';
+            const created = formatDate(job.created_at);
+
+            return `
+            <div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50" data-job-id="${job.job_id}">
+                <div class="flex items-center space-x-4">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-layer-group text-green-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-gray-900">Multi-Source Job ${job.job_id.slice(0, 8)}</h3>
+                        <p class="text-sm text-gray-500">${sources} · ${created}</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="px-2 py-1 text-xs font-medium rounded-full ${getMultiSourceStatusColor(status)}">
+                        ${status}
+                    </span>
+                    <button onclick="refreshJobStatus('${job.job_id}')" class="btn-secondary text-sm">
+                        Refresh
+                    </button>
+                </div>
+            </div>
+        `}).join('');
+    }
+
+    // Get multi-source status color
+    function getMultiSourceStatusColor(status) {
+        switch (status?.toLowerCase()) {
+            case 'completed':
+                return 'bg-green-100 text-green-800';
+            case 'running':
+                return 'bg-blue-100 text-blue-800';
+            case 'pending':
+                return 'bg-yellow-100 text-yellow-800';
+            case 'failed':
+                return 'bg-red-100 text-red-800';
+            default:
+                return 'bg-gray-100 text-gray-800';
+        }
+    }
+
+    // Refresh job status
+    async function refreshJobStatus(jobId) {
+        try {
+            const job = await LTE_API.apiGet(`/api/multisource/jobs/${jobId}`);
+            showToast(`Job ${jobId.slice(0, 8)}: ${job.status}`, 'info');
+            loadMultiSourceJobs(); // Refresh the list
+        } catch (error) {
+            showToast('Failed to refresh job status: ' + error.message, 'error');
+        }
+    }
+
+    // Enable/disable multi-source start button based on source selection
+    document.addEventListener('change', function (e) {
+        if (e.target.name === 'sources') {
+            const form = document.getElementById('multi-source-form');
+            const selectedSources = new FormData(form).getAll('sources');
+            const startBtn = document.getElementById('multi-start-btn');
+
+            if (selectedSources.length > 0) {
+                startBtn.disabled = false;
+                startBtn.className = 'btn-primary bg-green-600 hover:bg-green-700';
+            } else {
+                startBtn.disabled = true;
+                startBtn.className = 'btn-primary bg-green-600 hover:bg-green-700 opacity-50 cursor-not-allowed';
+            }
+        }
+    });
+
+    // Graph Analysis JavaScript (Phase 9_3)
+
+    // Handle graph form submission
+    document.getElementById('graph-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const runId = document.getElementById('graph-run-id').value.trim();
+        if (!runId) {
+            showToast('Please enter a run ID', 'error');
+            return;
+        }
+
+        try {
+            const buildBtn = document.getElementById('build-graph-btn');
+            buildBtn.disabled = true;
+            buildBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Building...';
+
+            showToast('Building evidence graph...', 'info');
+
+            // Build the graph
+            const result = await LTE_API.apiPost(`/api/graph/${runId}/build`);
+
+            showToast('Graph built successfully!', 'success');
+            addActivityStep(`Graph built for run: ${runId}`, 'success');
+
+            // Load and display the graph
+            await loadGraphData(runId);
+
+        } catch (error) {
+            showToast('Failed to build graph: ' + error.message, 'error');
+            addActivityStep(`Graph build failed: ${error.message}`, 'error');
+        } finally {
+            const buildBtn = document.getElementById('build-graph-btn');
+            buildBtn.disabled = false;
+            buildBtn.innerHTML = '<i class="fas fa-cogs mr-2"></i>Build Graph';
+        }
+    });
+
+    // Load and display graph data
+    async function loadGraphData(runId) {
+        try {
+            const graphData = await LTE_API.apiGet(`/api/graph/${runId}`);
+            displayGraphData(graphData);
+        } catch (error) {
+            console.error('Failed to load graph data:', error);
+            showToast('Failed to load graph data: ' + error.message, 'error');
+        }
+    }
+
+    // Display graph data
+    function displayGraphData(graphData) {
+        const viewer = document.getElementById('graph-viewer');
+        const stats = document.getElementById('graph-stats');
+
+        if (!graphData || !graphData.nodes) {
+            viewer.innerHTML = `
+                <div class="text-center py-8 text-gray-500">
+                    <i class="fas fa-exclamation-triangle text-3xl mb-2"></i>
+                    <p>No graph data available</p>
+                </div>
+            `;
+            stats.classList.add('hidden');
+            return;
+        }
+
+        // Update statistics
+        const docsCount = graphData.nodes.documents?.length || 0;
+        const entitiesCount = graphData.nodes.entities?.length || 0;
+        const claimsCount = graphData.nodes.claims?.length || 0;
+        const linksCount = (graphData.edges.entity_links?.length || 0) + (graphData.edges.claim_links?.length || 0);
+
+        document.getElementById('graph-docs-count').textContent = docsCount;
+        document.getElementById('graph-entities-count').textContent = entitiesCount;
+        document.getElementById('graph-claims-count').textContent = claimsCount;
+        document.getElementById('graph-links-count').textContent = linksCount;
+
+        stats.classList.remove('hidden');
+
+        // Display graph summary
+        viewer.innerHTML = `
+            <div class="space-y-4">
+                <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 class="font-medium text-blue-900 mb-2">Graph Summary</h4>
+                    <p class="text-sm text-blue-700">
+                        Run ID: ${graphData.run_id}<br>
+                        Created: ${formatDate(graphData.timestamp)}<br>
+                        Documents: ${docsCount} | Entities: ${entitiesCount} | Claims: ${claimsCount} | Links: ${linksCount}
+                    </p>
+                </div>
+                
+                ${graphData.findings ? `
+                <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <h4 class="font-medium text-yellow-900 mb-2">Analysis Findings</h4>
+                    <div class="space-y-2">
+                        ${graphData.findings.rulego?.map(finding => `
+                            <div class="text-sm">
+                                <span class="font-medium">${finding.rule_id}:</span> ${finding.msg}
+                            </div>
+                        `).join('') || '<p class="text-sm text-yellow-700">No policy findings</p>'}
+                    </div>
+                </div>
+                ` : ''}
+                
+                <div class="text-center py-4">
+                    <p class="text-sm text-gray-600">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Graph visualization will be enhanced in Phase 9.4
+                    </p>
+                </div>
+            </div>
+        `;
+    }
+
     // Load data on page load
     document.addEventListener('DOMContentLoaded', function () {
         loadRecentRuns();
+        loadMultiSourceJobs();
+        loadGPUStatus();
     });
 </script>
 {% endblock %}

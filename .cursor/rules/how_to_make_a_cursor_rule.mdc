@@ -1,7 +1,10 @@
 ---
+alwaysApply: true
 description: Rule for How To Make A Cursor Rule
-alwaysApply: false
+globs:
+- '**/*'
 ---
+
 # How to Build Cursor Rules - Complete Guide
 
 ## Description
@@ -132,7 +135,7 @@ const badCode = "avoid";
 - Link to documentation
 - Related rules
 
-@related_rule.mdc
+@coding_standards.mdc
 ```
 
 ## 📁 **File Organization**
@@ -201,7 +204,7 @@ const response = fetch('/api/data'); // Missing await
 ```markdown
 ## 📚 **Related Rules**
 - @coding_standards.mdc - For general coding practices
-- @api_conventions.mdc - For API-specific patterns
+- @mcp_server_integration.mdc - For MCP server patterns
 ```
 
 ## 🔧 **Creating Rules from Conversations**
@@ -280,11 +283,11 @@ project/
 ```markdown
 ## 📚 **Prerequisites**
 - @coding_standards.mdc - General coding practices
-- @api_conventions.mdc - API patterns
+- @mcp_server_integration.mdc - MCP server patterns
 
 ## 📚 **Related Rules**
-- @testing_patterns.mdc - Testing conventions
-- @deployment.mdc - Deployment workflows
+- @testing_standards.mdc - Testing conventions
+- @docker_management.mdc - Deployment workflows
 ```
 
 ## 📈 **Measuring Rule Success**
@@ -305,14 +308,4 @@ project/
 
 **This rule provides the foundation for creating effective Cursor rules that improve team productivity and code quality.**
 
-@mcp_server_guide_troubshooting.mdc
-
-
-**This rule provides the foundation for creating effective Cursor rules that improve team productivity and code quality.**
-
-@mcp_server_guide_troubshooting.mdc
-
-
-**This rule provides the foundation for creating effective Cursor rules that improve team productivity and code quality.**
-
-@mcp_server_guide_troubshooting.mdc
+@mcp_server_integration.mdc

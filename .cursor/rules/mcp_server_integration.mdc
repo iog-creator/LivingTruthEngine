@@ -697,11 +697,9 @@ def recover_tool_usage():
 **Follow these MCP integration practices to ensure reliable, efficient, and maintainable tool usage.**
 
 ## 📚 **Related Rules**
-- **@mcp_hub_server.mdc** - Detailed MCP Hub Server architecture and usage
-- **@current_working_state.mdc** - Current system status and operational details
 - **@project_overview.mdc** - Overall project architecture and components
 - **@coding_standards.mdc** - Code quality and development standards
-- **@development_workflow.mdc** - Development workflow and best practices
+- **@core_workflow.mdc** - Development workflow and best practices
 - **@docker_best_practices.mdc** - Docker configuration and deployment
 - **@system_management.mdc** - System management and automation
 

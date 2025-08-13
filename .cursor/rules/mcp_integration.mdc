@@ -1,0 +1,18 @@
+---
+description: How Cursor must use MCP for validation & automation
+alwaysApply: true
+globs: ["**/*"]
+---
+
+# MCP-First
+- Use MCP tools to:
+  - validate rules, archive old ones, create/update rule files,
+  - run smoke tests, and generate completion summaries.
+
+# Required MCP operations in every phase
+1) `validate_cursor_rules`
+2) `fix_cursor_rule_frontmatter`
+3) `ruleset_archive_outdated`
+4) `ruleset_apply_templates`
+5) `run_smoke_and_tests`
+6) `generate_phase_completion_summary`

@@ -1,0 +1,224 @@
+---
+description: This visualization system provides sophisticated 3D network analysis capabilities integrated seamlessly with the Living Truth Engine's AI analysis pipeline.
+globs:
+alwaysApply: false
+---
+
+
+# Visualization System Integration
+
+## Overview
+The Living Truth Engine includes a sophisticated visualization system for creating interactive 3D network graphs from analysis data.
+
+## 🎯 **Key Components**
+
+### **AdvancedVisualizer Class**
+- **Location**: `src/visualization/advanced_viz.py`
+- **Purpose**: Creates interactive 3D network graphs using Plotly
+- **Features**: Entity extraction, dynamic graph generation, HTML export
+
+### **MCP Integration**
+- **Tool**: `create_3d_network_visualization`
+- **Location**: `src/mcp_servers/living_truth_fastmcp_server.py`
+- **Purpose**: Exposes visualization capabilities via MCP protocol
+
+### **UI Integration**
+- **Location**: `src/dashboard/static/ui_status_chat.html`
+- **Purpose**: Embeds visualizations in the web interface
+- **Features**: Dynamic graph generation, entity extraction, HTML rendering
+
+## 🔧 **Data Schema**
+
+### **Expected Graph Data Format**
+```python
+{
+    "nodes": {
+        "node_id": {
+            "label": "Node Label",
+            "type": "entity_type",
+            "confidence": 0.8,
+            "description": "Node description"
+        }
+    },
+    "edges": [
+        {
+            "source": "node_id_1",
+            "target": "node_id_2",
+            "attributes": {
+                "type": "relationship_type",
+                "weight": 1.0
+            }
+        }
+    ]
+}
+```
+
+### **Schema Normalization**
+The MCP tool automatically normalizes incoming data:
+- **List nodes** → **Dict nodes** keyed by ID
+- **Edge fields** → **source/target** format
+- **Missing attributes** → **Default values**
+
+## 🚀 **Usage Patterns**
+
+### **Frontend Graph Generation**
+```javascript
+// Extract entities from document text
+const entities = [];
+const words = text.split(/\s+/);
+for (let i = 0; i < words.length && entities.length < 10; i++) {
+    const word = words[i];
+    const cleanWord = word.replace(/[^\w]/g, '');
+    
+    if (cleanWord.length > 2 && 
+        /^[A-Z]/.test(cleanWord) && 
+        !stopWords.includes(cleanWord)) {
+        entities.push(cleanWord);
+    }
+}
+
+// Create graph data
+const graphData = {
+    nodes: documentNodes.concat(entityNodes),
+    edges: entityEdges
+};
+
+// Generate visualization
+const vizResult = await apiCall('/api/execute', 'POST', {
+    tool_name: 'create_3d_network_visualization',
+    params: { graph_data: graphData }
+});
+```
+
+### **Backend Visualization Creation**
+```python
+def create_3d_network_visualization(self, graph_data: dict) -> str:
+    """Create 3D network visualization using advanced visualizer."""
+    try:
+        if not self.visualizer:
+            return "❌ Advanced visualizer not initialized"
+        
+        # Normalize incoming graph data
+        normalized = self._normalize_graph_data(graph_data)
+        
+        # Create 3D network graph
+        fig = self.visualizer.create_interactive_3d_network_graph(normalized)
+        
+        # Save visualization
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        output_file = f"3d_network_visualization_{timestamp}.html"
+        output_path = self.visualizer.output_dir / output_file
+        
+        # Save the Plotly figure as HTML
+        fig.write_html(str(output_path))
+        
+        return f"✅ 3D network visualization created successfully\nOutput file: {output_file}"
+        
+    except Exception as e:
+        return f"❌ 3D network visualization error: {str(e)}"
+```
+
+## 📊 **Visualization Features**
+
+### **3D Network Graphs**
+- **Interactive**: Zoom, pan, rotate, hover
+- **Color-coded**: Different colors for entity types
+- **Size-scaled**: Node size based on importance/confidence
+- **Edge visualization**: Relationship lines between entities
+
+### **Entity Extraction**
+- **JavaScript-based**: Client-side entity extraction
+- **Capitalized words**: Identifies potential entities
+- **Stop word filtering**: Removes common words
+- **Configurable limits**: Maximum entities per document
+
+### **HTML Rendering**
+- **Direct HTML**: Served as raw HTML content
+- **Embedded**: Displays within UI container
+- **External link**: "Open in new window" option
+- **Responsive**: Adapts to container size
+
+## 🔗 **API Integration**
+
+### **Visualization Endpoints**
+- **`/api/visualizations`**: List available visualization files
+- **`/api/visualizations/{filename}`**: Serve specific HTML file
+- **`/api/execute`**: Create new visualizations via MCP tools
+
+### **Response Format**
+```python
+# HTML Response (for visualization files)
+from fastapi.responses import HTMLResponse
+return HTMLResponse(content=html_content, media_type="text/html")
+
+# JSON Response (for MCP tool results)
+return f"✅ 3D network visualization created successfully\nOutput file: {filename}"
+```
+
+## 🧪 **Testing**
+
+### **Visualization Testing**
+- **File generation**: Verify HTML files are created
+- **Content validation**: Check for Plotly JavaScript
+- **Rendering test**: Confirm graphs display correctly
+- **Schema validation**: Ensure data normalization works
+
+### **Integration Testing**
+- **MCP tool execution**: Test via `/api/execute`
+- **UI embedding**: Verify visualization displays in UI
+- **Error handling**: Test with invalid data
+- **Performance**: Check generation time
+
+## 🚨 **Common Issues**
+
+### **Blank Grid Display**
+- **Cause**: Empty data arrays or schema mismatch
+- **Solution**: Normalize graph data format
+- **Prevention**: Validate data before visualization
+
+### **Missing Nodes/Edges**
+- **Cause**: Entity extraction too restrictive
+- **Solution**: Adjust extraction parameters
+- **Prevention**: Test with various document types
+
+### **HTML Not Rendering**
+- **Cause**: Content-Type mismatch
+- **Solution**: Use HTMLResponse with proper media_type
+- **Prevention**: Consistent response format
+
+## 📋 **Best Practices**
+
+### **Data Preparation**
+- **Normalize schemas**: Ensure consistent data format
+- **Validate inputs**: Check for required fields
+- **Handle errors**: Graceful fallbacks for missing data
+- **Limit size**: Reasonable node/edge counts
+
+### **Performance**
+- **Batch processing**: Generate multiple visualizations efficiently
+- **Caching**: Reuse generated visualizations when possible
+- **Async operations**: Non-blocking visualization generation
+- **Resource limits**: Prevent excessive memory usage
+
+### **User Experience**
+- **Loading indicators**: Show progress during generation
+- **Error messages**: Clear feedback for failures
+- **Multiple views**: Both embedded and external options
+- **Responsive design**: Adapt to different screen sizes
+
+## 🔄 **Workflow Integration**
+
+### **Complete Analysis Pipeline**
+1. **Start Analysis**: Begin document processing
+2. **Extract Entities**: Identify key entities from text
+3. **Generate Graph**: Create visualization data
+4. **Render Visualization**: Produce interactive HTML
+5. **Display Results**: Show in UI with other analysis
+
+### **Individual Components**
+- **Entity Extraction**: Standalone entity identification
+- **Graph Generation**: Create visualization from existing data
+- **Visualization Display**: Show existing visualizations
+- **Data Export**: Save visualization data for reuse
+
+
