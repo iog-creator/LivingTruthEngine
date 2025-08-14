@@ -1,7 +1,7 @@
 {
   "name": "mcp_hub_server",
   "version": "1.0.0",
-  "updated": "2025-08-14T17:59:22.494932",
+  "updated": "2025-08-14T18:08:10.450076",
   "envelope": {
     "status": "ok|error",
     "data?": {},

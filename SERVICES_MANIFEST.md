@@ -1,5 +1,5 @@
 ---
-phase: 9.5.7
+phase: 9.5.7.2
 status: active
 last_reviewed: 2025-08-14
 related_files:
@@ -7,11 +7,13 @@ related_files:
   - scripts/service_feature_map.py
   - scripts/verify_service_docs_complete.py
   - scripts/verify_compose_healthchecks.py
+  - scripts/gen_service_docs.py
+  - scripts/readme_sync.py
 ---
 
 # Living Truth Engine — Service Manifest
 
-This document is the **single source of truth** for all services used in Phase 9.5.7/9.5.7.1/9.5.7.2. It replaces individual files in `docs/services/*`. CI will fail if any required section is missing.
+This document is the **single source of truth** for all services used in Phase 9.5.7.2. It replaces individual files in `docs/services/*`. CI will fail if any required section is missing.
 
 ## Legend
 - **Core**: must be UP for 9.5.7 dashboard to be complete.
@@ -24,7 +26,9 @@ This document is the **single source of truth** for all services used in Phase 9
 ### 1) dashboard (core)
 **Role**: Primary web app — serves REST `/api/*`, WebSocket `/ws/*`, and the Resilience Dashboard UI.  
 **Ports**: `8050:8050`  
-**Env (examples)**: `PYTHONPATH=/app:/app/src`, `LM_STUDIO_ENDPOINT=http://host.docker.internal:1234/v1`  
+**Environment**: 
+- `PYTHONPATH=/app:/app/src`
+- `LM_STUDIO_ENDPOINT=http://host.docker.internal:1234/v1`
 **Healthcheck**: `GET http://localhost:8050/api/health` → 200  
 **Code Paths**:
 - `src/api/health.py`, `src/api/resilience.py`
@@ -83,12 +87,17 @@ This document is the **single source of truth** for all services used in Phase 9
 ### devdocs (optional)
 **Role**: Dev docs MCP endpoint / static docs host.  
 **Ports**: `9126:24125`  
+**Environment**: (none)  
 **Healthcheck**: `GET http://localhost:24125/health` → 200  
 **Tests**: `tests/services/test_devdocs_smoke.py`
 
 ### langflow (optional)
 **Role**: Workflow UI/orchestrator; not required for 9.5.7 baseline.  
 **Ports**: `7860:7860`  
+**Environment**: 
+- `LANGFLOW_DATABASE_URL=postgresql://langflow:langflow@postgres:5432/langflow`
+- `LANGFLOW_CONFIG_DIR=/app/langflow`
+- `PYTHONPATH=/app/langflow_source:/app/langchain_source`
 **Healthcheck**: `GET http://localhost:7860/health` → 200  
 **Tests**: `tests/services/test_langflow_smoke.py` (skipped if profile off)
 
