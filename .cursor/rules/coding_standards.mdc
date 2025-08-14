@@ -1,10 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: []
+description: Coding Standards rule for Living Truth Engine
+alwaysApply: false
 ---
-
 
 # Coding Standards for AI-Assisted Development
 
@@ -228,12 +225,3 @@ from .models import AnalysisResult
 - ✅ **Test coverage**: >90% code coverage
 - ✅ **AI understanding**: Clear, consistent patterns
 - ✅ **Maintainability**: Modular, readable code
-
----
-
-**Follow these standards to ensure AI can effectively assist with code generation, refactoring, and maintenance.**
-
-@how_to_make_a_cursor_rule.mdc
-@docker_best_practices.mdc
-@system_management.mdc
-@mcp_server_integration.mdc

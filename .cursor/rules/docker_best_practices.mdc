@@ -1,11 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: []
+description: Docker Best Practices rule for Living Truth Engine
+alwaysApply: false
 ---
-
-
 
 # Docker Best Practices for Living Truth Engine
 
@@ -205,10 +201,3 @@ DOCKER_BUILDKIT=1 docker compose -f docker/docker-compose.yml up -d --build
 # Monitor deployment
 docker compose -f docker/docker-compose.yml logs -f
 ```
-
----
-
-**Follow these Docker best practices to ensure secure, efficient, and maintainable containerized applications.**
-
-@coding_standards.mdc
-@core_workflow.mdc

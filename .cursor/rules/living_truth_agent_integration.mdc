@@ -1,11 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: []
+description: Living Truth Agent Integration rule for Living Truth Engine
+alwaysApply: false
 ---
-
-
 
 # Living Truth Agent Integration Process
 
@@ -207,10 +203,3 @@ result = mcp_mcp_hub_server_execute_tool("component_tool", {"param": "test"})
 2. **Create MCP tools** for content processing
 3. **Update tool registry** with new tools
 4. **Test integration** via MCP hub server
-
----
-
-**This rule ensures systematic integration with MCP tool development for every component migrated from Living Truth Agent to LivingTruthEngine.**
-
-@mcp_server_integration.mdc
-@project_overview.mdc

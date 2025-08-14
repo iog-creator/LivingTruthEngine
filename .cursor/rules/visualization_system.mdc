@@ -1,11 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: ['src/mcp_servers/living_truth_fastmcp_server.py', 'src/visualization/advanced_viz.py']
+description: Visualization System rule for Living Truth Engine
+alwaysApply: false
 ---
-
-
 
 # Visualization System Integration
 
@@ -222,5 +218,3 @@ return f"✅ 3D network visualization created successfully\nOutput file: {filena
 - **Graph Generation**: Create visualization from existing data
 - **Visualization Display**: Show existing visualizations
 - **Data Export**: Save visualization data for reuse
-
-

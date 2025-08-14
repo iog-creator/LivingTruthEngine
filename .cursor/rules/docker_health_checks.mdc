@@ -1,11 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: []
+description: Docker Health Checks rule for Living Truth Engine
+alwaysApply: false
 ---
-
-
 
 # Docker Health Check Best Practices
 
@@ -197,12 +193,3 @@ healthcheck:
 - ✅ **Reasonable timeout values** and intervals
 - ✅ **Proper error handling** and retry logic
 - ✅ **Container-specific optimizations**
-
----
-
-**This rule ensures reliable health monitoring for all Docker services in the Living Truth Engine project.**
-
-@how_to_make_a_cursor_rule.mdc
-
-
-@how_to_make_a_cursor_rule.mdc

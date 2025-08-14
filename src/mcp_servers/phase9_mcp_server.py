@@ -67,13 +67,13 @@ class Phase9MCPServer:
         Validate all cursor rules (.mdc files) for proper frontmatter and structure.
         
         Returns:
-            Validation results with details about any issues found
+            Validation result with issues and valid rules
         """
         try:
-            issues = []
             valid_rules = []
+            issues = []
             
-            for rule_file in self.rules_dir.glob("*.mdc"):
+            for rule_file in self.rules_dir.glob('*.mdc'):
                 try:
                     with open(rule_file, 'r', encoding='utf-8') as f:
                         content = f.read()
@@ -83,22 +83,56 @@ class Phase9MCPServer:
                         issues.append(f"{rule_file.name}: Missing frontmatter")
                         continue
                     
-                    # Parse frontmatter
+                    # Parse frontmatter more carefully
                     lines = content.split('\n')
                     frontmatter_end = -1
-                    for i, line in enumerate(lines[1:], 1):
-                        if line.strip() == '---':
+                    frontmatter_lines = []
+                    
+                    # Find the first complete frontmatter section
+                    i = 1  # Skip the first ---
+                    while i < len(lines):
+                        line = lines[i].strip()
+                        if line == '---':
                             frontmatter_end = i
                             break
+                        frontmatter_lines.append(lines[i])
+                        i += 1
                     
                     if frontmatter_end == -1:
                         issues.append(f"{rule_file.name}: Incomplete frontmatter")
                         continue
                     
-                    # Validate required fields
-                    frontmatter = '\n'.join(lines[1:frontmatter_end])
-                    if 'description:' not in frontmatter:
+                    # Check for additional frontmatter-like sections
+                    additional_frontmatter = 0
+                    i = frontmatter_end + 1
+                    while i < len(lines):
+                        line = lines[i].strip()
+                        if line == '---':
+                            # Check if this looks like frontmatter (has YAML-like content after it)
+                            j = i + 1
+                            yaml_like = False
+                            while j < len(lines) and j < i + 10:  # Check next 10 lines
+                                next_line = lines[j].strip()
+                                if next_line and ':' in next_line and not next_line.startswith('#'):
+                                    yaml_like = True
+                                    break
+                                elif next_line.startswith('#'):
+                                    break
+                                j += 1
+                            if yaml_like:
+                                additional_frontmatter += 1
+                        i += 1
+                    
+                    if additional_frontmatter > 0:
+                        issues.append(f"{rule_file.name}: Duplicate frontmatter detected ({additional_frontmatter + 1} frontmatter sections)")
+                        continue
+                    
+                    # Validate required fields in frontmatter
+                    frontmatter_text = '\n'.join(frontmatter_lines)
+                    if 'description:' not in frontmatter_text:
                         issues.append(f"{rule_file.name}: Missing description")
+                    elif 'alwaysApply:' not in frontmatter_text:
+                        issues.append(f"{rule_file.name}: Missing alwaysApply field")
                     else:
                         valid_rules.append(rule_file.name)
                         
@@ -143,29 +177,66 @@ class Phase9MCPServer:
             with open(rule_file, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            # Check if already has proper frontmatter
-            if content.startswith('---') and 'description:' in content:
-                return {
-                    "success": True,
-                    "message": f"{filename} already has proper frontmatter"
-                }
+            # Extract the main content by finding the first heading or content after frontmatter
+            lines = content.split('\n')
+            main_content_start = 0
             
-            # Add basic frontmatter
-            frontmatter = f"""---
-description: {filename.replace('.mdc', '').replace('_', ' ').title()} rule
-globs: ["**/*"]
+            # Find the end of the first frontmatter section
+            i = 0
+            while i < len(lines):
+                if lines[i].strip() == '---':
+                    i += 1
+                    # Skip until we find the closing ---
+                    while i < len(lines) and lines[i].strip() != '---':
+                        i += 1
+                    if i < len(lines):
+                        main_content_start = i + 1
+                        break
+                else:
+                    i += 1
+            
+            # Find the actual start of content (skip empty lines and any remaining frontmatter-like content)
+            while main_content_start < len(lines):
+                line = lines[main_content_start].strip()
+                if line and not line.startswith('---') and not line.startswith('description:') and not line.startswith('globs:') and not line.startswith('alwaysApply:'):
+                    break
+                main_content_start += 1
+            
+            # Extract main content
+            main_content = '\n'.join(lines[main_content_start:])
+            
+            # Create proper frontmatter based on filename
+            rule_name = filename.replace('.mdc', '').replace('_', ' ').title()
+            
+            # Only 00-global.mdc should have alwaysApply: true
+            if filename == '00-global.mdc':
+                frontmatter = f"""---
+description: >
+  Global operating rules for Living Truth Engine. Always include this in AI context.
+  Enforce test-first changes, Playwright use, MCP tool invocations, repo-health gates,
+  envelope contract, and phase closeouts. No TODOs left behind.
+alwaysApply: true
+globs:
+  - "**/*"
+---
+
+"""
+            else:
+                frontmatter = f"""---
+description: {rule_name} rule for Living Truth Engine
 alwaysApply: false
 ---
 
 """
             
-            new_content = frontmatter + content
+            new_content = frontmatter + main_content
             with open(rule_file, 'w', encoding='utf-8') as f:
                 f.write(new_content)
             
             return {
                 "success": True,
-                "message": f"Fixed frontmatter for {filename}"
+                "message": f"Fixed frontmatter for {filename}",
+                "removed_sections": 1
             }
             
         except Exception as e:

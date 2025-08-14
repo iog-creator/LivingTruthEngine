@@ -1,10 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: []
+description: Fallbacks And Health rule for Living Truth Engine
+alwaysApply: false
 ---
-
 
 # Fallbacks & Health
 
@@ -129,4 +126,3 @@ def process_with_fallback():
 description:
 globs:
 alwaysApply: false
----

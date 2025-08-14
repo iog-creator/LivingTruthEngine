@@ -1,10 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: ['PHASE_X_PLAN.md', 'PHASE_X_COMPLETION_SUMMARY.md', 'MCP_REQUIREMENTS_REFERENCE.md', 'PHASE_9_MASTER_PLAN__MCP_ADDENDA.md', 'PHASE_9.md', 'project_master_log.md']
+description: Mcp Enforcement rule for Living Truth Engine
+alwaysApply: false
 ---
-
 
 # MCP + Rules Enforcement Master Reference
 
@@ -13,20 +10,32 @@ related_files: ['PHASE_X_PLAN.md', 'PHASE_X_COMPLETION_SUMMARY.md', 'MCP_REQUIRE
 - Ensure MCP server functions are validated and errors surfaced (never silently skipped)
 - Maintain **documentation discipline** — master log, completion summaries, and MCP tool specs must be updated per phase
 
-## 📋 **Cursor Rule Integration**
-This document is enforced by the Cursor rule: `.cursor/rules/mcp_enforcement.mdc`
+## 📋 **Mandatory Tool Rituals**
+**These MCP checks are REQUIRED for ALL changes:**
 
-**ALWAYS consult this document before making any MCP-related changes or completing any phase.**
+### **MCP Validation (Non-Negotiable)**
+```bash
+# 1. MCP Sync and Logging Check
+python scripts/mcp_sync.py && python scripts/logging_schema_check.py
 
-**Last Updated**: August 13, 2025 18:03:00
+# 2. Phase9 MCP Server Validation
+python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; server = Phase9MCPServer(); result = server.validate_cursor_rules(); print('MCP Validation:', result)"
 
----
+# 3. FastMCP Server Validation
+python -c "from src.mcp_servers.living_truth_fastmcp_server import validate_cursor_rules; result = validate_cursor_rules(); print('FastMCP Validation:', result)"
+```
+
+### **Enforcement Policy**
+- **Block completion** if any MCP validation fails
+- **Always run all three checks** before marking any change complete
+- **No exceptions** - MCP validation is mandatory for all development work
 
 ## 1. **Cursor Rules Enforcement**
 
 ### **Validation Before Completion**
-1. Run `validate_cursor_rules()` before closing a phase
-2. Phase cannot be marked complete if validation fails
+- Run `validate_cursor_rules()` before closing a phase
+- Phase cannot be marked complete if validation fails
+- **Both MCP servers must validate successfully**
 
 ### **Rule Update Requirements**
 - Any new phase introducing APIs, data models, or workflows must update relevant Cursor Rules
@@ -37,8 +46,6 @@ This document is enforced by the Cursor rule: `.cursor/rules/mcp_enforcement.mdc
 
 ### **Rule Archive**
 - Outdated rules moved to `archive/` with phase tag
-
----
 
 ## 2. **MCP Server Requirements**
 
@@ -52,12 +59,11 @@ This document is enforced by the Cursor rule: `.cursor/rules/mcp_enforcement.mdc
 ### **Function Validation**
 - Test MCP server functions with known good inputs
 - Fail phase if any tool errors out during validation
+- **Both Phase9 and FastMCP servers must be validated**
 
 ### **Error Handling**
 - No silent failures: log every MCP server error
 - Fallbacks explicitly reported in MCP tool output
-
----
 
 ## 3. **MDC (Master Development Contract) Enforcement**
 
@@ -70,26 +76,22 @@ This document is enforced by the Cursor rule: `.cursor/rules/mcp_enforcement.mdc
 
 ### **Exit Gate Checks**
 - MDC requires these checks before phase close:
-  - MCP validation
+  - MCP validation (both servers)
   - CI green with all new tests
   - Documentation updates committed
   - Master log updated
-
----
 
 ## 4. **CI/CD Integration Requirements**
 
 ### **Validation Scripts**
 - `scripts/ci/validate_phaseX.sh` must:
-  - Validate MCP tools
+  - Validate MCP tools (both servers)
   - Run unit/integration tests
   - Verify cursor rules are updated
 
 ### **Performance/Error Gates**
 - Performance budgets enforced in CI (p95 latencies, LCP, bundle sizes)
 - Error budgets enforced in CI starting Phase 9.5.5
-
----
 
 ## 5. **MCP Tool Categories (Phase 9 Baseline)**
 
@@ -125,190 +127,6 @@ This document is enforced by the Cursor rule: `.cursor/rules/mcp_enforcement.mdc
 - `trigger_recovery_action` - Trigger recovery actions for services
 - `run_chaos_test` - Execute chaos engineering tests
 
----
-
-## 6. **Documentation & Logging**
-
-### **Per-Phase Docs**
-- `PHASE_X_PLAN.md`
-- `PHASE_X_COMPLETION_SUMMARY.md`
-- Update `project_master_log.md`
-- Update consolidated completion summary
-
-### **MCP Tool Specs**
-- Update `/specs` with any new or modified tool spec
-- Include:
-  - Tool name & version
-  - Input schema
-  - Output schema
-  - Error codes
-
-### **Logging**
-- MCP server logs must show:
-  - Tool start/end
-  - Input parameters
-  - Outcome (success/fail/fallback)
-  - Execution time
-
----
-
-## 7. **Phase Close Checklist**
-Before closing any phase:
-- [ ] MCP tools updated and validated
-- [ ] Cursor rules updated and validated
-- [ ] MDC addenda updated
-- [ ] CI green with all new gates/tests
-- [ ] Docs: plan + completion + master log updated
-- [ ] MCP specs updated
-- [ ] All errors handled and logged
-
----
-
-## 🔒 **Enforcement Summary**
-- No phase is complete without **passing MCP + Rules validation**
-- No undocumented MCP tool changes allowed
-- Cursor must always **self-update** its rules, tools, and docs when phase scope changes
-- All MCP errors must be surfaced — silent failure is prohibited
-- **MCP_REQUIREMENTS_REFERENCE.md must be consulted and updated for every MCP-related change**
-
----
-
-## 🚨 **CRITICAL ENFORCEMENT RULES**
-
-### **Phase: Global**
-### **Scope: All**
-### **Summary**: Enforce MCP tools, performance, and contract gates before any phase/patch/PR completion.
-
-### **Required MCP Tools**
-- `mcp.validate_cursor_rules`
-- `mcp.validate_mcp_requirements_reference`
-- `mcp.enforce_mcp_compliance`
-- `mcp.run_performance_harness`
-- `mcp.validate_performance_budgets`
-- `mcp.api_envelope_check`
-
-### **Enforcement Policy**
-- **Block completion** if any required MCP tool fails or is missing
-- **Block completion** on envelope violations or budget regressions
-- **Plans, summaries, MCP specs, and rules must be updated** in the same PR
-- **No exceptions** - all gates must pass before marking any phase complete
-- **MCP compliance is non-negotiable** for all development work
-
-### **Before Any MCP Change**
-1. Run `validate_mcp_requirements_reference()` to check current state
-2. Read `MCP_REQUIREMENTS_REFERENCE.md` for current requirements
-3. Check if change affects existing MCP tools or rules
-4. Plan updates to reference document if needed
-
-### **After Any MCP Change**
-1. Run `update_mcp_requirements_reference()` to update the reference document
-2. Update `MCP_REQUIREMENTS_REFERENCE.md` with new requirements
-3. Validate all MCP tools still function
-4. Update relevant Cursor rules
-5. Update phase documentation
-
-### **Before Phase Completion**
-1. Run `enforce_mcp_compliance(phase)` to validate all requirements
-2. Ensure `MCP_REQUIREMENTS_REFERENCE.md` reflects all changes
-3. Validate all MCP tools and rules
-4. Update master log and completion summaries
-5. Run full CI validation
-
-# MCP + Rules Enforcement Master Reference
-
-## 🎯 **Primary Goals**
-- Ensure **every phase** has MCP tools, Cursor Rules, and MDC updates **as needed**
-- Ensure MCP server functions are validated and errors surfaced (never silently skipped)
-- Maintain **documentation discipline** — master log, completion summaries, and MCP tool specs must be updated per phase
-
-## 📋 **Mandatory Reference Document**
-**ALWAYS consult and update:** `MCP_REQUIREMENTS_REFERENCE.md` before making any MCP-related changes or completing any phase.
-
-## 1. **Cursor Rules Enforcement**
-
-### **Validation Before Completion**
-- Run `validate_cursor_rules()` before closing a phase
-- Phase cannot be marked complete if validation fails
-
-### **Rule Update Requirements**
-- Any new phase introducing APIs, data models, or workflows must update relevant Cursor Rules
-- Add phase-specific rules to `.cursor/rules/` with:
-  - Frontmatter metadata (phase, description, enforcement scope)
-  - Build-Verify-Iterate section
-  - References to updated MCP tools
-
-### **Rule Archive**
-- Outdated rules moved to `archive/` with phase tag
-
-## 2. **MCP Server Requirements**
-
-### **Tool Lifecycle**
-- Add or update MCP tools per phase scope
-- Each MCP tool:
-  - Has `spec` JSON file in `/specs`
-  - Has unit tests in `/tests/mcp_tools/`
-  - Implements full envelope response: `{status, data?, error?}`
-
-### **Function Validation**
-- Test MCP server functions with known good inputs
-- Fail phase if any tool errors out during validation
-
-### **Error Handling**
-- No silent failures: log every MCP server error
-- Fallbacks explicitly reported in MCP tool output
-
-## 3. **MDC (Master Development Contract) Enforcement**
-
-### **Per-Phase MDC Addenda**
-- Each phase updates `PHASE_9_MASTER_PLAN__MCP_ADDENDA.md`
-- Addenda must include:
-  - New MCP tools
-  - Updated Cursor Rules
-  - New CI/CD gates
-
-### **Exit Gate Checks**
-- MDC requires these checks before phase close:
-  - MCP validation
-  - CI green with all new tests
-  - Documentation updates committed
-  - Master log updated
-
-## 4. **CI/CD Integration Requirements**
-
-### **Validation Scripts**
-- `scripts/ci/validate_phaseX.sh` must:
-  - Validate MCP tools
-  - Run unit/integration tests
-  - Verify cursor rules are updated
-
-### **Performance/Error Gates**
-- Performance budgets enforced in CI (p95 latencies, LCP, bundle sizes)
-- Error budgets enforced in CI starting Phase 9.5.5
-
-## 5. **MCP Tool Categories (Phase 9 Baseline)**
-
-### **System Health**
-- `get_health_status`
-- `validate_cursor_rules`
-- `list_tools`
-
-### **Data & Analysis**
-- `build_graph`
-- `fetch_timeline`
-- `analyze_veritas_summary`
-- `analyze_veritas_claims`
-
-### **Ingestion & Adapters**
-- `test_youtube_adapter`
-- `test_web_adapter`
-- `test_pdf_adapter`
-- `run_multi_source_job`
-
-### **Monitoring & Recovery**
-- `get_error_budget_status` (Phase 9.5.5)
-- `trigger_recovery_action` (Phase 9.5.5)
-- `run_chaos_test` (Phase 9.5.5)
-
 ## 6. **Documentation & Logging**
 
 ### **Per-Phase Docs**
@@ -333,9 +151,8 @@ Before closing any phase:
   - Execution time
 
 ## 7. **Phase Close Checklist**
-
 Before closing any phase:
-- [ ] MCP tools updated and validated
+- [ ] MCP tools updated and validated (both servers)
 - [ ] Cursor rules updated and validated
 - [ ] MDC addenda updated
 - [ ] CI green with all new gates/tests
@@ -362,14 +179,14 @@ Before closing any phase:
 ### **After Any MCP Change**
 1. Run `update_mcp_requirements_reference()` to update the reference document
 2. Update `MCP_REQUIREMENTS_REFERENCE.md` with new requirements
-3. Validate all MCP tools still function
+3. Validate all MCP tools still function (both servers)
 4. Update relevant Cursor rules
 5. Update phase documentation
 
 ### **Before Phase Completion**
 1. Run `enforce_mcp_compliance(phase)` to validate all requirements
 2. Ensure `MCP_REQUIREMENTS_REFERENCE.md` reflects all changes
-3. Validate all MCP tools and rules
+3. Validate all MCP tools and rules (both servers)
 4. Update master log and completion summaries
 5. Run full CI validation
 
@@ -378,8 +195,6 @@ Before closing any phase:
 - **NEVER make undocumented MCP changes** - always update reference document
 - **NEVER allow silent failures** - all errors must be surfaced and logged
 - **ALWAYS consult MCP_REQUIREMENTS_REFERENCE.md** before making MCP-related decisions
----
-description: MCP + Rules Enforcement Master Reference - Ensures all phases follow correct MCP tool validation, cursor rule enforcement, and documentation discipline
-globs: ["**/*.md", "**/*.py", "**/*.sh", "**/*.ts", "**/*.tsx", "**/*.json"]
-alwaysApply: true
----
+- **ALWAYS validate both MCP servers** - Phase9 and FastMCP
+- All MCP errors must be surfaced — silent failure is prohibited
+- **MCP_REQUIREMENTS_REFERENCE.md must be consulted and updated for every MCP-related change**

@@ -1,0 +1,69 @@
+---
+description: >
+  Global operating rules for Living Truth Engine. Always include this in AI context.
+  Enforce test-first changes, Playwright use, MCP tool invocations, repo-health gates,
+  envelope contract, and phase closeouts. No TODOs left behind.
+alwaysApply: true
+globs:
+  - "**/*"
+---
+
+# Global Canon (follow for EVERY change)
+- **Envelope everywhere**: APIs & tools return `{status, data?, error?{code,message}}`.
+- **Commit-complete**: code + tests + docs + rules updated in the same change.
+- **No drift**: if you touch code, update related tests, docs, and rules (this file too if needed).
+
+## Tool Rituals (run & show output)
+- **UI / Frontend** (any change under `ui/**` or `src/**` that affects UI):
+  1) `npx playwright test --reporter=list`  
+  2) On failure, re-run with trace: `npx playwright test --trace=on --project=chromium`
+  3) If you added UI, add/adjust a Playwright spec (selectors via `data-testid`), commit it.
+- **API / Python**:
+  - `pytest -q tests/api tests/models tests/prompts`
+- **MCP / Scripts** (REQUIRED for all changes):
+  - `python scripts/mcp_sync.py && python scripts/logging_schema_check.py`
+  - `python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; server = Phase9MCPServer(); result = server.validate_cursor_rules(); print('MCP Validation:', result)"`
+  - `python -c "from src.mcp_servers.living_truth_fastmcp_server import validate_cursor_rules; result = validate_cursor_rules(); print('FastMCP Validation:', result)"`
+- **Repo Health (fast set)**:
+  - `python scripts/verify_service_docs_complete.py`
+  - `python scripts/verify_compose_healthchecks.py`
+  - `python scripts/audit_models.py`  # uses LM Studio; keep core models present
+- **Definition of Done** (before proposing a commit):
+  - All above pass; README & master log updated if scope changed.
+  - **MCP validation MUST pass** - no exceptions.
+
+## MCP Requirements (non‑negotiable)
+- **Always validate cursor rules** before completing any change
+- **Always run MCP sync** to ensure tool registry is current
+- **Always check both MCP servers** (Phase9 and FastMCP) for validation
+- **Block completion** if any MCP validation fails
+- **Update MCP tools** if you modify cursor rules or add new functionality
+
+## Playwright Requirements (non‑negotiable)
+- Always add or update a **Playwright test** when editing UI. Use deterministic `data-testid`s.
+- Prefer small, focused specs; keep them under 10s each.
+- If you add a new page/flow, add at least **one** happy‑path spec.
+- CI must run Playwright on PRs & nightly. (If CI file is missing, add one.)
+
+## Project Knowledge (use, don't reinvent)
+- **Service docs** live in `SERVICES_MANIFEST.md` (SSOT).
+- **Models** live in `config/model_registry.yaml` (SSOT).
+- **Prompts** live in `prompts/registry.yaml` + `src/ai/prompt_manager.py`.
+- **Resilience UI** scope: Phase 9.5.7.x; keep tests and routes in sync.
+
+## What NOT to do
+- Don't write new features without tests.
+- Don't leave TODO comments; implement or open a tracked task with a failing test.
+- Don't create duplicate docs; update the SSOT files instead.
+- Don't skip MCP validation - it's required for all changes.
+
+## When I ask you to "implement/fix X", you MUST:
+1) Update code **and** tests.
+2) Run the Tool Rituals above; post outputs (or the diff if green).
+3) **Verify MCP validation passes** - this is mandatory.
+4) Only then propose a commit message summarizing code + tests + docs changes.
+
+## When I ask you to "implement/fix X", you MUST:
+1) Update code **and** tests.
+2) Run the Tool Rituals above; post outputs (or the diff if green).
+3) Only then propose a commit message summarizing code + tests + docs changes.

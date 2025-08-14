@@ -1,10 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: []
+description: Database Schema Consistency rule for Living Truth Engine
+alwaysApply: false
 ---
-
 
 # Database Schema Consistency
 
@@ -161,11 +158,3 @@ docker exec living-truth-postgres psql -U postgres -d living_truth_engine -c "SE
 - **PgVectorStore**: Database storage implementation
 - **VeritasRunner**: Bundle creation and database integration
 - **API Endpoints**: Timeline and graph API functionality
-
----
-
-**This rule ensures consistent database schema and proper data storage across the Living Truth Engine.**
-description:
-globs:
-alwaysApply: false
----

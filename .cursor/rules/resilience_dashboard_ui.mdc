@@ -1,8 +1,6 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: ['src/api/resilience.py', 'src/mcp_tools/resilience_dashboard_tools.py', 'ui/components/ChaosTestTable.tsx', 'MCP_REQUIREMENTS_REFERENCE.md', 'ui/components/PredictiveAlerts.tsx', 'tests/ui/resilience_dashboard.spec.ts', 'specs/resilience_dashboard_tools.json', 'ui/components/HistoricalTrends.tsx', 'PHASE_9.md', 'PHASE_9_5_7_PLAN.md', 'ui/components/ResilienceGauge.tsx', 'ui/components/ResilienceDashboard.tsx']
+description: Resilience Dashboard Ui rule for Living Truth Engine
+alwaysApply: false
 ---
 
 # Resilience Dashboard UI Development
@@ -212,11 +210,3 @@ test('resilience dashboard loads and displays data', async ({ page }) => {
 - @api_contracts.mdc - API envelope format
 - @mcp_server_integration.mdc - MCP tool patterns
 - @testing_standards.mdc - Testing requirements
-
----
-
-**This rule ensures consistent development of the resilience dashboard UI with proper MCP integration, testing, and monitoring.**
-description:
-globs:
-alwaysApply: false
----

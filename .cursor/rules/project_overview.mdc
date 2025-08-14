@@ -1,11 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: ['./scripts/testing/functional_tests.py', 'python3 src/mcp_servers/mcp_hub_server.py']
+description: Project Overview rule for Living Truth Engine
+alwaysApply: false
 ---
-
-
 
 ## 🎯 **Project Overview**
 
@@ -261,14 +257,3 @@ LivingTruthEngine/
 - **Configuration Reset**: Reset to known good state
 - **Environment Reset**: Complete environment rebuild
 - **Emergency Procedures**: Critical issue response
-
----
-
-**This overview provides the foundation for understanding and working with the Living Truth Engine project.**
-
-## 📚 **Related Rules**
-- **@mcp_server_integration.mdc** - MCP server integration patterns and best practices
-- **@coding_standards.mdc** - Code quality and development standards
-- **@core_workflow.mdc** - Development workflow and best practices
-- **@docker_best_practices.mdc** - Docker configuration and deployment
-- **@system_management.mdc** - System management and automation

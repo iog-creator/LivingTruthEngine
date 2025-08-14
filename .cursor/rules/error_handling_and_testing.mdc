@@ -1,12 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: []
+description: Error Handling And Testing rule for Living Truth Engine
+alwaysApply: false
 ---
-
-
-
 
 # Error Handling and Testing Standards
 
@@ -255,35 +250,13 @@ for doc in documents:
         doc['created_at'] = convert_datetime(doc['created_at'])
 ```
 
----
 
 **Follow these standards to ensure robust error handling and comprehensive testing throughout the Living Truth Engine project.**
 
 alwaysApply: false
----
-
-**Follow these standards to ensure robust error handling and comprehensive testing throughout the Living Truth Engine project.**
 
 alwaysApply: false
----
 
 alwaysApply: false
----
 
 alwaysApply: false
----
-
-
-alwaysApply: false
----
-
-alwaysApply: false
----
-
-
-
-alwaysApply: false
----
-
-alwaysApply: false
----

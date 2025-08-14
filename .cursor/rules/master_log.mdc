@@ -1,10 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: ['docs/project_master_log.md', 'build_master_log.py']
+description: Master Log rule for Living Truth Engine
+alwaysApply: false
 ---
-
 
 # Master Log Rebuild Rule
 

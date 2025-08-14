@@ -1,11 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: []
+description: System Status rule for Living Truth Engine
+alwaysApply: false
 ---
-
-
 
 # System Status (Updated: 2025-08-13 21:30:00)
 

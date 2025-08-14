@@ -1,11 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: []
+description: System Management rule for Living Truth Engine
+alwaysApply: false
 ---
-
-
 
 # System Management and Automation
 
@@ -240,11 +236,3 @@ source living_venv/bin/activate
 docker compose -f docker/docker-compose.yml down
 docker compose -f docker/docker-compose.yml up -d
 ```
-
----
-
-**Follow these system management practices to ensure reliable, efficient, and maintainable operations.**
-
-@coding_standards.mdc
-@core_workflow.mdc
-@docker_best_practices.mdc

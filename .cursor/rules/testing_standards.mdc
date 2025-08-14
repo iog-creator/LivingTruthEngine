@@ -1,10 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: []
+description: Testing Standards rule for Living Truth Engine
+alwaysApply: false
 ---
-
 
 - Smoke: `scripts/p9_1_smoke.sh`
 - Envelope lint: assert `status` present; `error` on non-2xx paths.

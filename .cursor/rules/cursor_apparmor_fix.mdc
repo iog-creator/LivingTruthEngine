@@ -1,11 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: []
+description: Cursor Apparmor Fix rule for Living Truth Engine
+alwaysApply: false
 ---
-
-
 
 # Cursor AppArmor Fix for Ubuntu
 
@@ -99,9 +95,3 @@ sudo apparmor_parser -r /etc/apparmor.d/cursor-appimage
 - **libfuse2t64** package installed
 - **8GB+ RAM** recommended for AI operations
 - **Stable internet connection** for AI features
-
----
-
-**Follow this rule to ensure Cursor runs smoothly on Ubuntu systems without AppArmor interference.**
-
-@how_to_make_a_cursor_rule.mdc

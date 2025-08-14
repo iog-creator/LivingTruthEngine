@@ -1,10 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: ['PHASE_<subphase>_COMPLETION_SUMMARY.md']
+description: Mcp Integration rule for Living Truth Engine
+alwaysApply: false
 ---
-
 
 # MCP-First Development
 

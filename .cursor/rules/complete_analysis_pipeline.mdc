@@ -1,10 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: []
+description: Complete Analysis Pipeline rule for Living Truth Engine
+alwaysApply: false
 ---
-
 
 # Complete Analysis Pipeline
 
@@ -242,5 +239,3 @@ function addStatus(message, type = 'info') {
 - **AI Analysis**: Individual summary and claims generation
 - **Visualization**: Independent graph creation
 - **Result Display**: Flexible result presentation
-
-

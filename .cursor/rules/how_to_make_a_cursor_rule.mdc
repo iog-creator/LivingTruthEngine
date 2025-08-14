@@ -1,10 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: []
+description: How To Make A Cursor Rule rule for Living Truth Engine
+alwaysApply: false
 ---
-
 
 # How to Build Cursor Rules - Complete Guide
 
@@ -57,11 +54,6 @@ Cursor rules are **long-term memory** that you and your team can access. They ca
 Every rule MUST have proper frontmatter:
 
 ```yaml
----
-description: Clear, concise description of what this rule does
-globs: ["file_patterns", "to_apply_to"]
-alwaysApply: true/false
----
 ```
 
 ### **Rule Types and Properties**
@@ -263,11 +255,6 @@ const response = fetch('/api/data'); // Missing await
 
 ### **Conditional Rules**
 ```yaml
----
-description: React patterns for components
-globs: ["**/components/**/*.tsx", "**/pages/**/*.tsx"]
-alwaysApply: false
----
 ```
 
 ### **Nested Rules**
@@ -304,9 +291,3 @@ project/
 - **Weekly**: Review rule usage and effectiveness
 - **Monthly**: Update rules based on project evolution
 - **Quarterly**: Audit and consolidate related rules
-
----
-
-**This rule provides the foundation for creating effective Cursor rules that improve team productivity and code quality.**
-
-@mcp_server_integration.mdc

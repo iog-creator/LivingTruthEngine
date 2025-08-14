@@ -1,11 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: ['ls -la config/tool_registry.json', 'src/mcp_servers/mcp_hub_server.py', 'config/tool_registry.json', 'living_truth_fastmcp_server.py', 'config/langflow_schemas.json', 'python3 src/mcp_servers/mcp_hub_server.py', 'tests/test_services_operational.py', 'tests/test_smoke_job_runs.py', 'tests/test_phase6_veritas.py']
+description: Mcp Server Integration rule for Living Truth Engine
+alwaysApply: false
 ---
-
-
 
 # MCP Server Integration and Best Practices
 
@@ -689,30 +685,3 @@ def recover_tool_usage():
         restart_mcp_server()
     return check_mcp_health()
 ```
-
----
-
-**Follow these MCP integration practices to ensure reliable, efficient, and maintainable tool usage.**
-
-## 📚 **Related Rules**
-- **@project_overview.mdc** - Overall project architecture and components
-- **@coding_standards.mdc** - Code quality and development standards
-- **@core_workflow.mdc** - Development workflow and best practices
-- **@docker_best_practices.mdc** - Docker configuration and deployment
-- **@system_management.mdc** - System management and automation
-
-## Phase 6 integration updates
-
-- Optional services stabilized as internal stubs (health-only) used by MCP adapters:
-  - DevDocs: http://localhost:9126/health
-  - Rulego: http://localhost:9127/health
-  - MCP Solver: http://localhost:9128/health
-- Dashboard service exposes:
-  - Health: http://localhost:8050/health
-  - Meta: http://localhost:8050/meta (tabs include "Job Runs")
-- MCP Hub validation: ensure categories `documentation`, `workflow`, `solver` list their status tools and execute successfully.
-
-### Tests added
-- `tests/test_services_operational.py`: operational checks for services + LM Studio endpoints
-- `tests/test_phase6_veritas.py`: Merkle roundtrip, bundle proofs, engine list/open, dashboard import
-- `tests/test_smoke_job_runs.py`: dashboard health/meta, Job Runs presence, start run + bundle checks

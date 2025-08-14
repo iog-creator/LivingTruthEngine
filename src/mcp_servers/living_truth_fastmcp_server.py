@@ -1165,22 +1165,48 @@ class LivingTruthEngine:
                         results.append(f"❌ {mdc_file.name}: Missing YAML frontmatter")
                         continue
                     
-                    # Extract frontmatter
+                    # Parse frontmatter more carefully
                     lines = content.split('\n')
+                    frontmatter_end = -1
                     frontmatter_lines = []
-                    in_frontmatter = False
                     
-                    for line in lines:
-                        if line.strip() == '---':
-                            if not in_frontmatter:
-                                in_frontmatter = True
-                            else:
-                                break
-                        elif in_frontmatter:
-                            frontmatter_lines.append(line)
+                    # Find the first complete frontmatter section
+                    i = 1  # Skip the first ---
+                    while i < len(lines):
+                        line = lines[i].strip()
+                        if line == '---':
+                            frontmatter_end = i
+                            break
+                        frontmatter_lines.append(lines[i])
+                        i += 1
                     
-                    if not frontmatter_lines:
-                        results.append(f"❌ {mdc_file.name}: Empty frontmatter")
+                    if frontmatter_end == -1:
+                        results.append(f"❌ {mdc_file.name}: Incomplete frontmatter")
+                        continue
+                    
+                    # Check for additional frontmatter-like sections
+                    additional_frontmatter = 0
+                    i = frontmatter_end + 1
+                    while i < len(lines):
+                        line = lines[i].strip()
+                        if line == '---':
+                            # Check if this looks like frontmatter (has YAML-like content after it)
+                            j = i + 1
+                            yaml_like = False
+                            while j < len(lines) and j < i + 10:  # Check next 10 lines
+                                next_line = lines[j].strip()
+                                if next_line and ':' in next_line and not next_line.startswith('#'):
+                                    yaml_like = True
+                                    break
+                                elif next_line.startswith('#'):
+                                    break
+                                j += 1
+                            if yaml_like:
+                                additional_frontmatter += 1
+                        i += 1
+                    
+                    if additional_frontmatter > 0:
+                        results.append(f"❌ {mdc_file.name}: Duplicate frontmatter detected ({additional_frontmatter + 1} frontmatter sections)")
                         continue
                     
                     # Parse YAML
@@ -1200,9 +1226,8 @@ class LivingTruthEngine:
                             issues.append("Missing 'description' field")
                         if 'alwaysApply' not in frontmatter:
                             issues.append("Missing 'alwaysApply' field")
-                        elif not frontmatter.get('alwaysApply', False) and 'globs' not in frontmatter:
-                            # Only require globs if alwaysApply is false
-                            issues.append("Missing 'globs' field (required when alwaysApply is false)")
+                        elif frontmatter.get('alwaysApply', False) and mdc_file.name != '00-global.mdc':
+                            issues.append("alwaysApply should only be true for 00-global.mdc")
                     
                     if issues:
                         results.append(f"❌ {mdc_file.name}: {', '.join(issues)}")
@@ -1230,26 +1255,49 @@ class LivingTruthEngine:
             with open(mdc_file, 'r', encoding='utf-8') as f:
                 content = f.read()
             
-            # Extract the main content (after frontmatter)
+            # Extract the main content by finding the first heading or content after frontmatter
             lines = content.split('\n')
             main_content_start = 0
             
-            for i, line in enumerate(lines):
-                if line.strip() == '---':
-                    if main_content_start == 0:
-                        main_content_start = i + 1
-                    else:
+            # Find the end of the first frontmatter section
+            i = 0
+            while i < len(lines):
+                if lines[i].strip() == '---':
+                    i += 1
+                    # Skip until we find the closing ---
+                    while i < len(lines) and lines[i].strip() != '---':
+                        i += 1
+                    if i < len(lines):
                         main_content_start = i + 1
                         break
+                else:
+                    i += 1
             
+            # Find the actual start of content (skip empty lines and any remaining frontmatter-like content)
+            while main_content_start < len(lines):
+                line = lines[main_content_start].strip()
+                if line and not line.startswith('---') and not line.startswith('description:') and not line.startswith('globs:') and not line.startswith('alwaysApply:'):
+                    break
+                main_content_start += 1
+            
+            # Extract main content
             main_content = '\n'.join(lines[main_content_start:])
             
             # Create proper frontmatter based on filename
-            frontmatter = {
-                'description': f"Rule for {filename.replace('.mdc', '').replace('_', ' ').title()}",
-                'globs': ["**/*"],
-                'alwaysApply': True
-            }
+            rule_name = filename.replace('.mdc', '').replace('_', ' ').title()
+            
+            # Only 00-global.mdc should have alwaysApply: true
+            if filename == '00-global.mdc':
+                frontmatter = {
+                    'description': 'Global operating rules for Living Truth Engine. Always include this in AI context. Enforce test-first changes, Playwright use, MCP tool invocations, repo-health gates, envelope contract, and phase closeouts. No TODOs left behind.',
+                    'alwaysApply': True,
+                    'globs': ["**/*"]
+                }
+            else:
+                frontmatter = {
+                    'description': f"{rule_name} rule for Living Truth Engine",
+                    'alwaysApply': False
+                }
             
             # Write fixed content
             fixed_content = f"---\n{yaml.dump(frontmatter, default_flow_style=False)}---\n\n{main_content}"

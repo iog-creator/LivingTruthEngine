@@ -1,11 +1,7 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: ['PHASE_9_MASTER_PLAN.md', 'PHASE_<subphase>_COMPLETION_SUMMARY.md', 'PHASE_9.md', 'manifest.json', 'metrics.json', 'README.md', 'CONSOLIDATED_COMPLETION_SUMMARY.md', 'merkle.json']
+description: Core Workflow rule for Living Truth Engine
+alwaysApply: false
 ---
-
-
 
 # Core Workflow (Phase 9)
 
@@ -119,12 +115,3 @@ related_files: ['PHASE_9_MASTER_PLAN.md', 'PHASE_<subphase>_COMPLETION_SUMMARY.m
 - [ ] **Update master log** with current status
 - [ ] **Document schema changes** and their rationale
 - [ ] **Note any workarounds** that were implemented
-
----
-
-**This workflow ensures that root issues are fixed rather than worked around, leading to a more robust and maintainable system.**
-
-
-# UI Targeting
-- Do NOT modify `src/dashboard/static/ui_status_chat.html` unless a phase plan explicitly says so.
-- Main dashboard `/` edits allowed only when the phase defines them.

@@ -1,11 +1,8 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: ['merkle.json', 'metrics.json', 'manifest.json']
+description: Veritas Runs rule for Living Truth Engine
+alwaysApply: false
 ---
 
-
 # Veritas Generalist Ingestion Runner - Development Guidelines
 
 ## Overview
@@ -285,4 +282,3 @@ def test_bundle_structure():
 - **Docstrings**: Comprehensive documentation
 - **Error handling**: Explicit error handling patterns
 - **Testing**: 100% test coverage for new functionality
-
