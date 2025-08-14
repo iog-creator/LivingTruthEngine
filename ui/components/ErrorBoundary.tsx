@@ -10,6 +10,7 @@ interface ErrorBoundaryState {
     error?: Error;
     errorInfo?: React.ErrorInfo;
     errorId?: string;
+    hasLogged: boolean;
 }
 
 interface ErrorBoundaryProps {
@@ -20,36 +21,44 @@ interface ErrorBoundaryProps {
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
     constructor(props: ErrorBoundaryProps) {
         super(props);
-        this.state = { hasError: false };
+        this.state = { hasError: false, hasLogged: false };
     }
 
-    static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
         // Generate a unique error ID for tracking
         const errorId = `error_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-        // Log error to console for development
-        console.error('ErrorBoundary caught an error:', error);
 
         return {
             hasError: true,
             error,
-            errorId
+            errorId,
+            hasLogged: false
         };
     }
 
     componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-        // Log error details
-        console.error('ErrorBoundary error details:', {
-            error: error.message,
-            stack: error.stack,
-            componentStack: errorInfo.componentStack,
-            errorId: this.state.errorId
-        });
+        // Prevent infinite logging
+        if (this.state.hasLogged) {
+            return;
+        }
 
-        // Update state with error info
+        // Log error details only once
+        try {
+            console.error('ErrorBoundary caught error:', {
+                message: error.message,
+                stack: error.stack?.split('\n').slice(0, 5).join('\n'), // Limit stack trace
+                componentStack: errorInfo.componentStack?.split('\n').slice(0, 3).join('\n'), // Limit component stack
+                errorId: this.state.errorId
+            });
+        } catch (logError) {
+            // Fallback logging if console.error fails
+            console.warn('ErrorBoundary logging failed:', logError);
+        }
+
+        // Update state with error info and mark as logged
         this.setState({
             errorInfo,
-            errorId: this.state.errorId
+            hasLogged: true
         });
 
         // In a real app, you would send this to your error reporting service
@@ -57,7 +66,13 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     }
 
     resetError = () => {
-        this.setState({ hasError: false, error: undefined, errorInfo: undefined, errorId: undefined });
+        this.setState({
+            hasError: false,
+            error: undefined,
+            errorInfo: undefined,
+            errorId: undefined,
+            hasLogged: false
+        });
     };
 
     render() {

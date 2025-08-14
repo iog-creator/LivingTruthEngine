@@ -1,21 +1,20 @@
 'use client';
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  Activity, 
-  BarChart3, 
-  Database, 
-  FileText, 
-  Settings, 
+import { useAppStore } from '@/lib/state';
+import { cn } from '@/lib/utils';
+import {
+  Activity,
+  BarChart3,
+  Database,
+  FileText,
+  Settings,
   Users,
-  Menu,
   X
 } from 'lucide-react';
-import { useSidebarOpen, useAppActions } from '@/lib/state';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useCallback, useMemo } from 'react';
 
 const navigation = [
   {
@@ -62,16 +61,44 @@ const navigation = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const sidebarOpen = useSidebarOpen();
-  const { setSidebarOpen } = useAppActions();
+  const sidebarOpen = useAppStore((state) => state.sidebarOpen);
+  const setSidebarOpen = useAppStore((state) => state.setSidebarOpen);
+
+  // Memoize the close handler to prevent re-renders
+  const handleClose = useCallback(() => {
+    setSidebarOpen(false);
+  }, [setSidebarOpen]);
+
+  // Memoize the navigation items to prevent re-renders
+  const navigationItems = useMemo(() => {
+    return navigation.map((item) => {
+      const isActive = pathname === item.href;
+      return (
+        <Link
+          key={item.name}
+          href={item.href}
+          className={cn(
+            'flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+            isActive
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+          )}
+          onClick={handleClose}
+        >
+          <item.icon className="h-4 w-4" />
+          <span>{item.name}</span>
+        </Link>
+      );
+    });
+  }, [pathname, handleClose]);
 
   return (
     <>
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
-          onClick={() => setSidebarOpen(false)}
+          onClick={handleClose}
         />
       )}
 
@@ -93,36 +120,18 @@ export function Sidebar() {
               variant="ghost"
               size="sm"
               className="lg:hidden"
-              onClick={() => setSidebarOpen(false)}
+              onClick={handleClose}
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
 
-          {/* Navigation */}
-          <ScrollArea className="flex-1 px-3 py-4">
+          {/* Navigation - Replaced ScrollArea with simple div */}
+          <div className="flex-1 px-3 py-4 overflow-y-auto">
             <nav className="space-y-1">
-              {navigation.map((item) => {
-                const isActive = pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                      'flex items-center space-x-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                      isActive
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                    )}
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.name}</span>
-                  </Link>
-                );
-              })}
+              {navigationItems}
             </nav>
-          </ScrollArea>
+          </div>
 
           {/* Footer */}
           <div className="border-t p-4">

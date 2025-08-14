@@ -1,21 +1,64 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, XCircle, AlertTriangle, Activity, Database, Settings } from 'lucide-react';
-import { useHealthFull, useModels } from '@/lib/query';
+import { Activity, AlertTriangle, CheckCircle, Database, Settings, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+interface HealthData {
+  all_gates_passed?: boolean;
+  service?: string;
+  embedding_model?: string;
+  pgvector?: { status: string };
+  embedding_dim?: number;
+  reverse_proxy?: boolean;
+  fallbacks_enabled?: boolean;
+  ui_origin?: string;
+  gates?: Record<string, boolean>;
+  errors?: Record<string, string>;
+}
 
 export function HealthCards() {
-  const healthQuery = useQuery(useHealthFull());
-  const modelsQuery = useQuery(useModels());
+  const [healthData, setHealthData] = useState<HealthData | null>(null);
+  const [modelsData, setModelsData] = useState<Record<string, any> | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (healthQuery.isLoading || modelsQuery.isLoading) {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        // Fetch health data
+        const healthResponse = await fetch('http://localhost:8050/api/health/full');
+        if (healthResponse.ok) {
+          const healthResult = await healthResponse.json();
+          setHealthData(healthResult.data);
+        }
+
+        // Fetch models data
+        const modelsResponse = await fetch('http://localhost:8050/api/models');
+        if (modelsResponse.ok) {
+          const modelsResult = await modelsResponse.json();
+          setModelsData(modelsResult.data);
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (isLoading) {
     return <HealthCardsSkeleton />;
   }
 
-  if (healthQuery.isError || modelsQuery.isError) {
+  if (error) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card className="border-destructive">
@@ -27,8 +70,9 @@ export function HealthCards() {
             <CardDescription>Unable to fetch system status</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-destructive">
-              {healthQuery.error?.message || 'Unknown error'}
+            <p className="text-sm text-destructive">{error}</p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Please check that the dashboard server is running on http://localhost:8050
             </p>
           </CardContent>
         </Card>
@@ -36,8 +80,34 @@ export function HealthCards() {
     );
   }
 
-  const healthData = healthQuery.data?.data;
-  const modelsData = modelsQuery.data?.data;
+  // Fallback if no data
+  if (!healthData) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Activity className="h-5 w-5" />
+              <span>System Status</span>
+            </CardTitle>
+            <CardDescription>Dashboard is running</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Status</span>
+                <Badge variant="default">Running</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Service</span>
+                <span className="text-sm font-mono">unified_dashboard</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -88,10 +158,6 @@ export function HealthCards() {
               <Badge variant={healthData?.pgvector?.status === 'ok' ? 'default' : 'destructive'}>
                 {healthData?.pgvector?.status === 'ok' ? 'Connected' : 'Disconnected'}
               </Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm">Connection</span>
-              <span className="text-sm font-mono truncate max-w-24">{healthData?.pgvector?.connection}</span>
             </div>
             {healthData?.embedding_dim && (
               <div className="flex items-center justify-between">
@@ -185,7 +251,7 @@ export function HealthCards() {
       </Card>
 
       {/* Errors Card */}
-      {healthData?.errors && healthData.errors.length > 0 && (
+      {healthData?.errors && Object.keys(healthData.errors).length > 0 && (
         <Card className="border-destructive">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -196,9 +262,9 @@ export function HealthCards() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {healthData.errors.map((error, index) => (
+              {Object.entries(healthData.errors).map(([key, error], index) => (
                 <div key={index} className="text-sm text-destructive">
-                  {error}
+                  {key}: {error}
                 </div>
               ))}
             </div>
