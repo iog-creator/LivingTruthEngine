@@ -151,6 +151,14 @@ class UnifiedDashboard:
                 {"request": request, "title": "Advanced - Living Truth Engine"}
             )
 
+        @self.app.get("/ui/resilience", response_class=HTMLResponse)
+        async def resilience_page(request: Request):
+            """Resilience Dashboard UI page"""
+            return self.templates.TemplateResponse(
+                "resilience.html",
+                {"request": request, "title": "Resilience Dashboard - Living Truth Engine"}
+            )
+
         # API Routes for UI functionality
         @self.app.post("/api/runs/youtube/start")
         async def start_youtube_run(request: Request):
