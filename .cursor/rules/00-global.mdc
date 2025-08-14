@@ -62,8 +62,3 @@ globs:
 2) Run the Tool Rituals above; post outputs (or the diff if green).
 3) **Verify MCP validation passes** - this is mandatory.
 4) Only then propose a commit message summarizing code + tests + docs changes.
-
-## When I ask you to "implement/fix X", you MUST:
-1) Update code **and** tests.
-2) Run the Tool Rituals above; post outputs (or the diff if green).
-3) Only then propose a commit message summarizing code + tests + docs changes.

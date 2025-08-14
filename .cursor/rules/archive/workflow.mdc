@@ -1,6 +1,6 @@
 ---
 description: Mandatory bring-up → smoke → verify loop. Keep scope tiny. Use docs.
-alwaysApply: true
+alwaysApply: false
 globs:
   - "**/*.py"
   - "src/**"

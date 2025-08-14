@@ -1,7 +1,7 @@
 ---
 description: Enforce a strict Build-Verify-Iterate workflow for Living Truth Engine; all changes must pass bring-up, smoke, and tests before completion.
 globs: ["**/*"]
-alwaysApply: true
+alwaysApply: false
 ---
 
 # Build-Verify-Iterate Workflow Rule
