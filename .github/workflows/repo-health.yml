@@ -19,7 +19,7 @@ jobs:
           python scripts/mcp_sync.py
           python scripts/gen_service_docs.py
           python scripts/logging_schema_check.py
-          python scripts/readme_sync.py
+          python scripts/update_readme_github_action.py
           python scripts/update_master_log.py
       - name: Commit archive (if any)
         run: |

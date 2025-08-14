@@ -1,6 +1,6 @@
 # Living Truth Engine — Phase 9
 
-**Current focus:** 9.5.7 Resilience Dashboard UI  
+**Current focus:** 9.5.7.1 Repo Health Completion  
 **Last repo health run:** 2025-08-14
 
 ## Active MCP tools
@@ -14,7 +14,6 @@
 - mcp_hub_server.py
 - phase9_mcp_server.py
 - postgresql_mcp_server.py
-
 
 ## Active Docker services
 - langflow
@@ -30,7 +29,6 @@
 - veritas_api
 - veritas_worker
 - veritas_console
-
 
 ## How to run
 - `docker compose -f docker/docker-compose.yml up -d --build`
