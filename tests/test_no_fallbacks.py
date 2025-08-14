@@ -79,13 +79,13 @@ class TestNoFallbacks:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        assert "gates" in data, "Response should have gates"
-        assert "all_gates_passed" in data, "Response should have all_gates_passed"
+        assert "gates" in data["data"], "Response should have gates in data"
+        assert "all_gates_passed" in data["data"], "Response should have all_gates_passed in data"
         
         # Check that all required gates are present
         required_gates = ["mcp_hub", "veritas_tools", "langflow", "lm_studio", "neo4j", "redis"]
         for gate in required_gates:
-            assert gate in data["gates"], f"Missing gate: {gate}"
+            assert gate in data["data"]["gates"], f"Missing gate: {gate}"
     
     def test_youtube_start_requires_health_gates(self):
         """Test that YouTube start endpoint requires all health gates to pass."""

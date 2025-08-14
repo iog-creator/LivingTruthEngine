@@ -61,6 +61,13 @@ except ImportError as e:
     logger.error(f"Failed to import contract router: {e}")
     contract_router = None
 
+# Import resilience router
+try:
+    from api.resilience import router as resilience_router
+except ImportError as e:
+    logger.error(f"Failed to import resilience router: {e}")
+    resilience_router = None
+
 class UnifiedDashboard:
     def __init__(self):
         self.app = FastAPI(
@@ -101,6 +108,10 @@ class UnifiedDashboard:
         # Include contract router if available
         if contract_router:
             self.app.include_router(contract_router)
+        
+        # Include resilience router if available
+        if resilience_router:
+            self.app.include_router(resilience_router)
         
         # WebSocket connections
         self.active_connections = []

@@ -25,18 +25,19 @@ class TestHealthGates:
         
         # Check required fields
         assert "status" in data, "Response should have status"
-        assert "service" in data, "Response should have service"
-        assert "gates" in data, "Response should have gates"
-        assert "all_gates_passed" in data, "Response should have all_gates_passed"
+        assert "data" in data, "Response should have data"
+        assert "service" in data["data"], "Response should have service in data"
+        assert "gates" in data["data"], "Response should have gates in data"
+        assert "all_gates_passed" in data["data"], "Response should have all_gates_passed in data"
         
-        # Check that status is either "healthy" or "unhealthy"
-        assert data["status"] in ["healthy", "unhealthy"], f"Status should be healthy or unhealthy, got {data['status']}"
+        # Check that status is ok
+        assert data["status"] == "ok", f"Status should be ok, got {data['status']}"
         
         # Check that service is correct
-        assert data["service"] == "unified_dashboard", f"Service should be unified_dashboard, got {data['service']}"
+        assert data["data"]["service"] == "unified_dashboard", f"Service should be unified_dashboard, got {data['data']['service']}"
         
         # Check that all_gates_passed is boolean
-        assert isinstance(data["all_gates_passed"], bool), "all_gates_passed should be boolean"
+        assert isinstance(data["data"]["all_gates_passed"], bool), "all_gates_passed should be boolean"
     
     def test_required_gates_present(self):
         """Test that all required health gates are present."""
@@ -44,7 +45,7 @@ class TestHealthGates:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        gates = data["gates"]
+        gates = data["data"]["gates"]
         
         # Check that all required gates are present
         required_gates = ["mcp_hub", "veritas_tools", "langflow", "lm_studio", "neo4j", "redis"]
@@ -59,20 +60,20 @@ class TestHealthGates:
         
         data = response.json()
         
-        if not data["all_gates_passed"]:
+        if not data["data"]["all_gates_passed"]:
             # When gates fail, errors should be present
-            assert "errors" in data, "Should have errors when gates fail"
-            assert isinstance(data["errors"], dict), "Errors should be a dictionary"
+            assert "errors" in data["data"], "Should have errors when gates fail"
+            assert isinstance(data["data"]["errors"], dict), "Errors should be a dictionary"
             
             # Check that failed gates have error messages
-            for gate, passed in data["gates"].items():
+            for gate, passed in data["data"]["gates"].items():
                 if not passed:
-                    assert gate in data["errors"], f"Failed gate {gate} should have error message"
-                    assert isinstance(data["errors"][gate], str), f"Error for gate {gate} should be string"
+                    assert gate in data["data"]["errors"], f"Failed gate {gate} should have error message"
+                    assert isinstance(data["data"]["errors"][gate], str), f"Error for gate {gate} should be string"
         else:
             # When all gates pass, errors should be empty
-            assert "errors" in data, "Should have errors field even when all gates pass"
-            assert data["errors"] == {}, "Errors should be empty when all gates pass"
+            assert "errors" in data["data"], "Should have errors field even when all gates pass"
+            assert data["data"]["errors"] == {}, "Errors should be empty when all gates pass"
     
     def test_youtube_start_blocks_on_health_gate_failure(self):
         """Test that YouTube start endpoint blocks when health gates fail."""
@@ -82,7 +83,7 @@ class TestHealthGates:
         
         health_data = health_response.json()
         
-        if not health_data["all_gates_passed"]:
+        if not health_data["data"]["all_gates_passed"]:
             # If health gates are failing, YouTube start should return 503
             response = requests.post(
                 f"{self.BASE_URL}/api/runs/youtube/start",
@@ -131,10 +132,10 @@ class TestHealthGates:
         data = response.json()
         
         # Check that failed gates have descriptive error messages
-        for gate, passed in data["gates"].items():
+        for gate, passed in data["data"]["gates"].items():
             if not passed:
-                assert gate in data["errors"], f"Failed gate {gate} should have error message"
-                error_msg = data["errors"][gate]
+                assert gate in data["data"]["errors"], f"Failed gate {gate} should have error message"
+                error_msg = data["data"]["errors"][gate]
                 assert len(error_msg) > 0, f"Error message for gate {gate} should not be empty"
                 assert isinstance(error_msg, str), f"Error message for gate {gate} should be string"
 
