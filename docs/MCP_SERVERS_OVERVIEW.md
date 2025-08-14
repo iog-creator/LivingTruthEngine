@@ -1,8 +1,8 @@
 ---
 phase: 9.3
 status: active
-last_reviewed: 2025-08-13
-related_files: ['src/mcp_servers/mcp_solver_server.py', 'src/mcp_servers/mcp_hub_server.py', 'src/mcp_servers/github_mcp_server.py', 'src/mcp_servers/rulego_mcp_server.py', 'src/mcp_servers/postgresql_mcp_server.py', 'src/mcp_servers/langflow_mcp_server.py', 'src/mcp_servers/living_truth_fastmcp_server.py', 'src/mcp_servers/huggingface_mcp_server.py', 'src/mcp_servers/devdocs_mcp_server.py']
+last_reviewed: 2025-08-14
+related_files: ['src/mcp_servers/mcp_solver_server.py', 'src/mcp_servers/mcp_hub_server.py', 'src/mcp_servers/github_mcp_server.py', 'src/mcp_servers/rulego_mcp_server.py', 'src/mcp_servers/postgresql_mcp_server.py', 'src/mcp_servers/langflow_mcp_server.py', 'src/mcp_servers/living_truth_fastmcp_server.py', 'src/mcp_servers/huggingface_mcp_server.py', 'src/mcp_servers/devdocs_mcp_server.py', 'src/mcp_servers/phase9_mcp_server.py']
 ---
 
 # MCP Servers Overview
@@ -18,7 +18,7 @@ This document provides a comprehensive overview of all MCP (Model Context Protoc
 - **Tools**: 15 meta-tools for tool discovery, execution, and management
 - **Status**: ✅ Active and operational
 
-### **Underlying MCP Servers (8 servers, 63 tools total)**
+### **Underlying MCP Servers (9 servers, 63+ tools total)**
 
 #### **1. Living Truth FastMCP Server**
 - **File**: `src/mcp_servers/living_truth_fastmcp_server.py`
@@ -31,7 +31,17 @@ This document provides a comprehensive overview of all MCP (Model Context Protoc
   - **Utility Tools**: Project information and testing
   - **Automation Tools**: Documentation and system validation
 
-#### **2. Langflow MCP Server**
+#### **2. Phase9 MCP Server**
+- **File**: `src/mcp_servers/phase9_mcp_server.py`
+- **Tools**: 15+ tools
+- **Purpose**: Phase 9 specific tools and validation
+- **Categories**:
+  - **Cursor Rules Management**: `validate_cursor_rules()`, `fix_cursor_rule_frontmatter()`
+  - **MCP Validation**: Tool validation and compliance checking
+  - **System Health**: Health checks and status monitoring
+  - **Documentation**: Rule management and documentation tools
+
+#### **3. Langflow MCP Server**
 - **File**: `src/mcp_servers/langflow_mcp_server.py`
 - **Tools**: 12 tools
 - **Purpose**: Langflow workflow management and JSON import/export
@@ -41,7 +51,7 @@ This document provides a comprehensive overview of all MCP (Model Context Protoc
   - Node configuration and flow execution
   - Template-based workflow building
 
-#### **3. PostgreSQL MCP Server**
+#### **4. PostgreSQL MCP Server**
 - **File**: `src/mcp_servers/postgresql_mcp_server.py`
 - **Tools**: 6 tools
 - **Purpose**: Database operations and management
@@ -50,7 +60,7 @@ This document provides a comprehensive overview of all MCP (Model Context Protoc
   - Query execution and result processing
   - Schema management and data validation
 
-#### **4. Hugging Face MCP Server**
+#### **5. Hugging Face MCP Server**
 - **File**: `src/mcp_servers/huggingface_mcp_server.py`
 - **Tools**: 5 tools
 - **Purpose**: Model access and inference
@@ -59,7 +69,7 @@ This document provides a comprehensive overview of all MCP (Model Context Protoc
   - Text generation and inference
   - Model metadata and configuration
 
-#### **5. DevDocs MCP Server**
+#### **6. DevDocs MCP Server**
 - **File**: `src/mcp_servers/devdocs_mcp_server.py`
 - **Tools**: 4 tools
 - **Purpose**: Documentation retrieval and search
@@ -68,7 +78,7 @@ This document provides a comprehensive overview of all MCP (Model Context Protoc
   - Content retrieval and search
   - Documentation status and health
 
-#### **6. Rulego MCP Server**
+#### **7. Rulego MCP Server**
 - **File**: `src/mcp_servers/rulego_mcp_server.py`
 - **Tools**: 5 tools
 - **Purpose**: Workflow orchestration and rule management
@@ -77,7 +87,7 @@ This document provides a comprehensive overview of all MCP (Model Context Protoc
   - Rule execution and validation
   - Workflow orchestration
 
-#### **7. MCP Solver Server**
+#### **8. MCP Solver Server**
 - **File**: `src/mcp_servers/mcp_solver_server.py`
 - **Tools**: 5 tools
 - **Purpose**: Constraint solving and optimization
@@ -86,7 +96,7 @@ This document provides a comprehensive overview of all MCP (Model Context Protoc
   - Optimization algorithms
   - Problem modeling and solution generation
 
-#### **8. GitHub MCP Server**
+#### **9. GitHub MCP Server**
 - **File**: `src/mcp_servers/github_mcp_server.py`
 - **Tools**: 4 tools
 - **Purpose**: Repository management and version control
@@ -94,6 +104,36 @@ This document provides a comprehensive overview of all MCP (Model Context Protoc
   - Repository operations
   - Issue and pull request management
   - Code analysis and metrics
+
+## 🔧 **Recent MCP Tools and Rules Improvements (Phase 8.3-8.5)**
+
+### **MCP Tool Enhancements**
+- **Enhanced Validation Logic**: Both Phase9 and FastMCP servers now correctly detect duplicate frontmatter vs content
+- **Smart Content Extraction**: Improved `fix_cursor_rule_frontmatter()` properly extracts main content after any frontmatter
+- **Consistent Validation**: Both servers now use identical validation logic for reliability
+
+### **Cursor Rules Policy Implementation**
+- **AlwaysApply Policy**: Only `00-global.mdc` has `alwaysApply: true`, all other rules use `alwaysApply: false`
+- **User Rules Policy**: Documented guidelines for global User Rules (Cursor Settings → Rules)
+- **Rule Type Guidelines**: Clear guidance on when to use Always, Auto Attached, Agent Requested, or Manual rule types
+
+### **Tool Rituals (Mandatory for ALL Changes)**
+```bash
+# 1. MCP Sync and Logging Check
+python scripts/mcp_sync.py && python scripts/logging_schema_check.py
+
+# 2. Phase9 MCP Server Validation
+python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; server = Phase9MCPServer(); result = server.validate_cursor_rules(); print('MCP Validation:', result)"
+
+# 3. FastMCP Server Validation
+python -c "from src.mcp_servers.living_truth_fastmcp_server import validate_cursor_rules; result = validate_cursor_rules(); print('FastMCP Validation:', result)"
+```
+
+### **Validation Results**
+- ✅ **All 33 MDC files** now have proper frontmatter format
+- ✅ **Both MCP servers** validate correctly
+- ✅ **MCP sync and logging** working properly
+- ✅ **AlwaysApply policy** enforced across all rules
 
 ## 📋 **Tool Categories and Functions**
 
