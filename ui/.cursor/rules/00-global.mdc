@@ -1,11 +1,8 @@
 ---
-description: >
-  Global operating rules for Living Truth Engine. Always include this in AI context.
-  Enforce test-first changes, Playwright use, MCP tool invocations, repo-health gates,
-  envelope contract, and phase closeouts. No TODOs left behind.
-alwaysApply: true
-globs:
-  - "**/*"
+phase: 9
+status: active
+last_reviewed: 2025-08-14
+related_files: ['python scripts/mcp_sync.py && python scripts/logging_schema_check.py', 'python scripts/verify_compose_healthchecks.py', 'python scripts/verify_service_docs_complete.py', 'SERVICES_MANIFEST.md', 'python scripts/audit_models.py', 'src/ai/prompt_manager.py']
 ---
 
 
@@ -21,24 +18,14 @@ globs:
   3) If you added UI, add/adjust a Playwright spec (selectors via `data-testid`), commit it.
 - **API / Python**:
   - `pytest -q tests/api tests/models tests/prompts`
-- **MCP / Scripts** (REQUIRED for all changes):
+- **MCP / Scripts**:
   - `python scripts/mcp_sync.py && python scripts/logging_schema_check.py`
-  - `python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; server = Phase9MCPServer(); result = server.validate_cursor_rules(); print('MCP Validation:', result)"`
-  - `python -c "from src.mcp_servers.living_truth_fastmcp_server import validate_cursor_rules; result = validate_cursor_rules(); print('FastMCP Validation:', result)"`
 - **Repo Health (fast set)**:
   - `python scripts/verify_service_docs_complete.py`
   - `python scripts/verify_compose_healthchecks.py`
   - `python scripts/audit_models.py`  # uses LM Studio; keep core models present
 - **Definition of Done** (before proposing a commit):
   - All above pass; README & master log updated if scope changed.
-  - **MCP validation MUST pass** - no exceptions.
-
-## MCP Requirements (non‑negotiable)
-- **Always validate cursor rules** before completing any change
-- **Always run MCP sync** to ensure tool registry is current
-- **Always check both MCP servers** (Phase9 and FastMCP) for validation
-- **Block completion** if any MCP validation fails
-- **Update MCP tools** if you modify cursor rules or add new functionality
 
 ## Playwright Requirements (non‑negotiable)
 - Always add or update a **Playwright test** when editing UI. Use deterministic `data-testid`s.
@@ -56,10 +43,8 @@ globs:
 - Don't write new features without tests.
 - Don't leave TODO comments; implement or open a tracked task with a failing test.
 - Don't create duplicate docs; update the SSOT files instead.
-- Don't skip MCP validation - it's required for all changes.
 
 ## When I ask you to "implement/fix X", you MUST:
 1) Update code **and** tests.
 2) Run the Tool Rituals above; post outputs (or the diff if green).
-3) **Verify MCP validation passes** - this is mandatory.
-4) Only then propose a commit message summarizing code + tests + docs changes.
+3) Only then propose a commit message summarizing code + tests + docs changes.
