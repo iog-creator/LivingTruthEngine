@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['docs/MULTI_SOURCE_GUIDE.md', 'PHASE_9_PLAN.md', 'src/dashboard/unified_dashboard.py', 'docs/CLAIM_VERIFICATION_GUIDE.md', 'manifest.json', 'src/ingestion_general/runners.py', 'verification.json', 'links.json', 'src/analysis/entity_linking.py', 'config/tool_registry.json', 'PHASE_9_COMPLETION_SUMMARY.md', 'tests/test_evidence_graph.py', 'README.md', 'src/mcp_servers/living_truth_fastmcp_server.py', 'src/ingestion_general/multi_source_runner.py', 'src/ingestion_general/web_fetcher.py', 'PHASE_9.md', 'docs/EVIDENCE_GRAPH_GUIDE.md', 'src/analysis/claim_verification.py', 'src/analysis/evidence_graph.py', 'src/ingestion_general/pdf_extractor.py', 'tests/test_multi_source.py']
+---
+
 # **PHASE 9 COMPLETION SUMMARY — Multi-Source Expansion & Advanced Evidence Linking**
 
 ## **Repository Information**

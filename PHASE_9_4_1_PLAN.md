@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['ui/lib/schemas.ts', 'ui/.eslintrc.json', 'ui/app/(dashboard)/overview/page.tsx', 'ui/components.json', 'ui/lib/query.ts', 'ui/lib/api.ts', 'ui/lib/state.ts', 'ui/components/dashboard/HealthCards.tsx', 'ui/components/dashboard/ErrorBoundary.tsx', 'ui/tsconfig.json', 'PHASE_9.md', 'ui/app/page.tsx', 'ui/package.json', 'ui/app/(dashboard)/layout.tsx', 'lib/api.ts']
+---
+
 # PHASE_9_4_1_PLAN.md — UI Foundation & Scaffold (Next.js)
 
 ## 🎯 Objectives

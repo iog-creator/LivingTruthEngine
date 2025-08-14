@@ -1,7 +1,10 @@
 ---
-description: Prevent MCP “red dot” by enforcing naming & single-source workspace config
-alwaysApply: false
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['python3 -m json.tool .cursor/mcp.json', '.cursor/mcp.json']
 ---
+
 ## MCP Red Dot Prevention (concise)
 
 **Naming**

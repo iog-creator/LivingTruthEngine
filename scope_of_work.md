@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
+---
+
 Heard. Gloves off, research hat on. I went wide—looked at alternative model families (SSMs like **Mamba-2**, RNN-style **RWKV-7**), practical local-serve options (**LM Studio**, **Ollama**), quantization limits, graph-first RAG (**GraphRAG**), and GPU-accelerated graph sims (**cuGraph**). Below is a **complete, implementable spec** for **Veritas Nexus** that respects your hard limit (**≤10 GB per model**) and **moves beyond “Transformer-only LLMs”** by mixing SSM/RNN models with small encoders, graph analytics, and strict provenance.
 
 ---

@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
+---
+
 # Quick Start
 
 This is the fastest way to run the Living Truth Engine and get your first result in under 60 seconds.

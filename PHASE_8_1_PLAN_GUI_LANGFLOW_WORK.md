@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['src/dashboard/services/analysis_service.py', 'src/dashboard/services/mcp_service.py', 'src/dashboard/unified_dashboard.py', 'src/dashboard/services/langflow_service.py', 'src/dashboard/services/file_service.py']
+---
+
 # Phase 8.1 Plan — Unified User-Friendly GUI & Langflow Integration
 
 ## Objective

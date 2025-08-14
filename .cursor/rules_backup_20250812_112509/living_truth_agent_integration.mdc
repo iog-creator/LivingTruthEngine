@@ -1,11 +1,10 @@
 ---
-description: Systematic process for integrating Living Truth Agent functionality into
-  LivingTruthEngine while building MCP tools for each component
-globs:
-- '**/src/analysis/**'
-- '**/src/integration/**'
-alwaysApply: false
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
 ---
+
 
 
 # Living Truth Agent Integration Process

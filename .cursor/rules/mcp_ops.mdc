@@ -1,0 +1,120 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['PHASE_9.md']
+---
+
+
+# MCP-first Operations
+
+## 🎯 **Required MCP Operations**
+
+### **Pre-coding Operations**
+- `validate_cursor_rules()` - Validate all cursor rules
+- `mcp.lte.health.get_full()` - Get system health snapshot
+- `mcp.lte.models.registry_show()` - Show model registry status
+
+### **Post-coding Operations**
+- `fix_cursor_rule_frontmatter()` - Fix rule metadata
+- `ruleset_archive_outdated()` - Archive superseded rules
+- `ruleset_apply_templates()` - Apply rule templates
+
+### **Completion Operations**
+- `generate_phase_completion_summary()` - Generate completion summary
+- `mcp.lte.smoke.run_phase()` - Run phase-specific smoke tests
+- `python build_master_log.py append` - Update master log
+
+## 📋 **Phase Workflow Integration**
+
+### **Before Each Sub-phase**
+1. **Validate Environment**
+   - `mcp.project.rules.validate` - Check cursor rules
+   - `mcp.lte.health.get_full` - Record health snapshot
+   - `mcp.lte.models.registry_show` - Verify model configuration
+
+2. **Prepare Development**
+   - `mcp.lte.pgvector.db_dim` - Check database dimensions
+   - `mcp.lte.models.assert_embedding_dim` - Validate SSOT
+
+### **During Development**
+1. **Code Quality**
+   - `mcp.project.rules.fix_frontmatter` - Maintain rule metadata
+   - `mcp.lte.ui.contracts.validate_envelopes` - Validate API contracts
+
+2. **Testing**
+   - `mcp.lte.smoke.run_phase` - Execute smoke tests
+   - `mcp.lte.adapters.test_sources` - Test adapter pipelines
+
+### **After Completion**
+1. **Documentation**
+   - `generate_phase_completion_summary()` - Write completion summary
+   - `mcp.project.rules.archive_outdated` - Clean up old rules
+
+2. **Integration**
+   - `mcp.lte.proxy.smoke` - Verify reverse proxy
+   - `mcp.lte.gpu.status` - Check GPU allocation
+
+## 🔧 **MCP Tool Categories**
+
+### **Project Management**
+- `mcp.project.rules.*` - Rule validation and management
+- `mcp.lte.smoke.*` - Smoke test execution
+- `generate_phase_completion_summary()` - Documentation generation
+
+### **System Health**
+- `mcp.lte.health.*` - Health monitoring and validation
+- `mcp.lte.models.*` - Model registry management
+- `mcp.lte.gpu.*` - GPU status and allocation
+
+### **Infrastructure**
+- `mcp.lte.pgvector.*` - Database dimension management
+- `mcp.lte.proxy.*` - Reverse proxy validation
+- `mcp.lte.adapters.*` - Adapter pipeline testing
+
+### **UI & Contracts**
+- `mcp.lte.ui.contracts.*` - UI contract validation
+- `mcp.lte.timeline.*` - Timeline endpoint validation
+
+## ✅ **Implementation Checklist**
+
+- [ ] All required MCP operations implemented
+- [ ] Pre-coding validation workflow established
+- [ ] Post-coding quality checks automated
+- [ ] Completion documentation automated
+- [ ] Integration with phase workflow complete
+
+## 🔧 **Examples**
+
+### **Pre-coding Validation**
+```python
+# Validate cursor rules
+result = mcp.project.rules.validate()
+if not result["valid"]:
+    raise Exception("Cursor rules validation failed")
+
+# Get health snapshot
+health = mcp.lte.health.get_full()
+print(f"System health: {health['status']}")
+```
+
+### **Completion Workflow**
+```python
+# Generate completion summary
+summary = generate_phase_completion_summary("9.4.2")
+with open("PHASE_9_4_2_COMPLETION_SUMMARY.md", "w") as f:
+    f.write(summary)
+
+# Update master log
+subprocess.run(["python", "build_master_log.py", "append"])
+```
+
+## 📚 **References**
+- Phase 9.3 for MCP operations pattern
+- @core_workflow.mdc for development protocol
+- @api_contracts.mdc for contract validation
+- @models_and_embeddings.mdc for SSOT validation
+description:
+globs:
+alwaysApply: false
+---

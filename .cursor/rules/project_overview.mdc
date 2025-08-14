@@ -1,9 +1,10 @@
 ---
-alwaysApply: true
-description: Rule for Project Overview
-globs:
-- '**/*'
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['./scripts/testing/functional_tests.py', 'python3 src/mcp_servers/mcp_hub_server.py']
 ---
+
 
 
 ## 🎯 **Project Overview**

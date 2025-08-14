@@ -1,8 +1,10 @@
 ---
-description: Consolidated Docker practices & health checks
-alwaysApply: true
-globs: ["docker/**","scripts/**","src/**"]
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
 ---
+
 
 # Compose Rules
 - Healthchecks for all services; fail fast if any gate fails.

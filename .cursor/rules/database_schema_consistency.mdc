@@ -1,0 +1,171 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
+---
+
+
+# Database Schema Consistency
+
+## 🎯 **Core Principle**
+Maintain consistent data types and relationships across all database tables to prevent runtime errors and ensure proper API functionality.
+
+## 📋 **Critical Schema Rules**
+
+### **Run ID Format Consistency**
+- **Use VARCHAR(255) for run_id columns** across all tables
+- **Never use UUID type** for run_id columns
+- **String format**: `YYYYMMDD_HHMMSS_topic-name` (e.g., `20250813_205443_youtube-analysis--https---www-youtube-co`)
+
+### **Required Schema Updates**
+```sql
+-- Always use these data types for consistency
+ALTER TABLE lte.documents ALTER COLUMN run_id TYPE VARCHAR(255);
+ALTER TABLE lte.graph_snapshots ALTER COLUMN run_id TYPE VARCHAR(255);
+ALTER TABLE lte.claims ALTER COLUMN doc_id TYPE INTEGER;
+```
+
+### **Document Storage Schema**
+```sql
+-- lte.documents table structure
+CREATE TABLE lte.documents (
+    id INTEGER PRIMARY KEY,
+    run_id VARCHAR(255) NOT NULL,
+    source_type VARCHAR(50) NOT NULL,
+    uri TEXT,
+    title TEXT,
+    published_at TIMESTAMP,
+    shard_no INTEGER DEFAULT 1,
+    text_len INTEGER,
+    sha256 VARCHAR(64),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+## 🔧 **Implementation Requirements**
+
+### **VeritasRunner Database Integration**
+- **Always store documents** in database after bundle creation
+- **Use proper field mapping** from canonicalized documents to database schema
+- **Handle errors gracefully** without failing the entire run
+
+```python
+# Required database storage in VeritasRunner.start()
+try:
+    from src.storage.pgvector_store import PgVectorStore
+    from src.config.living_truth_config import LivingTruthConfig
+    
+    # Initialize pgvector store
+    config = LivingTruthConfig()
+    dsn = f"postgresql://postgres:pass@postgres:5432/living_truth_engine"
+    pgvector_store = PgVectorStore(dsn, embedder=None)
+    
+    # Convert canonicalized docs to database format
+    db_docs = []
+    for doc in canonicalized_docs:
+        db_doc = {
+            "id": doc.get("id", ""),
+            "source_type": doc.get("source_type", "unknown"),
+            "uri": doc.get("uri", ""),
+            "title": doc.get("title", ""),
+            "text": doc.get("text", "")
+        }
+        db_docs.append(db_doc)
+    
+    # Store documents in database
+    if db_docs:
+        pgvector_store.upsert_docs(run_id, db_docs)
+        logger.info(f"Stored {len(db_docs)} documents in database for run {run_id}")
+        
+except Exception as e:
+    logger.error(f"Failed to store documents in database: {e}")
+    # Don't fail the run, just log the error
+```
+
+### **PgVectorStore upsert_docs Method**
+- **Match actual database schema** in SQL queries
+- **Use correct column names** and data types
+- **Handle conflicts properly** with ON CONFLICT clauses
+
+```python
+def upsert_docs(self, run_id: str, docs: List[Dict[str, Any]]):
+    """Upsert documents and their embeddings to pgvector store"""
+    with self.db.cursor() as cur:
+        for d in docs:
+            # Insert document using actual schema columns
+            cur.execute(
+                "INSERT INTO lte.documents(run_id,source_type,uri,title,text_len,sha256) "
+                "VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT (run_id,source_type,uri,shard_no) DO UPDATE SET title=EXCLUDED.title,text_len=EXCLUDED.text_len,sha256=EXCLUDED.sha256",
+                (run_id, d["source_type"], d.get("uri", ""), d.get("title", ""), len(d.get("text", "")), d.get("id", ""))
+            )
+```
+
+## 🚨 **Common Issues to Avoid**
+
+### **UUID Format Mismatch**
+- ❌ **Don't use UUID type** for run_id columns
+- ❌ **Don't assume** database schema matches code expectations
+- ✅ **Always verify** schema before implementing storage code
+- ✅ **Use VARCHAR(255)** for run_id columns consistently
+
+### **Missing Database Storage**
+- ❌ **Don't create bundles** without storing documents in database
+- ❌ **Don't ignore** database storage errors
+- ✅ **Always implement** database storage in VeritasRunner
+- ✅ **Log errors** but don't fail the entire run
+
+### **Schema Mismatch**
+- ❌ **Don't assume** column names and types
+- ❌ **Don't use hardcoded** schema expectations
+- ✅ **Check actual schema** with `\d table_name`
+- ✅ **Update code** to match actual database structure
+
+## ✅ **Validation Checklist**
+
+### **Before Implementing Database Storage**
+- [ ] **Check actual schema** with `\d table_name` command
+- [ ] **Verify data types** match code expectations
+- [ ] **Test database connection** and permissions
+- [ ] **Validate field mapping** from source data to database columns
+
+### **After Implementation**
+- [ ] **Test document storage** with actual run data
+- [ ] **Verify API endpoints** work with stored data
+- [ ] **Check error handling** for database failures
+- [ ] **Validate performance** of database operations
+
+## 📊 **Testing Requirements**
+
+### **Schema Validation**
+```bash
+# Check actual table schema
+docker exec living-truth-postgres psql -U postgres -d living_truth_engine -c "\d lte.documents"
+
+# Verify run_id format
+docker exec living-truth-postgres psql -U postgres -d living_truth_engine -c "SELECT DISTINCT run_id FROM lte.documents LIMIT 5;"
+```
+
+### **Storage Validation**
+```bash
+# Create test run
+curl -s -X POST http://localhost:8050/api/runs/youtube/start -H 'Content-Type: application/json' -d '{"channel_url":"https://www.youtube.com/@imaginationpodcastofficial","limit":1,"sort":"oldest","max_depth":1}'
+
+# Verify documents stored
+docker exec living-truth-postgres psql -U postgres -d living_truth_engine -c "SELECT COUNT(*) FROM lte.documents WHERE run_id LIKE '%youtube%';"
+```
+
+## 📚 **References**
+
+- **Phase 9.5.3**: Database schema fixes and document storage implementation
+- **PgVectorStore**: Database storage implementation
+- **VeritasRunner**: Bundle creation and database integration
+- **API Endpoints**: Timeline and graph API functionality
+
+---
+
+**This rule ensures consistent database schema and proper data storage across the Living Truth Engine.**
+description:
+globs:
+alwaysApply: false
+---

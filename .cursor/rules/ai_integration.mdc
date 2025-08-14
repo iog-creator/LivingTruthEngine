@@ -1,4 +1,11 @@
 ---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
+---
+
+---
 description: This AI integration provides real LLM capabilities throughout the Living Truth Engine, enabling sophisticated analysis and interactive features.
 globs:
 alwaysApply: false

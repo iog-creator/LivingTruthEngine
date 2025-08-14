@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['LivingTruthEngine/src/visualization/advanced_viz.py', 'living_truth_agent/core/agi_integration.py', 'LivingTruthEngine/src/analysis/__init__.py', 'LivingTruthEngine/src/integration/__init__.py', 'living_truth_agent/core/living_truth_config.py', 'LivingTruthEngine/src/visualization/__init__.py', 'LivingTruthEngine/src/analysis/notebook_agent.py', 'LivingTruthEngine/src/analysis/hybrid_retrieval.py', 'LivingTruthEngine/src/config/__init__.py', 'LivingTruthEngine/src/processing/__init__.py', 'config/tool_registry.json', 'LivingTruthEngine/src/mcp_servers/mcp_hub_server.py', 'LivingTruthEngine/src/analysis/research_analysis.py', 'LivingTruthEngine/src/integration/agi_integration.py', 'living_truth_fastmcp_server.py', 'living_truth_agent/core/living_truth_visualization.py', 'living_truth_agent/core/living_truth_retrieval.py', 'LivingTruthEngine/src/config/living_truth_config.py', 'living_truth_agent/core/notebook_agent.py', 'LivingTruthEngine/src/processing/channel_archiver.py', 'mcp_hub_server.py', 'living_truth_agent/core/channel_archiver.py', 'dash_app.py', 'living_truth_agent/core/research_analysis_system.py', 'LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py', 'LivingTruthEngine/src/analysis/dash_app.py']
+---
+
 # Living Truth Agent → LivingTruthEngine Integration Plan
 
 ## Overview

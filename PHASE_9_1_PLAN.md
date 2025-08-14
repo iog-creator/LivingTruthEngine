@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['src/dashboard/unified_dashboard.py', 'src/ai/dspy_programs.py', 'src/storage/pgvector_store.py', 'src/common/model_registry.py', 'src/analysis/rulego_bridge.py']
+---
+
 Got it—let’s lock in **Phase 9\_1: Services + Models SSOT & Wiring** so Cursor stops reinventing wheels and uses the stack we already planned and shipped.
 
 Below is a compact “action pack” you can drop into Phase‑9. It establishes a **single source of truth (SSOT)** for models, reconnects **Rulego**, turns on **pgvector**, and gives Cursor explicit API/types to call—without changing what already works (UI + runs + MCP). I’m basing this on what we’ve already delivered (UI at `ui_status_chat.html`, Veritas bundles, aux services, Phase‑9 endpoints/plan).    &#x20;

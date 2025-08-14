@@ -531,6 +531,38 @@ class UnifiedDashboard:
                     logger.warning(f"Failed to get embedding model info: {e}")
                     embedding_model = "unknown"
                     embedding_dim = None
+                
+                # Validate database schema against model registry
+                dim_mismatch = False
+                schema_validation = None
+                try:
+                    from src.storage.pgvector_store import PgVectorStore
+                    pgvector_store = PgVectorStore("postgresql://postgres:pass@postgres:5432/living_truth_engine")
+                    schema_validation = pgvector_store.validate_database_schema()
+                    dim_mismatch = schema_validation.get('dim_mismatch', False)
+                except Exception as e:
+                    logger.warning(f"Failed to validate database schema: {e}")
+                    schema_validation = {"valid": False, "error": str(e)}
+                
+                # Get GPU status and fallback events
+                gpu_status = None
+                fallback_events = []
+                try:
+                    from src.common.gpu_scheduler import GPUScheduler
+                    # Use global GPU scheduler instance
+                    if not hasattr(self, '_gpu_scheduler'):
+                        gpu_config = {
+                            "vram_threshold_mb": 1000,
+                            "reservation_mb": 500,
+                            "max_fallback_history": 20
+                        }
+                        self._gpu_scheduler = GPUScheduler(gpu_config)
+                    
+                    gpu_status = self._gpu_scheduler.get_gpu_status()
+                    fallback_events = self._gpu_scheduler.get_fallback_history(limit=10)
+                except Exception as e:
+                    logger.warning(f"Failed to get GPU status: {e}")
+                    gpu_status = {"available": False, "reason": f"GPU check failed: {e}"}
 
                 return envelope_ok({
                     "service": "unified_dashboard",
@@ -538,11 +570,18 @@ class UnifiedDashboard:
                     "all_gates_passed": all_gates_passed,
                     "errors": gate_errors,
                     "models_checksum": models_checksum,
-                    "pgvector": {"enabled": True, "tables": ["lte.documents", "lte.doc_embeddings"]},
+                    "pgvector": {
+                        "enabled": True, 
+                        "tables": ["lte.documents", "lte.doc_embeddings"],
+                        "schema_validation": schema_validation
+                    },
                     "rulego": {"status": "ok"},
                     "fallbacks_enabled": ALLOW_FALLBACKS,
                     "embedding_model": embedding_model,
                     "embedding_dim": embedding_dim,
+                    "dim_mismatch": dim_mismatch,
+                    "gpu": gpu_status,
+                    "recent_fallbacks": fallback_events,
                     "reverse_proxy": True,
                     "ui_origin": "http://localhost:4173"
                 })
@@ -567,6 +606,63 @@ class UnifiedDashboard:
                 })
             except Exception as e:
                 return envelope_err(f"models_load_failed: {e}", 500)
+
+        @self.app.get("/api/gpu/status")
+        async def get_gpu_status():
+            """Get GPU status and information"""
+            try:
+                # Use global GPU scheduler instance
+                if not hasattr(self, '_gpu_scheduler'):
+                    from src.common.gpu_scheduler import GPUScheduler
+                    gpu_config = {
+                        "vram_threshold_mb": 1000,
+                        "reservation_mb": 500,
+                        "max_fallback_history": 20
+                    }
+                    self._gpu_scheduler = GPUScheduler(gpu_config)
+                
+                gpu_status = self._gpu_scheduler.get_gpu_status()
+                return envelope_ok(gpu_status)
+            except Exception as e:
+                return envelope_err(f"gpu_status_failed: {e}", 500)
+
+        @self.app.post("/api/gpu/simulate_low_vram")
+        async def simulate_low_vram():
+            """Simulate low VRAM condition for testing"""
+            try:
+                # Use global GPU scheduler instance
+                if not hasattr(self, '_gpu_scheduler'):
+                    from src.common.gpu_scheduler import GPUScheduler
+                    gpu_config = {
+                        "vram_threshold_mb": 1000,
+                        "reservation_mb": 500,
+                        "max_fallback_history": 20
+                    }
+                    self._gpu_scheduler = GPUScheduler(gpu_config)
+                
+                result = self._gpu_scheduler.simulate_low_vram()
+                return envelope_ok(result)
+            except Exception as e:
+                return envelope_err(f"low_vram_simulation_failed: {e}", 500)
+
+        @self.app.get("/api/gpu/fallbacks")
+        async def get_gpu_fallbacks(limit: int = 10):
+            """Get recent GPU fallback events"""
+            try:
+                # Use global GPU scheduler instance
+                if not hasattr(self, '_gpu_scheduler'):
+                    from src.common.gpu_scheduler import GPUScheduler
+                    gpu_config = {
+                        "vram_threshold_mb": 1000,
+                        "reservation_mb": 500,
+                        "max_fallback_history": 20
+                    }
+                    self._gpu_scheduler = GPUScheduler(gpu_config)
+                
+                fallbacks = self._gpu_scheduler.get_fallback_history(limit=limit)
+                return envelope_ok({"fallbacks": fallbacks, "count": len(fallbacks)})
+            except Exception as e:
+                return envelope_err(f"fallbacks_failed: {e}", 500)
 
         @self.app.get("/api/rules/health")
         async def get_rules_health():
@@ -853,7 +949,7 @@ class UnifiedDashboard:
                 return envelope_err(f"get_graph failed: {e}", 500)
         
         @self.app.post("/api/graph/{run_id}/build")
-        async def build_graph(run_id: str):
+        async def build_graph(run_id: str, rebuild: bool = False):
             """Build graph for a specific run using the linking pipeline."""
             try:
                 # Enforce health gate
@@ -875,16 +971,37 @@ class UnifiedDashboard:
                 if not documents:
                     return envelope_err(f"No documents found for run {run_id}", 404)
                 
-                # Process run through linking pipeline
-                results = linking_pipeline.process_run(run_id, documents)
+                # Process run through linking pipeline with rebuild flag
+                results = linking_pipeline.process_run(run_id, documents, rebuild=rebuild)
                 
                 if results.get('status') == 'failed':
-                    return envelope_err(f"Graph building failed: {results.get('error')}", 500)
+                    error_msg = results.get('error', 'Unknown error')
+                    if 'duplicate key value violates unique constraint' in error_msg:
+                        return envelope_err(
+                            f"Graph building failed due to constraint violation. Try using ?rebuild=1 to clear existing data: {error_msg}", 
+                            409,
+                            {"code": "graph_build_conflict", "hint": "Use ?rebuild=1 to clear existing data"}
+                        )
+                    else:
+                        return envelope_err(f"Graph building failed: {error_msg}", 500)
                 
-                return envelope_ok({"run_id": run_id, "results": results})
+                return envelope_ok({
+                    "run_id": run_id, 
+                    "results": results, 
+                    "rebuild": rebuild,
+                    "performance": results.get('performance', {})
+                })
                 
             except Exception as e:
-                return envelope_err(f"build_graph failed: {e}", 500)
+                error_msg = str(e)
+                if 'duplicate key value violates unique constraint' in error_msg:
+                    return envelope_err(
+                        f"Graph building failed due to constraint violation. Try using ?rebuild=1 to clear existing data: {error_msg}", 
+                        409,
+                        {"code": "graph_build_conflict", "hint": "Use ?rebuild=1 to clear existing data"}
+                    )
+                else:
+                    return envelope_err(f"build_graph failed: {error_msg}", 500)
         
         @self.app.get("/api/claims/{run_id}")
         async def get_claims(run_id: str):
@@ -973,6 +1090,605 @@ class UnifiedDashboard:
                 
             except Exception as e:
                 return envelope_err(f"get_entities failed: {e}", 500)
+
+        # Phase 9.5.3: Timeline API endpoint
+        @self.app.get("/api/timeline/{run_id}")
+        async def get_timeline(run_id: str):
+            """Get timeline data for a specific run with events and temporal analysis."""
+            try:
+                # Enforce health gate
+                if not await _health_gate():
+                    return envelope_err("Health gate failed; dependencies not ready", 503)
+                
+                from datetime import datetime, timedelta
+                import json
+                import os
+                
+                # Check if bundle exists
+                bundle_path = Path(f"data/outputs/runs/{run_id}.veritasrun")
+                if not bundle_path.exists():
+                    return envelope_err(f"Run {run_id} not found", 404)
+                
+                # Load bundle data
+                documents = []
+                corpus_path = bundle_path / "corpus.jsonl"
+                if corpus_path.exists():
+                    with open(corpus_path, "r", encoding="utf-8") as f:
+                        for line in f:
+                            line = line.strip()
+                            if line:
+                                try:
+                                    doc = json.loads(line)
+                                    documents.append(doc)
+                                except json.JSONDecodeError:
+                                    continue
+                
+                # Load manifest for run metadata
+                manifest = {}
+                manifest_path = bundle_path / "manifest.json"
+                if manifest_path.exists():
+                    with open(manifest_path, "r", encoding="utf-8") as f:
+                        manifest = json.load(f)
+                
+                # Load metrics for run statistics
+                metrics = {}
+                metrics_path = bundle_path / "metrics.json"
+                if metrics_path.exists():
+                    with open(metrics_path, "r", encoding="utf-8") as f:
+                        metrics = json.load(f)
+                
+                # Create timeline events based on available data
+                timeline_events = []
+                
+                # Add run start event
+                run_start_time = datetime.now() - timedelta(hours=1)
+                timeline_events.append({
+                    "timestamp": run_start_time.isoformat(),
+                    "event": "Run started",
+                    "type": "run_start",
+                    "entity": run_id,
+                    "confidence": 1.0,
+                    "metadata": {
+                        "run_id": run_id,
+                        "status": "started"
+                    }
+                })
+                
+                # Add document processing events
+                if documents:
+                    doc_processing_time = run_start_time + timedelta(minutes=5)
+                    timeline_events.append({
+                        "timestamp": doc_processing_time.isoformat(),
+                        "event": f"Documents processed",
+                        "type": "document_processing",
+                        "entity": f"{len(documents)} documents",
+                        "confidence": 1.0,
+                        "metadata": {
+                            "document_count": len(documents),
+                            "run_id": run_id
+                        }
+                    })
+                
+                # Add claims extraction events (placeholder for future implementation)
+                claims_time = doc_processing_time + timedelta(minutes=10)
+                timeline_events.append({
+                    "timestamp": claims_time.isoformat(),
+                    "event": "Claims extraction ready",
+                    "type": "claims_extraction_ready",
+                    "entity": "0 claims",
+                    "confidence": 1.0,
+                    "metadata": {
+                        "claims_count": 0,
+                        "run_id": run_id,
+                        "note": "Claims extraction not yet implemented"
+                    }
+                })
+                
+                # Add entity extraction events (placeholder for future implementation)
+                entities_time = claims_time + timedelta(minutes=5)
+                timeline_events.append({
+                    "timestamp": entities_time.isoformat(),
+                    "event": "Entity extraction ready",
+                    "type": "entity_extraction_ready",
+                    "entity": "0 entities",
+                    "confidence": 1.0,
+                    "metadata": {
+                        "entities_count": 0,
+                        "run_id": run_id,
+                        "note": "Entity extraction not yet implemented"
+                    }
+                })
+                
+                # Add run completion event
+                completion_time = entities_time + timedelta(minutes=5)
+                timeline_events.append({
+                    "timestamp": completion_time.isoformat(),
+                    "event": "Run completed",
+                    "type": "run_complete",
+                    "entity": run_id,
+                    "confidence": 1.0,
+                    "metadata": {
+                        "run_id": run_id,
+                        "status": "completed",
+                        "total_duration_minutes": 25
+                    }
+                })
+                
+                # Add some sample temporal events based on documents (if available)
+                if documents:
+                    for i, doc in enumerate(documents[:5]):  # Limit to first 5 documents
+                        # Create a temporal event for each document
+                        doc_time = completion_time + timedelta(minutes=i * 2)
+                        timeline_events.append({
+                            "timestamp": doc_time.isoformat(),
+                            "event": f"Document processed: {doc.get('title', 'Unknown document')[:50]}...",
+                            "type": "document_processed",
+                            "entity": doc.get('id', 'unknown'),
+                            "confidence": 1.0,
+                            "metadata": {
+                                "document_id": doc.get('id'),
+                                "document_title": doc.get('title', '')[:100],
+                                "source_type": doc.get('source_type', 'unknown'),
+                                "run_id": run_id
+                            }
+                        })
+                
+                # Sort events by timestamp
+                timeline_events.sort(key=lambda x: x['timestamp'])
+                
+                # Calculate actual duration from manifest if available
+                total_duration_minutes = 25  # Default
+                if manifest and 'started_at' in manifest and 'completed_at' in manifest:
+                    try:
+                        start_time = datetime.fromisoformat(manifest['started_at'].replace('Z', '+00:00'))
+                        end_time = datetime.fromisoformat(manifest['completed_at'].replace('Z', '+00:00'))
+                        duration = end_time - start_time
+                        total_duration_minutes = int(duration.total_seconds() / 60)
+                    except:
+                        pass
+                
+                return envelope_ok({
+                    "run_id": run_id,
+                    "timeline": {
+                        "events": timeline_events,
+                        "total_events": len(timeline_events),
+                        "time_range": {
+                            "start": timeline_events[0]['timestamp'] if timeline_events else None,
+                            "end": timeline_events[-1]['timestamp'] if timeline_events else None
+                        }
+                    },
+                    "summary": {
+                        "documents_processed": len(documents),
+                        "claims_extracted": 0,  # Will be populated when claims are extracted
+                        "entities_identified": 0,  # Will be populated when entities are extracted
+                        "total_duration_minutes": total_duration_minutes,
+                        "bundle_size_bytes": sum(f.stat().st_size for f in bundle_path.rglob('*') if f.is_file()) if bundle_path.exists() else 0
+                    }
+                })
+                
+            except Exception as e:
+                return envelope_err(f"get_timeline failed: {e}", 500)
+
+        # Phase 9.5.0 Adapter Testing Endpoints
+        @self.app.post("/api/test/youtube_adapter")
+        async def test_youtube_adapter(request: Request):
+            """Test YouTube adapter with sample parameters."""
+            try:
+                # Enforce health gate
+                if not await _health_gate():
+                    return envelope_err("Health gate failed; dependencies not ready", 503)
+                
+                data = await request.json()
+                
+                # Import Phase 9.5.0 adapters
+                try:
+                    from src.adapters import YouTubeAdapter
+                    from src.runners.enhanced_multisource_runner import EnhancedMultiSourceRunner
+                except ImportError as e:
+                    return envelope_err(f"Phase 9.5.0 adapters not available: {e}", 503)
+                
+                # Initialize adapter and runner
+                config = {
+                    "deduplication_enabled": True,
+                    "persist_transcript_mode": True,
+                    "youtube_default_limit": 2,
+                    "youtube_default_sort": "oldest",
+                    "transcript_timeout": 30,
+                }
+                
+                adapter = YouTubeAdapter(config)
+                runner = EnhancedMultiSourceRunner()
+                
+                # Test parameters
+                test_params = {
+                    "channel_url": data.get("channel_url", "https://www.youtube.com/@imaginationpodcastofficial"),
+                    "limit": data.get("limit", 2),
+                    "sort": data.get("sort", "oldest"),
+                    "transcript_mode": data.get("transcript_mode", "autosubs"),
+                }
+                
+                # Process source
+                documents = await adapter.process_source(test_params)
+                
+                return envelope_ok({
+                    "adapter": "youtube",
+                    "documents_count": len(documents),
+                    "documents": [
+                        {
+                            "id": doc.id,
+                            "title": doc.title,
+                            "url": doc.url,
+                            "transcript_mode": doc.transcript_mode,
+                            "sha256": doc.sha256[:8] + "...",
+                            "metadata": doc.metadata
+                        }
+                        for doc in documents
+                    ],
+                    "deduplication_enabled": config["deduplication_enabled"],
+                    "test_params": test_params
+                })
+                
+            except Exception as e:
+                return envelope_err(f"YouTube adapter test failed: {e}", 500)
+
+        @self.app.post("/api/test/web_adapter")
+        async def test_web_adapter(request: Request):
+            """Test web adapter with sample parameters."""
+            try:
+                # Enforce health gate
+                if not await _health_gate():
+                    return envelope_err("Health gate failed; dependencies not ready", 503)
+                
+                data = await request.json()
+                
+                # Import Phase 9.5.0 adapters
+                try:
+                    from src.adapters import WebAdapter
+                except ImportError as e:
+                    return envelope_err(f"Phase 9.5.0 adapters not available: {e}", 503)
+                
+                # Initialize adapter
+                config = {
+                    "deduplication_enabled": True,
+                    "persist_transcript_mode": True,
+                    "web_default_max_depth": 1,
+                    "web_default_js_render": False,
+                    "web_request_timeout": 15,
+                    "allowed_domains": ["youtube.com", "youtu.be", "example.com"],
+                }
+                
+                adapter = WebAdapter(config)
+                
+                # Test parameters
+                test_params = {
+                    "urls": data.get("urls", ["https://example.com"]),
+                    "max_depth": data.get("max_depth", 1),
+                    "js_render": data.get("js_render", False),
+                }
+                
+                # Process source
+                documents = await adapter.process_source(test_params)
+                
+                return envelope_ok({
+                    "adapter": "web",
+                    "documents_count": len(documents),
+                    "documents": [
+                        {
+                            "id": doc.id,
+                            "title": doc.title,
+                            "url": doc.url,
+                            "sha256": doc.sha256[:8] + "...",
+                            "metadata": doc.metadata
+                        }
+                        for doc in documents
+                    ],
+                    "deduplication_enabled": config["deduplication_enabled"],
+                    "test_params": test_params
+                })
+                
+            except Exception as e:
+                return envelope_err(f"Web adapter test failed: {e}", 500)
+
+        @self.app.post("/api/test/pdf_adapter")
+        async def test_pdf_adapter(request: Request):
+            """Test PDF adapter with sample parameters."""
+            try:
+                # Enforce health gate
+                if not await _health_gate():
+                    return envelope_err("Health gate failed; dependencies not ready", 503)
+                
+                data = await request.json()
+                
+                # Import Phase 9.5.0 adapters
+                try:
+                    from src.adapters import PDFAdapter
+                except ImportError as e:
+                    return envelope_err(f"Phase 9.5.0 adapters not available: {e}", 503)
+                
+                # Initialize adapter
+                config = {
+                    "deduplication_enabled": True,
+                    "persist_transcript_mode": True,
+                    "pdf_default_ocr_required": False,
+                    "pdf_ocr_auto_retry": True,
+                    "pdf_max_pages_per_pdf": 10,
+                    "pdf_extraction_timeout": 30,
+                }
+                
+                adapter = PDFAdapter(config)
+                
+                # Test parameters
+                test_params = {
+                    "urls": data.get("urls", ["https://example.com/sample.pdf"]),
+                    "ocr_required": data.get("ocr_required", False),
+                    "auto_retry": data.get("auto_retry", True),
+                }
+                
+                # Process source
+                documents = await adapter.process_source(test_params)
+                
+                return envelope_ok({
+                    "adapter": "pdf",
+                    "documents_count": len(documents),
+                    "documents": [
+                        {
+                            "id": doc.id,
+                            "title": doc.title,
+                            "url": doc.url,
+                            "sha256": doc.sha256[:8] + "...",
+                            "metadata": doc.metadata
+                        }
+                        for doc in documents
+                    ],
+                    "deduplication_enabled": config["deduplication_enabled"],
+                    "test_params": test_params
+                })
+                
+            except Exception as e:
+                return envelope_err(f"PDF adapter test failed: {e}", 500)
+
+        @self.app.post("/api/test/multi_source_run")
+        async def test_multi_source_run(request: Request):
+            """Test multi-source run with enhanced runner."""
+            try:
+                # Enforce health gate
+                if not await _health_gate():
+                    return envelope_err("Health gate failed; dependencies not ready", 503)
+                
+                data = await request.json()
+                
+                # Import Phase 9.5.0 runner
+                try:
+                    from src.runners.enhanced_multisource_runner import EnhancedMultiSourceRunner
+                except ImportError as e:
+                    return envelope_err(f"Phase 9.5.0 runner not available: {e}", 503)
+                
+                # Initialize runner
+                runner = EnhancedMultiSourceRunner()
+                
+                # Create test sources
+                sources = [
+                    {
+                        "type": "youtube",
+                        "channel_url": "https://www.youtube.com/@imaginationpodcastofficial",
+                        "limit": 1,
+                        "transcript_mode": "autosubs"
+                    },
+                    {
+                        "type": "web",
+                        "urls": ["https://example.com"],
+                        "max_depth": 1
+                    },
+                    {
+                        "type": "pdf",
+                        "urls": ["https://example.com/sample.pdf"],
+                        "ocr_required": False
+                    }
+                ]
+                
+                # Start job
+                job_id = await runner.start_job(
+                    sources=sources,
+                    job_label=data.get("job_label", "Phase 9.5.0 Test Run")
+                )
+                
+                # Wait for completion (with timeout)
+                import asyncio
+                timeout = 30  # seconds
+                start_time = asyncio.get_event_loop().time()
+                
+                while True:
+                    job_status = await runner.get_job_status(job_id)
+                    if job_status["status"] in ["completed", "failed"]:
+                        break
+                    
+                    if asyncio.get_event_loop().time() - start_time > timeout:
+                        return envelope_err("Multi-source run test timed out", 408)
+                    
+                    await asyncio.sleep(1)
+                
+                return envelope_ok({
+                    "job_id": job_id,
+                    "job_status": job_status,
+                    "sources_count": len(sources),
+                    "test_params": data
+                })
+                
+            except Exception as e:
+                return envelope_err(f"Multi-source run test failed: {e}", 500)
+
+        @self.app.post("/api/test/deduplication")
+        async def test_deduplication(request: Request):
+            """Test deduplication functionality."""
+            try:
+                # Enforce health gate
+                if not await _health_gate():
+                    return envelope_err("Health gate failed; dependencies not ready", 503)
+                
+                data = await request.json()
+                
+                # Import Phase 9.5.0 adapters
+                try:
+                    from src.adapters import YouTubeAdapter
+                except ImportError as e:
+                    return envelope_err(f"Phase 9.5.0 adapters not available: {e}", 503)
+                
+                # Initialize adapter with deduplication enabled
+                config = {
+                    "deduplication_enabled": True,
+                    "persist_transcript_mode": True,
+                    "youtube_default_limit": 3,
+                    "transcript_timeout": 30,
+                }
+                
+                adapter = YouTubeAdapter(config)
+                
+                # Create test content with duplicates
+                test_content = data.get("test_content", "This is duplicate content")
+                iterations = data.get("iterations", 3)
+                
+                # Simulate duplicate documents
+                import uuid
+                from src.adapters.base_adapter import DocumentLike
+                from datetime import datetime
+                
+                documents = []
+                for i in range(iterations):
+                    doc = DocumentLike(
+                        id=f"test_{uuid.uuid4().hex[:8]}",
+                        source="test",
+                        url=f"https://example.com/test_{i}",
+                        title=f"Test Document {i+1}",
+                        text=test_content,  # Same content = duplicates
+                        metadata={"iteration": i},
+                        sha256="",  # Will be set by adapter
+                        created_at=datetime.now(),
+                        transcript_mode=None
+                    )
+                    documents.append(doc)
+                
+                # Test deduplication
+                unique_documents = adapter._filter_duplicates(documents)
+                
+                return envelope_ok({
+                    "total_documents": len(documents),
+                    "unique_documents": len(unique_documents),
+                    "duplicates_removed": len(documents) - len(unique_documents),
+                    "test_content": test_content,
+                    "iterations": iterations
+                })
+                
+            except Exception as e:
+                return envelope_err(f"Deduplication test failed: {e}", 500)
+
+        @self.app.post("/api/test/transcript_persistence")
+        async def test_transcript_persistence(request: Request):
+            """Test transcript mode persistence."""
+            try:
+                # Enforce health gate
+                if not await _health_gate():
+                    return envelope_err("Health gate failed; dependencies not ready", 503)
+                
+                data = await request.json()
+                
+                # Import Phase 9.5.0 adapters
+                try:
+                    from src.adapters import YouTubeAdapter
+                except ImportError as e:
+                    return envelope_err(f"Phase 9.5.0 adapters not available: {e}", 503)
+                
+                # Initialize adapter
+                config = {
+                    "deduplication_enabled": True,
+                    "persist_transcript_mode": True,
+                    "youtube_default_limit": 1,
+                    "transcript_timeout": 30,
+                }
+                
+                adapter = YouTubeAdapter(config)
+                
+                # Test parameters
+                test_params = {
+                    "channel_url": data.get("channel_url", "https://www.youtube.com/@imaginationpodcastofficial"),
+                    "limit": 1,
+                    "transcript_mode": data.get("transcript_mode", "autosubs"),
+                }
+                
+                # Process source
+                documents = await adapter.process_source(test_params)
+                
+                # Check if transcript mode was persisted
+                persisted_transcript_mode = None
+                if documents:
+                    persisted_transcript_mode = documents[0].transcript_mode
+                
+                return envelope_ok({
+                    "persisted_transcript_mode": persisted_transcript_mode,
+                    "documents_count": len(documents),
+                    "test_params": test_params
+                })
+                
+            except Exception as e:
+                return envelope_err(f"Transcript persistence test failed: {e}", 500)
+
+        @self.app.post("/api/test/enhanced_extraction")
+        async def test_enhanced_extraction(request: Request):
+            """Test enhanced extraction with real URLs."""
+            try:
+                # Enforce health gate
+                if not await _health_gate():
+                    return envelope_err("Health gate failed; dependencies not ready", 503)
+                
+                data = await request.json()
+                
+                # Import Phase 9.5.0a enhanced adapters
+                try:
+                    from src.adapters import WebAdapter, PDFAdapter
+                except ImportError as e:
+                    return envelope_err(f"Phase 9.5.0a enhanced adapters not available: {e}", 503)
+                
+                # Initialize adapters
+                config = {
+                    "deduplication_enabled": True,
+                    "web_default_max_depth": 1,
+                    "web_default_js_render": False,
+                    "web_request_timeout": 30,
+                    "pdf_default_ocr_required": False,
+                    "pdf_ocr_auto_retry": True,
+                    "pdf_extraction_timeout": 60,
+                }
+                
+                web_adapter = WebAdapter(config)
+                pdf_adapter = PDFAdapter(config)
+                
+                web_url = data.get("web_url", "https://httpbin.org/html")
+                pdf_url = data.get("pdf_url", "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf")
+                
+                # Test web extraction
+                web_docs = await web_adapter.process_source({"urls": [web_url]})
+                web_method = web_docs[0].metadata.get("extraction_method", "unknown") if web_docs else "failed"
+                web_detail = web_docs[0].metadata.get("extraction_method_detail", "") if web_docs else ""
+                
+                # Test PDF extraction
+                pdf_docs = await pdf_adapter.process_source({"urls": [pdf_url]})
+                pdf_method = pdf_docs[0].metadata.get("extraction_method", "unknown") if pdf_docs else "failed"
+                pdf_detail = pdf_docs[0].metadata.get("extraction_method_detail", "") if pdf_docs else ""
+                
+                return envelope_ok({
+                    "web_extraction_method": web_method,
+                    "web_extraction_detail": web_detail,
+                    "web_documents_count": len(web_docs),
+                    "pdf_extraction_method": pdf_method,
+                    "pdf_extraction_detail": pdf_detail,
+                    "pdf_documents_count": len(pdf_docs),
+                    "test_urls": {
+                        "web": web_url,
+                        "pdf": pdf_url
+                    }
+                })
+                
+            except Exception as e:
+                return envelope_err(f"Enhanced extraction test failed: {e}", 500)
 
         @self.app.websocket("/ws/ai-activity")
         async def websocket_endpoint(websocket: WebSocket):

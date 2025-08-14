@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['src/dashboard/unified_dashboard.py', 'test_no_fallbacks.py', 'manifest.json', 'ingestion_success_flow.cy.ts', 'test_health_gates.py', 'ingestion_error_surface.cy.ts', 'PHASE_8_1_COMPLETION_SUMMARY.md', 'config/tool_registry.json', 'metrics.json', 'tests/test_no_fallbacks.py', 'merkle.json', 'start_disabled_until_gates_pass.cy.ts', 'tests/test_ingestion_youtube_failures.py', 'QUICKSTART.md', 'PHASE_8.md', 'PHASE_8_2_PLAN.md', 'ROOT_OVERVIEW.md', 'tests/test_health_gates.py', 'tests/test_ingestion_youtube_happy_path.py', 'test_ingestion_youtube_failures.py', 'test_ingestion_youtube_happy_path.py']
+---
+
 The root problem is the system quietly “helping” via fallbacks, so failures don’t surface, Cursor assumes success, and we drift. We’ll fix that by **killing all fallbacks**, adding hard **health gates**, and making ingestion through **one source of truth (Veritas MCP)** the only path.
 
 Below is a concrete **Phase 8.3 plan** tailored to your repo. I’ll show exactly where fallbacks exist in the docs, what we’ll remove, and how we’ll verify that pulling YouTube transcripts actually works before anything else proceeds.

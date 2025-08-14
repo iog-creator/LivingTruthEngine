@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: archived
+last_reviewed: 2025-08-13
+related_files: ['living_truth_fastmcp_server.py', 'LivingTruthEngine_SurvivorTestimonyAnalysis_Langflow.json']
+---
+
 # Living Truth Engine - Langflow Setup and Workflow
 
 ## Overview

@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['agents/agent.py', 'scripts/setup/extract_langflow_schemas_simple.py', 'logic/loop.py', 'logic/conditional_router.py', 'scripts/setup/generate_langflow_flow.py', 'config/langflow_schemas.json', 'input_output/chat.py', 'flows/living_truth_engine_flow.json', 'openai/openai_chat_model.py', 'agents/mcp_component.py']
+---
+
 # Langflow Schema-Based Flow Generation
 
 ## Overview

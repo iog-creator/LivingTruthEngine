@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['links.json', 'PHASE_9.md', 'manifest.json', 'PHASE_8.md', 'docs/project_master_log.md', 'verification.json']
+---
+
 # Living Truth Engine - Phase 9: Multi-Source Expansion & Advanced Evidence Linking
 
 > 📚 **Project History**: See the full, append‑only log in  
@@ -26,13 +33,31 @@ This repository contains the **Phase 9 development branch** of the Living Truth 
 - **Standardized Completion**: Automated phase completion summaries with health status
 - **Archived Stale Rules**: Moved outdated and conflicting rules to `.cursor/rules/archive/`
 
-### **🎯 Phase 9 Goals (In Development)**
-- **Multi-source ingestion**: Multiple YouTube channels, domain URLs, PDF repositories in one job
-- **Advanced link discovery**: Detect named entities, claims, and references across different sources
-- **Evidence graph view**: Interactive 2D/3D graph showing connections between docs, entities, and claims
-- **AI-assisted verification**: Auto-flag suspicious claims, suggest corroborating/contradicting documents
-- **Flexible run configuration**: Choose per-source parameters (max depth, OCR/JS toggles)
-- **Improved run metadata**: Store and display cross-source relationships in manifest
+### **✅ Phase 9.5.3: Timeline API + Graph Polish (Complete)**
+- **Timeline API**: `/api/timeline/{run_id}` endpoint with <25ms response time
+- **Graph UX Enhancements**: Node type filters, search, pinning, and selection polish
+- **Graph Build Fix**: Resolved constraint violations with UPSERT support and transaction safety
+- **Performance Optimization**: All APIs meeting timing requirements (<1s timeline, <2s graph)
+- **Error Handling**: Enhanced with specific constraint violation error codes (409)
+
+### **✅ Phase 9.5.5: Error Budgeting & Recovery Automation (Complete)**
+- **Error Budget Framework**: SLO/SLI monitoring with rolling window calculations
+- **Automated Recovery Workflows**: Self-healing mechanisms with configurable cooldown
+- **Chaos Engineering**: Failure simulation and recovery time validation
+- **CI/CD Integration**: Error budget validation and recovery script testing
+
+### **✅ Phase 9.5.6: Chaos Engineering & Proactive Resilience (Complete)**
+- **Enhanced Chaos Testing**: 6 chaos scenarios with blast radius control and safeguards
+- **Predictive Monitoring**: Real-time anomaly detection with early-warning alerts
+- **Proactive Recovery**: Adaptive response policies with service scaling and graceful degradation
+- **Resilience Dashboard**: Infrastructure for resilience score calculation and historical analysis
+- **MCP Tools**: `trigger_chaos_scenario()`, `get_resilience_score()`, `simulate_proactive_recovery()`
+
+### **🎯 Phase 9.5.7: Resilience Dashboard UI (Next)** 🚀 READY TO START
+- **Resilience Dashboard**: Interactive UI for chaos test results and resilience metrics
+- **Real-time Monitoring**: Live updates of resilience scores and anomaly alerts
+- **Historical Analysis**: Trend visualization and predictive analytics
+- **CI/CD Integration**: Resilience score validation and dashboard testing
 
 ## 🔧 **Development Workflow**
 

@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['tests/test_phase_9_4_0_routing.py', 'src/dashboard/unified_dashboard.py', 'PHASE_9.md', 'ui/src/App.tsx', 'unified_dashboard.py', 'PHASE_9_4_0_COMPLETION_SUMMARY.md', 'package.json', 'ui/package.json', 'ui/src/main.tsx', 'src/App.tsx', 'src/main.tsx']
+---
+
 # PHASE_9_4_0_PLAN.md — DevOps Cutover Skeleton (Single Origin)
 
 ## 🎯 Objectives

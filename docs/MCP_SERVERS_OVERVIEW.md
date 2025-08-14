@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['src/mcp_servers/mcp_solver_server.py', 'src/mcp_servers/mcp_hub_server.py', 'src/mcp_servers/github_mcp_server.py', 'src/mcp_servers/rulego_mcp_server.py', 'src/mcp_servers/postgresql_mcp_server.py', 'src/mcp_servers/langflow_mcp_server.py', 'src/mcp_servers/living_truth_fastmcp_server.py', 'src/mcp_servers/huggingface_mcp_server.py', 'src/mcp_servers/devdocs_mcp_server.py']
+---
+
 # MCP Servers Overview
 
 ## Description

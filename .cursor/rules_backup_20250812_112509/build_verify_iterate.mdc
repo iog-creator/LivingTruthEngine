@@ -1,8 +1,10 @@
 ---
-description: Enforce a strict Build-Verify-Iterate workflow for Living Truth Engine; all changes must pass bring-up, smoke, and tests before completion.
-globs: ["**/*"]
-alwaysApply: true
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['manifest.json', 'README.md', 'metrics.json', 'CONSOLIDATED_COMPLETION_SUMMARY.md', 'merkle.json']
 ---
+
 
 # Build-Verify-Iterate Workflow Rule
 

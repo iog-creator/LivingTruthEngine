@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['tests/test_ingestion_youtube_failures.py', 'PHASE_8.md', 'tests/test_ingestion_youtube_happy_path.py', 'tests/test_health_gates.py', 'tests/test_no_fallbacks.py']
+---
+
 # Phase 8.3 Completion Summary
 
 ## Overview

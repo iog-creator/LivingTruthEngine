@@ -1,0 +1,13 @@
+{
+  "namespace": "mcp.lte.adapters",
+  "methods": {
+    "test_sources": {
+      "params": { "sources": ["youtube","web","pdf"], "limit": 1 },
+      "result": { "ok": true, "per_source": { "youtube": 1, "web": 1, "pdf": 1 } }
+    },
+    "transcript_mode_check": {
+      "params": { "run_id": "string" },
+      "result": { "ok": true, "modes": ["official","auto","none"] }
+    }
+  }
+}

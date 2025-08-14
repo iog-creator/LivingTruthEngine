@@ -1,10 +1,10 @@
 ---
-phase: 8.3.3
-title: Frontend Rescue — Completion Summary
-date: 2025-08-12
-path: RESCUE (current dashboard + typed API helper)
-status: completed
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['src/dashboard/contract.py', 'src/dashboard/unified_dashboard.py']
 ---
+
 
 ## What we did
 - Added **/api/contract** endpoint (canonical envelope + specimen responses).

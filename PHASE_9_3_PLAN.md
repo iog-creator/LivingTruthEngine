@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['src/analysis/linking_pipeline.py', 'tests/test_graph_api.py', 'PHASE_9_3_COMPLETION_SUMMARY.md', 'src/dashboard/unified_dashboard.py', 'PHASE_9.md', 'src/ai/dspy_programs.py', 'src/storage/pgvector_store.py', 'tests/test_linking_pipeline.py', 'docs/project_master_log.md', 'tests/test_rulego_dspy.py', 'src/analysis/rulego_bridge.py']
+---
+
 Great question. Based on everything we’ve shipped and validated, we’re ready for **Phase 9.3**.
 
 * **9.1** (Models SSOT + wiring) — ✅ complete

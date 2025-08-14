@@ -1,0 +1,8 @@
+{
+  "namespace": "mcp.lte.pgvector",
+  "methods": {
+    "db_dim": { "params": { "table": "string" }, "result": { "dim": 0 } },
+    "migrate_dim": { "params": { "target_dim": 0 }, "result": { "script": "docker/initdb/004_embeddings.sql", "notes": "string" } },
+    "reindex_ann": { "params": { "table": "string" }, "result": { "ok": true } }
+  }
+}

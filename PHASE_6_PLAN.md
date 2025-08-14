@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['mcp_solver_server.py', 'python scripts/testing/functional_tests.py', 'provenance.py', 'PHASE_6_COMPLETION_SUMMARY.md', 'manifest.json', 'src/aux_services/devdocs_server.py', 'tests/test_phase6_veritas.py', 'canonicalize.py', 'src/analysis/dash_app.py', 'scripts/testing/functional_tests.py', 'docs/PROJECT_SETUP.md', 'docs/PROJECT_STRUCTURE.md', 'web_fetcher.py', 'runners.py', 'config/tool_registry.json', 'data/outputs/runs/<run>/_ui_flags.json', 'README.md', 'metrics.json', 'src/mcp_servers/living_truth_fastmcp_server.py', 'merkle.json', 'src/config/living_truth_config.py', 'bundle.py', 'PHASE_6.md', 'pdf_extractor.py', 'src/mcp_servers/devdocs_mcp_server.py', 'rulego_server.py', 'hashes.json', '__init__.py', 'solver_server.py', 'rulego_mcp_server.py', 'yt_adapter.py']
+---
+
 # Phase 6 Plan — Service Stabilization, MCP Usage, and Validation
 
 ## Objective

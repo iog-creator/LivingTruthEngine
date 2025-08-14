@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['suspects.json', 'config/tool_registry.json', 'manifest.json', 'src/ingestion_general/adapters/youtube_adapter.py', 'metrics.json', 'src/api/ai_activity.py', 'merkle.json']
+---
+
 Got it. I’ll do three things in one shot:
 
 1. **Rewrite Phase 8.2** to explicitly include test coverage.

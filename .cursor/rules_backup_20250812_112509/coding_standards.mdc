@@ -1,7 +1,10 @@
 ---
-description: Rule for Coding Standards
-alwaysApply: false
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
 ---
+
 # Coding Standards for AI-Assisted Development
 
 ## Description

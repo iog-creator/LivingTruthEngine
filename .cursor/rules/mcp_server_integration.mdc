@@ -1,12 +1,10 @@
 ---
-description: MCP (Model Context Protocol) server integration practices for the Living
-  Truth Engine, ensuring proper tool usage and system integration
-globs:
-- '**/mcp*.py'
-- '**/mcp*.json'
-- '**/src/mcp_servers/**'
-alwaysApply: false
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['ls -la config/tool_registry.json', 'src/mcp_servers/mcp_hub_server.py', 'config/tool_registry.json', 'living_truth_fastmcp_server.py', 'config/langflow_schemas.json', 'python3 src/mcp_servers/mcp_hub_server.py', 'tests/test_services_operational.py', 'tests/test_smoke_job_runs.py', 'tests/test_phase6_veritas.py']
 ---
+
 
 
 # MCP Server Integration and Best Practices

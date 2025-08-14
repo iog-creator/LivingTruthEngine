@@ -1,10 +1,10 @@
 ---
-description: Cursor AppArmor fix for Ubuntu to resolve freezing issues during AI operations
-globs:
-- '**/scripts/setup/**'
-- '**/docs/**'
-alwaysApply: false
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
 ---
+
 
 
 # Cursor AppArmor Fix for Ubuntu

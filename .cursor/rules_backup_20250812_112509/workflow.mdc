@@ -1,12 +1,10 @@
 ---
-description: Mandatory bring-up → smoke → verify loop. Keep scope tiny. Use docs.
-alwaysApply: true
-globs:
-  - "**/*.py"
-  - "src/**"
-  - "scripts/**"
-  - "docs/**"
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['PHASE_8.md']
 ---
+
 
 # Bring-up → Smoke → Verify (must follow)
 

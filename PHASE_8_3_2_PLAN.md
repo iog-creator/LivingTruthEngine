@@ -1,28 +1,10 @@
 ---
-phase: 8.3.2
-title: Snapshot, Reconcile & Lock (Baseline = 8.3.1; Incorporates Revised System Spec)
-owner: PM (Living Truth Engine)
-status: Ready-to-run
-created: 2025-08-11
-applies: one-off
-objectives:
-  - Produce an auditable, reproducible snapshot of the *actual* running system.
-  - Reconcile docs & code with the revised spec you provided (ports, services, tool counts, envelopes, no-fallbacks).
-  - Lock invariants needed for Phase 9: stable health `service`, `{status,data?,error?}` envelopes, transcript call shape.
-deliverables:
-  - docs/snapshots/snapshot_<UTC>.md (generated evidence)
-  - scripts/snapshot.sh (enhanced collector)
-  - scripts/smoke_envelope.sh (envelope contract check)
-  - Docs reconciled: Langflow→Langflow; port mappings; tool counts pinned to observed; health `service` labeled
-  - (Optional) tests/test_transcript_api.py (API call-shape sanity)
-success_criteria:
-  - Snapshot shows green health, valid envelopes, tool categories visible, and service probes for Langflow/LM Studio/Neo4j/Postgres/Redis/Veritas API & Console.
-  - Docs updated to reflect observed ports and tool counts; Langflow removed; transcript call fixed if needed.
-  - Envelope smoke passes for /api/health, /api/health/full, /api/tools, /api/runs.
-notes:
-  - Treat your revised spec as the **desired** target; this phase pins docs to reality from the snapshot.
-  - Keep edits surgical; no net-new features.
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['config/tool_registry.json']
 ---
+
 
 ## 1) One-click snapshotter (enhanced)
 

@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['src/analysis/linking_pipeline.py', 'src/dashboard/unified_dashboard.py', 'src/ai/dspy_programs.py', 'src/storage/pgvector_store.py', 'apiClient.ts', 'src/analysis/rulego_bridge.py']
+---
+
 You’re right—the current setup is brittle. The root issues I’m hearing/seeing:
 
 * Two front-end “homes” got edited in parallel (state page vs. 8050), so state and callbacks diverged.

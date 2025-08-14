@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: archived
+last_reviewed: 2025-08-13
+related_files: ['FORENSIC_ANALYSIS_INTEGRATION_SUMMARY.md', 'LivingTruthEngine_ForensicAnalysis_Langflow.json', 'docs/FORENSIC_ANALYSIS_SETUP.md', 'src/mcp_servers/living_truth_fastmcp_server.py', 'scripts/setup/import_langflow_workflow.py']
+---
+
 # Living Truth Engine - Forensic Analysis Integration Summary
 
 ## 🎯 **Project Overview**

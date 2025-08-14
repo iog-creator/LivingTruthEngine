@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['manifest.json', 'src/ingestion_general/runners.py', 'src/ingestion_general/provenance.py', 'src/ingestion_general/bundles.py', 'src/ingestion_general/fetchers.py', 'src/analysis/dash_app.py', 'scripts/testing/functional_tests.py', 'docs/PROJECT_STRUCTURE.md', 'config/tool_registry.json', 'living_truth_fastmcp_server.py', 'metrics.json', 'README.md', 'tests/test_phase7_veritas.py', 'src/mcp_servers/living_truth_fastmcp_server.py', 'merkle.json', 'src/ingestion_general/__init__.py', 'src/ingestion_general/canonicalize.py', 'entities.json', 'PHASE_7.md', 'src/mcp_servers/langflow_mcp_server.py', 'PHASE_7_COMPLETION_SUMMARY.md']
+---
+
 
 ---
 

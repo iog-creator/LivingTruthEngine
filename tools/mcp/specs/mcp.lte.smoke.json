@@ -1,0 +1,9 @@
+{
+  "namespace": "mcp.lte.smoke",
+  "methods": {
+    "run_phase": {
+      "params": { "script": "scripts/p9_4_0_smoke.sh" },
+      "result": { "ok": true, "stdout": "string", "stderr": "string" }
+    }
+  }
+}

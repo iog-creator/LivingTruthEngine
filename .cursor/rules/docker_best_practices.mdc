@@ -1,12 +1,10 @@
 ---
-description: Docker best practices for the Living Truth Engine project, ensuring modern,
-  secure, and efficient containerization
-globs:
-- '**/docker/**'
-- '**/Dockerfile*'
-- '**/docker-compose*'
-alwaysApply: false
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
 ---
+
 
 
 # Docker Best Practices for Living Truth Engine

@@ -1,0 +1,17 @@
+{
+  "namespace": "mcp.project.rules",
+  "methods": {
+    "validate": {
+      "params": {},
+      "result": { "ok": true, "missing": [], "warnings": [] }
+    },
+    "archive_outdated": {
+      "params": { "paths": ["rules/*.mdc"] },
+      "result": { "archived": [], "index_updated": true }
+    },
+    "fix_frontmatter": {
+      "params": { "paths": ["rules/*.mdc"] },
+      "result": { "updated": [] }
+    }
+  }
+}

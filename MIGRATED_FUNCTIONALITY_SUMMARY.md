@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['src/integration/agi_integration.py', 'src/visualization/advanced_viz.py', 'MIGRATED_FUNCTIONALITY_SUMMARY.md', 'scripts/testing/test_migrated_functionality_comprehensive.py', 'config/tool_registry.json', 'src/analysis/research_analysis.py', 'test_migrated_functionality.py', 'src/config/living_truth_config.py', 'README.md', 'src/processing/channel_archiver.py', 'src/mcp_servers/living_truth_fastmcp_server.py', 'src/analysis/hybrid_retrieval.py', 'CURRENT_STATUS.md']
+---
+
 # Migrated Living Truth Agent Functionality Summary
 
 ## 🎯 **Overview**

@@ -1,0 +1,13 @@
+{
+  "namespace": "mcp.lte.ui.contracts",
+  "methods": {
+    "validate_envelopes": {
+      "params": { "endpoints": ["/api/health","/api/health/full","/api/models"] },
+      "result": { "ok": true, "failures": [] }
+    },
+    "playwright_smoke": {
+      "params": { "specs": ["tests/e2e/status.spec.ts","tests/e2e/runs.spec.ts","tests/e2e/graph.spec.ts"] },
+      "result": { "passed": true, "report": "path/to/report" }
+    }
+  }
+}

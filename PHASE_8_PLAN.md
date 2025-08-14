@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['src/analysis/dash_app.py', 'tests/test_phase8_youtube_run.py', 'src/ingestion_general/fetchers/web_fetcher.py', 'config/tool_registry.json', 'src/ingestion_general/canonicalize.py', 'manifest.json', 'PHASE_8_COMPLETION_SUMMARY.md', 'PHASE_8.md', 'src/ingestion_general/runners.py', 'src/ingestion_general/adapters/youtube_adapter.py', 'README.md', 'metrics.json', 'src/mcp_servers/living_truth_fastmcp_server.py', 'merkle.json', 'src/ingestion_general/extractors/pdf_extractor.py']
+---
+
 perfect — locking in the standard. here’s the **copy‑pasteable Phase 8 package** (plan + completion summary) to drop in the repo root. no questions, ready for Cursor.
 
 **PHASE\_8\_PLAN.md**

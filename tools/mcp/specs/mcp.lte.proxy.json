@@ -1,0 +1,12 @@
+{
+  "namespace": "mcp.lte.proxy",
+  "methods": {
+    "smoke": {
+      "params": { "base_url": "http://localhost" },
+      "result": {
+        "root_contains": "Living Truth Engine",
+        "api": { "/api/health": "ok", "/api/health/full": "ok", "/api/models": "ok" }
+      }
+    }
+  }
+}

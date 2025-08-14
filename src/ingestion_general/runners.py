@@ -255,6 +255,42 @@ class VeritasRunner:
         # Save provenance data
         self.provenance_pipeline.save_provenance_data(provenance_data, bundle_dir)
         
+        # Store documents in database
+        try:
+            logger.info("Starting database storage process...")
+            from src.storage.pgvector_store import PgVectorStore
+            from src.config.living_truth_config import LivingTruthConfig
+            
+            # Initialize pgvector store
+            config = LivingTruthConfig()
+            dsn = f"postgresql://postgres:pass@postgres:5432/living_truth_engine"
+            logger.info(f"Connecting to database with DSN: {dsn}")
+            pgvector_store = PgVectorStore(dsn, embedder=None)
+            logger.info("Successfully connected to database")
+            
+            # Convert canonicalized docs to database format for upsert_docs
+            db_docs = []
+            for doc in canonicalized_docs:
+                db_doc = {
+                    "id": doc.get("id", ""),  # Use the canonicalized document ID as sha256
+                    "source_type": doc.get("source_type", "unknown"),
+                    "uri": doc.get("uri", ""),
+                    "title": doc.get("title", ""),
+                    "text": doc.get("text", "")  # Keep text for embedding generation
+                }
+                db_docs.append(db_doc)
+            
+            # Store documents in database
+            if db_docs:
+                pgvector_store.upsert_docs(run_id, db_docs)
+                logger.info(f"Stored {len(db_docs)} documents in database for run {run_id}")
+            else:
+                logger.warning(f"No documents to store in database for run {run_id}")
+                
+        except Exception as e:
+            logger.error(f"Failed to store documents in database: {e}")
+            # Don't fail the run, just log the error
+        
         logger.info(f"Phase 8 bundle written to {bundle_dir}")
         logger.info(f"Documents: {len(canonicalized_docs)}")
         logger.info(f"Merkle root: {provenance_data['merkle']['root']}")

@@ -1,11 +1,10 @@
 ---
-description: Error handling and testing standards for the Living Truth Engine project,
-  ensuring proper error reporting and comprehensive testing
-globs:
-- '**/*.py'
-- '**/tests/**'
-alwaysApply: false
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
 ---
+
 
 
 # Error Handling and Testing Standards

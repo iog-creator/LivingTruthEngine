@@ -1,11 +1,10 @@
 ---
-description: This rule establishes automated processes for detecting development needs,
-  adding tools, updating documentation, and managing cursor rules without manual intervention.
-globs:
-- '**/*.py'
-- '**/scripts/**'
-alwaysApply: false
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['README.md', 'CURRENT_STATUS.md', 'docs/CURRENT_SYSTEM_STATUS.md']
 ---
+
 
 
 # Automated Development Management

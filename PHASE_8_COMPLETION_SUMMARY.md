@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['tests/test_phase8_youtube_run.py', 'manifest.json', 'metrics.json', 'PHASE_7.md', 'merkle.json']
+---
+
 # Phase 8 Completion Summary — Real Data Ingestion, OCR/JS Toggles, Dashboard Controls
 
 ## Overview

@@ -1,0 +1,114 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['pgvector_store.py']
+---
+
+
+# Models & Embeddings (SSOT)
+
+## 🎯 **Single Source of Truth (SSOT)**
+
+### **Embedding dimension is SSOT-driven via ModelRegistry**
+- No magic numbers in code (replacing hard-coded 768)
+- All embedding dimensions sourced from `ModelRegistry`
+- Database schema must match registry configuration
+
+### **Health Endpoint Requirements**
+- `/api/health/full` must surface `embedding_model` and `embedding_dim`
+- Provide `dim_mismatch` boolean when registry vs DB differ
+- Enable monitoring of configuration consistency
+
+## 🔧 **Implementation Requirements**
+
+### **ModelRegistry Integration**
+```python
+# ✅ Good - SSOT-driven
+dim = ModelRegistry.embedding().extra["dim"]
+
+# ❌ Bad - Magic number
+dim = 768
+```
+
+### **Database Migrations**
+- Migrations must re-create vector columns using configured **dim**
+- Validate schema matches registry on startup
+- Fail fast with remediation instructions on mismatch
+
+### **Configuration Validation**
+- Start-time check in `pgvector_store.py`
+- Query DB vector column length and compare with registry
+- Provide clear error messages with migration instructions
+
+## 📋 **Health Contract**
+
+### **Required Health Fields**
+```json
+{
+  "embedding_model": "string",
+  "embedding_dim": 1536,
+  "dim_mismatch": false,
+  "fallback_events": [...]
+}
+```
+
+### **Validation Logic**
+- Compare `ModelRegistry.embedding().extra["dim"]` with DB schema
+- Report `dim_mismatch: true` when values differ
+- Include remediation instructions in health response
+
+## 🚨 **Error Handling**
+
+### **Dimension Mismatch**
+- Fail fast with clear error message
+- Include migration script name in error
+- Provide step-by-step remediation instructions
+
+### **Registry Validation**
+- Validate registry configuration on startup
+- Check all required fields are present
+- Log configuration details for debugging
+
+## ✅ **Implementation Checklist**
+
+- [ ] ModelRegistry configured with SSOT embedding dimensions
+- [ ] Health endpoint includes embedding_model and embedding_dim
+- [ ] Database migrations use registry dimensions
+- [ ] Start-time validation implemented
+- [ ] Error handling for dimension mismatches
+- [ ] Documentation updated with SSOT approach
+
+## 🔧 **Examples**
+
+### **Health Endpoint Response**
+```json
+{
+  "status": "ok",
+  "data": {
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+    "embedding_dim": 384,
+    "dim_mismatch": false,
+    "llm_model": "gpt-4",
+    "reverse_proxy": true,
+    "ui_origin": "http://localhost:3000"
+  }
+}
+```
+
+### **Migration Script**
+```sql
+-- docker/initdb/003b_graph_dim.sql
+ALTER TABLE lte.doc_embeddings 
+ALTER COLUMN embedding TYPE vector(384);
+```
+
+## 📚 **References**
+- Phase 9.3.1 hotfix for embedding dimension issues
+- Phase 9.5.1 for partitioned embeddings by model/dim
+- @api_contracts.mdc for health endpoint format
+- @core_workflow.mdc for development protocol
+description:
+globs:
+alwaysApply: false
+---

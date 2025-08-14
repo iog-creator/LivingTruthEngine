@@ -42,28 +42,88 @@ class PgVectorStore:
             return False
         
         return True
+    
+    def validate_database_schema(self) -> Dict[str, Any]:
+        """Validate database schema matches model registry configuration"""
+        try:
+            with self.db.cursor() as cur:
+                # Check if doc_embeddings table has model-aware columns
+                cur.execute("""
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.columns 
+                        WHERE table_schema = 'lte' 
+                        AND table_name = 'doc_embeddings'
+                        AND column_name = 'model_key'
+                    )
+                """)
+                model_key_exists = cur.fetchone()[0]
+                
+                if not model_key_exists:
+                    return {
+                        "valid": False,
+                        "error": "model_key column not found in doc_embeddings table",
+                        "remediation": "Run migration script: docker/initdb/004_model_aware_embeddings_simple.sql"
+                    }
+                
+                # Check for dimension mismatches in existing embeddings
+                cur.execute("""
+                    SELECT DISTINCT embedding_dim, model_key, COUNT(*) as count
+                    FROM lte.doc_embeddings
+                    WHERE embedding_dim IS NOT NULL
+                    GROUP BY embedding_dim, model_key
+                """)
+                existing_dims = cur.fetchall()
+                
+                # Check if current model dimension exists in database
+                current_dim_exists = any(dim == self._embedding_dim and model == self._model_key 
+                                       for dim, model, count in existing_dims)
+                
+                return {
+                    "valid": True,
+                    "model_aware_columns": True,
+                    "current_model_key": self._model_key,
+                    "current_embedding_dim": self._embedding_dim,
+                    "existing_dimensions": [{"dim": dim, "model": model, "count": count} 
+                                          for dim, model, count in existing_dims],
+                    "current_dim_exists": current_dim_exists,
+                    "dim_mismatch": not current_dim_exists and len(existing_dims) > 0
+                }
+                
+        except Exception as e:
+            logger.error(f"Database schema validation failed: {e}")
+            return {
+                "valid": False,
+                "error": str(e),
+                "remediation": "Check database connection and schema"
+            }
 
     def upsert_docs(self, run_id: str, docs: List[Dict[str, Any]]):
         """Upsert documents and their embeddings to pgvector store"""
         with self.db.cursor() as cur:
             for d in docs:
-                # Insert document
+                # Insert document using actual schema columns
                 cur.execute(
-                    "INSERT INTO lte.documents(id,run_id,source_type,text,meta) "
-                    "VALUES (%s,%s,%s,%s,%s) ON CONFLICT (id) DO UPDATE SET text=EXCLUDED.text",
-                    (d["id"], run_id, d["source_type"], d["text"], d.get("meta", {}))
+                    "INSERT INTO lte.documents(run_id,source_type,uri,title,text_len,sha256) "
+                    "VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT (run_id,source_type,uri,shard_no) DO UPDATE SET title=EXCLUDED.title,text_len=EXCLUDED.text_len,sha256=EXCLUDED.sha256",
+                    (run_id, d["source_type"], d.get("uri", ""), d.get("title", ""), len(d.get("text", "")), d.get("id", ""))
                 )
+                
+                # Get the document ID for embedding storage
+                cur.execute("SELECT id FROM lte.documents WHERE run_id = %s AND source_type = %s AND uri = %s", 
+                           (run_id, d["source_type"], d.get("uri", "")))
+                doc_id = cur.fetchone()[0]
                 
                 # Generate and insert embedding if embedder is available
                 if self.embedder:
                     vec = np.array(self.embedder.encode(d["text"]))
                     if not self._validate_embedding_dimension(vec):
-                        raise ValueError(f"Embedding dimension validation failed for document {d['id']}")
+                        raise ValueError(f"Embedding dimension validation failed for document {doc_id}")
                     
+                    # Use model-aware embedding table (current schema)
                     cur.execute(
-                        "INSERT INTO lte.doc_embeddings(id,doc_id,run_id,embedding,model_key,dim) "
-                        "VALUES (%s,%s,%s,%s,%s,%s) ON CONFLICT (id) DO UPDATE SET embedding=EXCLUDED.embedding,model_key=EXCLUDED.model_key,dim=EXCLUDED.dim",
-                        (d["id"], d["id"], run_id, vec, self._model_key, self._embedding_dim)
+                        "INSERT INTO lte.doc_embeddings(doc_id,embedding_text,model,model_key,embedding_dim) "
+                        "VALUES (%s,%s,%s,%s,%s) ON CONFLICT (doc_id) DO UPDATE SET embedding_text=EXCLUDED.embedding_text,model=EXCLUDED.model,model_key=EXCLUDED.model_key,embedding_dim=EXCLUDED.embedding_dim",
+                        (doc_id, str(vec.tolist()), "sentence-transformers/all-MiniLM-L6-v2", self._model_key, self._embedding_dim)
                     )
 
     def search(self, run_id: str, query: str, k: int = 10) -> List[Dict[str, Any]]:
@@ -79,8 +139,8 @@ class PgVectorStore:
             cur.execute(
                 "SELECT d.id,d.text,d.meta "
                 "FROM lte.doc_embeddings e JOIN lte.documents d ON d.id=e.doc_id "
-                "WHERE e.run_id=%s AND e.model_key=%s ORDER BY e.embedding <#> %s LIMIT %s",
-                (run_id, self._model_key, qvec, k)
+                "WHERE e.model_key=%s AND e.embedding_dim=%s ORDER BY e.embedding_text <#> %s LIMIT %s",
+                (self._model_key, self._embedding_dim, str(qvec.tolist()), k)
             )
             return [{"id": i, "text": t, "meta": m} for (i, t, m) in cur.fetchall()]
     
@@ -97,11 +157,17 @@ class PgVectorStore:
     # Phase 9.3: Graph functionality methods
     
     def store_document(self, doc: Dict[str, Any]) -> int:
-        """Store a document and return its ID."""
+        """Store a document and return its ID. Uses UPSERT to handle duplicates."""
         with self.db.cursor() as cur:
             cur.execute(
                 "INSERT INTO lte.documents (run_id, source_type, uri, title, published_at, shard_no, text_len, sha256) "
-                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+                "VALUES (%s, %s, %s, %s, %s, %s, %s, %s) "
+                "ON CONFLICT (run_id, source_type, uri, shard_no) DO UPDATE SET "
+                "title = EXCLUDED.title, "
+                "published_at = EXCLUDED.published_at, "
+                "text_len = EXCLUDED.text_len, "
+                "sha256 = EXCLUDED.sha256 "
+                "RETURNING id",
                 (doc.get('run_id'), doc.get('source_type'), doc.get('uri'), doc.get('title'),
                  doc.get('published_at'), doc.get('shard_no', 1), doc.get('text_len'),
                  doc.get('sha256'))
@@ -109,66 +175,102 @@ class PgVectorStore:
             return cur.fetchone()[0]
     
     def store_entity(self, doc_id: int, entity: Dict[str, Any]) -> int:
-        """Store an entity and return its ID."""
+        """Store an entity and return its ID. Uses UPSERT to handle duplicates."""
         with self.db.cursor() as cur:
             cur.execute(
                 "INSERT INTO lte.entities (doc_id, type, value, span_start, span_end, conf) "
-                "VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
+                "VALUES (%s, %s, %s, %s, %s, %s) "
+                "ON CONFLICT DO NOTHING RETURNING id",
                 (doc_id, entity['type'], entity['value'], entity.get('span_start'),
                  entity.get('span_end'), entity.get('conf', 1.0))
             )
-            return cur.fetchone()[0]
+            result = cur.fetchone()
+            if result:
+                return result[0]
+            else:
+                # If conflict occurred, get the existing ID
+                cur.execute(
+                    "SELECT id FROM lte.entities WHERE doc_id = %s AND type = %s AND value = %s",
+                    (doc_id, entity['type'], entity['value'])
+                )
+                return cur.fetchone()[0]
     
     def store_claim(self, doc_id: int, claim: Dict[str, Any]) -> int:
-        """Store a claim and return its ID."""
+        """Store a claim and return its ID. Uses UPSERT to handle duplicates."""
         with self.db.cursor() as cur:
             cur.execute(
                 "INSERT INTO lte.claims (doc_id, text, normalized, conf) "
-                "VALUES (%s, %s, %s, %s) RETURNING id",
+                "VALUES (%s, %s, %s, %s) "
+                "ON CONFLICT DO NOTHING RETURNING id",
                 (doc_id, claim['text'], claim.get('normalized'), claim.get('conf', 1.0))
             )
-            return cur.fetchone()[0]
+            result = cur.fetchone()
+            if result:
+                return result[0]
+            else:
+                # If conflict occurred, get the existing ID
+                cur.execute(
+                    "SELECT id FROM lte.claims WHERE doc_id = %s AND text = %s",
+                    (doc_id, claim['text'])
+                )
+                return cur.fetchone()[0]
     
     def store_entity_embedding(self, entity_id: int, embedding: np.ndarray) -> None:
-        """Store an entity embedding with SSOT validation."""
+        """Store an entity embedding with SSOT validation. Uses UPSERT to handle duplicates."""
         if not self._validate_embedding_dimension(embedding):
             raise ValueError(f"Entity embedding dimension validation failed for entity {entity_id}")
             
         with self.db.cursor() as cur:
             cur.execute(
                 "INSERT INTO lte.claim_embeddings (claim_id, embedding, model, model_key, dim) "
-                "VALUES (%s, %s, %s, %s, %s)",
+                "VALUES (%s, %s, %s, %s, %s) "
+                "ON CONFLICT (claim_id) DO UPDATE SET "
+                "embedding = EXCLUDED.embedding, "
+                "model = EXCLUDED.model, "
+                "model_key = EXCLUDED.model_key, "
+                "dim = EXCLUDED.dim",
                 (entity_id, embedding.tolist(), "sentence-transformers/all-MiniLM-L6-v2", self._model_key, self._embedding_dim)
             )
     
     def store_claim_embedding(self, claim_id: int, embedding: np.ndarray) -> None:
-        """Store a claim embedding with SSOT validation."""
+        """Store a claim embedding with SSOT validation. Uses UPSERT to handle duplicates."""
         if not self._validate_embedding_dimension(embedding):
             raise ValueError(f"Claim embedding dimension validation failed for claim {claim_id}")
             
         with self.db.cursor() as cur:
             cur.execute(
                 "INSERT INTO lte.claim_embeddings (claim_id, embedding, model, model_key, dim) "
-                "VALUES (%s, %s, %s, %s, %s)",
+                "VALUES (%s, %s, %s, %s, %s) "
+                "ON CONFLICT (claim_id) DO UPDATE SET "
+                "embedding = EXCLUDED.embedding, "
+                "model = EXCLUDED.model, "
+                "model_key = EXCLUDED.model_key, "
+                "dim = EXCLUDED.dim",
                 (claim_id, embedding.tolist(), "sentence-transformers/all-MiniLM-L6-v2", self._model_key, self._embedding_dim)
             )
     
     def store_entity_link(self, link: Dict[str, Any]) -> None:
-        """Store an entity link."""
+        """Store an entity link. Uses UPSERT to handle duplicates."""
         with self.db.cursor() as cur:
             cur.execute(
                 "INSERT INTO lte.entity_links (left_entity_id, right_entity_id, link_type, score, method) "
-                "VALUES (%s, %s, %s, %s, %s)",
+                "VALUES (%s, %s, %s, %s, %s) "
+                "ON CONFLICT (left_entity_id, right_entity_id, link_type) DO UPDATE SET "
+                "score = EXCLUDED.score, "
+                "method = EXCLUDED.method",
                 (link['left_entity_id'], link['right_entity_id'], link['link_type'],
                  link['score'], link['method'])
             )
     
     def store_claim_link(self, link: Dict[str, Any]) -> None:
-        """Store a claim link."""
+        """Store a claim link. Uses UPSERT to handle duplicates."""
         with self.db.cursor() as cur:
             cur.execute(
                 "INSERT INTO lte.claim_links (left_claim_id, right_claim_id, link_type, score, method) "
-                "VALUES (%s, %s, %s, %s, %s)",
+                "VALUES (%s, %s, %s, %s, %s) "
+                "ON CONFLICT (left_claim_id, right_claim_id, link_type) DO UPDATE SET "
+                "score = EXCLUDED.score, "
+                "method = EXCLUDED.method",
                 (link['left_claim_id'], link['right_claim_id'], link['link_type'],
                  link['score'], link['method'])
             )
@@ -245,6 +347,38 @@ class PgVectorStore:
                     "published_at": pa, "shard_no": sn, "text_len": tl, "sha256": s,
                     "created_at": ca} for (i, ri, st, u, t, pa, sn, tl, s, ca) in cur.fetchall()]
     
+    def get_run_details(self, run_id: str) -> Optional[Dict[str, Any]]:
+        """Get run details including document count and metadata."""
+        with self.db.cursor() as cur:
+            # Check if run exists by looking for documents
+            cur.execute(
+                "SELECT COUNT(*) as doc_count, MIN(created_at) as start_time, MAX(created_at) as end_time "
+                "FROM lte.documents WHERE run_id = %s",
+                (run_id,)
+            )
+            result = cur.fetchone()
+            
+            if not result or result[0] == 0:
+                return None
+            
+            doc_count, start_time, end_time = result
+            
+            # Get additional run metadata
+            cur.execute(
+                "SELECT DISTINCT source_type FROM lte.documents WHERE run_id = %s",
+                (run_id,)
+            )
+            source_types = [row[0] for row in cur.fetchall()]
+            
+            return {
+                "run_id": run_id,
+                "document_count": doc_count,
+                "start_time": start_time,
+                "end_time": end_time,
+                "source_types": source_types,
+                "status": "completed" if end_time else "in_progress"
+            }
+    
     def store_graph_snapshot(self, run_id: str, graph: Dict[str, Any]) -> None:
         """Store a graph snapshot for a run."""
         with self.db.cursor() as cur:
@@ -262,3 +396,18 @@ class PgVectorStore:
             )
             result = cur.fetchone()
             return result[0] if result else None
+
+    def clear_run_data(self, run_id: str) -> None:
+        """Clear all data for a specific run (for rebuild functionality)."""
+        with self.db.cursor() as cur:
+            # Delete in order to respect foreign key constraints
+            cur.execute("DELETE FROM lte.graph_snapshots WHERE run_id = %s", (run_id,))
+            cur.execute("DELETE FROM lte.claim_links WHERE left_claim_id IN (SELECT c.id FROM lte.claims c JOIN lte.documents d ON c.doc_id = d.id WHERE d.run_id = %s)", (run_id,))
+            cur.execute("DELETE FROM lte.claim_links WHERE right_claim_id IN (SELECT c.id FROM lte.claims c JOIN lte.documents d ON c.doc_id = d.id WHERE d.run_id = %s)", (run_id,))
+            cur.execute("DELETE FROM lte.entity_links WHERE left_entity_id IN (SELECT e.id FROM lte.entities e JOIN lte.documents d ON e.doc_id = d.id WHERE d.run_id = %s)", (run_id,))
+            cur.execute("DELETE FROM lte.entity_links WHERE right_entity_id IN (SELECT e.id FROM lte.entities e JOIN lte.documents d ON e.doc_id = d.id WHERE d.run_id = %s)", (run_id,))
+            cur.execute("DELETE FROM lte.claim_embeddings WHERE claim_id IN (SELECT c.id FROM lte.claims c JOIN lte.documents d ON c.doc_id = d.id WHERE d.run_id = %s)", (run_id,))
+            cur.execute("DELETE FROM lte.entities WHERE doc_id IN (SELECT id FROM lte.documents WHERE run_id = %s)", (run_id,))
+            cur.execute("DELETE FROM lte.claims WHERE doc_id IN (SELECT id FROM lte.documents WHERE run_id = %s)", (run_id,))
+            cur.execute("DELETE FROM lte.doc_embeddings WHERE doc_id IN (SELECT id FROM lte.documents WHERE run_id = %s)", (run_id,))
+            cur.execute("DELETE FROM lte.documents WHERE run_id = %s", (run_id,))

@@ -1,8 +1,10 @@
 ---
-description: This visualization system provides sophisticated 3D network analysis capabilities integrated seamlessly with the Living Truth Engine's AI analysis pipeline.
-globs:
-alwaysApply: false
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['src/mcp_servers/living_truth_fastmcp_server.py', 'src/visualization/advanced_viz.py']
 ---
+
 
 
 # Visualization System Integration

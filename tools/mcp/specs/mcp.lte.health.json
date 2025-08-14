@@ -1,0 +1,20 @@
+{
+  "namespace": "mcp.lte.health",
+  "methods": {
+    "get_full": {
+      "params": {},
+      "result": {
+        "status": "ok",
+        "data": {
+          "embedding_model": "string",
+          "embedding_dim": 0,
+          "reverse_proxy": true,
+          "gpu": { "present": true, "vram_total": 0, "active_allocations": [] },
+          "fallbacks": []
+        }
+      }
+    },
+    "assert_ok": { "params": {}, "result": { "ok": true, "failing_gates": [] } },
+    "recent_fallbacks": { "params": {"n": 20}, "result": { "events": [] } }
+  }
+}

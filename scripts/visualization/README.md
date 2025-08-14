@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['mcp_visualization_api.py']
+---
+
 # MCP Visualization System
 
 This directory contains the interactive visualization system for the Living Truth Engine MCP Hub Server. The system provides a web-based interface for interacting with all 63 MCP tools through a beautiful, interactive visualization.

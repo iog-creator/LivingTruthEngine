@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: archived
+last_reviewed: 2025-08-13
+related_files: ['src/mcp_servers/langflow_mcp_server.py', 'langflow_mcp_server.py']
+---
+
 To achieve accurate and reliable interaction with Langflow flows via Cursor AI and the MCP server, the key is to leverage JSON import/export for all operations. This ensures schemas are always pulled from Langflow's code-generated templates (no manual construction, reducing errors like blank nodes). Since your Langflow is local (GitHub clone), Cursor can use MCP tools to export flows to JSON files (capturing exact schemas), modify them (configure nodes), and import back via API or file upload. This mimics UI drag/configure/save but programmatically, using the API's /api/v1/flows endpoint for POST (import/create) and GET (export).
 <argument name="citation_id">8</argument>
 

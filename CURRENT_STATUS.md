@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['python src/mcp_servers/living_truth_fastmcp_server.py', '.cursor/mcp.json', 'config/tool_registry.json']
+---
+
 # Living Truth Engine - Current Status
 
 ## 🎯 **Project Overview**

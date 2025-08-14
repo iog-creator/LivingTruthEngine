@@ -1,12 +1,10 @@
 ---
-description: This rule defines Docker health check best practices and troubleshooting
-  procedures for the Living Truth Engine project.
-globs:
-- '**/docker/**'
-- '**/Dockerfile*'
-- '**/docker-compose*'
-alwaysApply: false
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
 ---
+
 
 
 # Docker Health Check Best Practices

@@ -1,12 +1,10 @@
 ---
-description: This rule documents the current operational status of the MCP Hub Server,
-  including available tools, usage patterns, and troubleshooting information.
-globs:
-- '**/mcp*.py'
-- '**/mcp*.json'
-- '**/src/mcp_servers/**'
-alwaysApply: false
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
 ---
+
 
 
 # MCP Hub Server - Current Status and Usage

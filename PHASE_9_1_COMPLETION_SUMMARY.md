@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['src/dashboard/unified_dashboard.py', 'PHASE_9.md', 'PHASE_9_1_COMPLETION_SUMMARY.md', 'src/common/model_registry.py', 'src/common/__init__.py', 'tests/test_no_fallbacks_strict.py']
+---
+
 # **PHASE 9_1 COMPLETION SUMMARY — Services + Models SSOT & Wiring**
 
 ## **Repository Information**

@@ -1,0 +1,9 @@
+{
+  "namespace": "mcp.lte.timeline",
+  "methods": {
+    "preview": {
+      "params": { "run_id": "string" },
+      "result": { "items": [ { "id": "string", "type": "string", "label": "string", "ts_first": "string", "ts_last": "string", "refs": 0 } ] }
+    }
+  }
+}

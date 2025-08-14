@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['PHASE_8.md']
+---
+
 # Living Truth Engine - Root Overview
 
 This file gives another AI or developer everything needed to understand and run the project immediately.

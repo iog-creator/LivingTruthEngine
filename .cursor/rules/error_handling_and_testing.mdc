@@ -1,11 +1,11 @@
 ---
-description: Error handling and testing standards for the Living Truth Engine project,
-  ensuring proper error reporting and comprehensive testing
-globs:
-- '**/*.py'
-- '**/tests/**'
-alwaysApply: false
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
 ---
+
+
 
 
 # Error Handling and Testing Standards
@@ -166,6 +166,95 @@ def test_audio_generation(self):
 4. **Performance Monitoring**: Monitor response times and resource usage
 5. **Documentation**: Keep error handling and testing documentation current
 
+## 🗄️ **Database Constraint Violation Handling**
+
+### **UPSERT Pattern for Idempotent Operations**
+- **Use `ON CONFLICT` clauses** for all database insertions that may have duplicates
+- **Transaction safety** - Wrap related operations in database transactions
+- **Clear error messages** - Provide specific guidance for constraint violations
+- **Rebuild functionality** - Support clearing existing data for clean rebuilds
+
+### **Examples of Good Constraint Handling**
+```python
+# ✅ GOOD - UPSERT with conflict handling
+def store_entity(self, doc_id: int, entity: Dict[str, Any]) -> int:
+    """Store an entity and return its ID. Uses UPSERT to handle duplicates."""
+    with self.db.cursor() as cur:
+        cur.execute(
+            "INSERT INTO lte.entities (doc_id, type, value, span_start, span_end, conf) "
+            "VALUES (%s, %s, %s, %s, %s, %s) "
+            "ON CONFLICT DO NOTHING RETURNING id",
+            (doc_id, entity['type'], entity['value'], entity.get('span_start'),
+             entity.get('span_end'), entity.get('conf', 1.0))
+        )
+        result = cur.fetchone()
+        if result:
+            return result[0]
+        else:
+            # If conflict occurred, get the existing ID
+            cur.execute(
+                "SELECT id FROM lte.entities WHERE doc_id = %s AND type = %s AND value = %s",
+                (doc_id, entity['type'], entity['value'])
+            )
+            return cur.fetchone()[0]
+
+# ✅ GOOD - Transaction management
+def process_run(self, run_id: str, documents: List[Dict[str, Any]], rebuild: bool = False):
+    """Process a complete run through the linking pipeline."""
+    try:
+        # Start transaction
+        self.pgvector_store.db.autocommit = False
+        
+        try:
+            # Clear existing data if rebuild requested
+            if rebuild:
+                self.pgvector_store.clear_run_data(run_id)
+            
+            # Process documents and store data
+            # ... processing logic ...
+            
+            # Commit transaction
+            self.pgvector_store.db.commit()
+            return results
+            
+        except Exception as e:
+            # Rollback transaction on error
+            self.pgvector_store.db.rollback()
+            raise
+            
+        finally:
+            # Restore autocommit
+            self.pgvector_store.db.autocommit = True
+            
+    except Exception as e:
+        return {'status': 'failed', 'error': str(e)}
+```
+
+### **API Error Response Standards**
+```python
+# ✅ GOOD - Specific error codes for constraint violations
+if 'duplicate key value violates unique constraint' in error_msg:
+    return envelope_err(
+        f"Graph building failed due to constraint violation. Try using ?rebuild=1 to clear existing data: {error_msg}", 
+        409,
+        {"code": "graph_build_conflict", "hint": "Use ?rebuild=1 to clear existing data"}
+    )
+```
+
+### **JSON Serialization Handling**
+```python
+# ✅ GOOD - DateTime conversion for JSON serialization
+def convert_datetime(obj):
+    if hasattr(obj, 'isoformat'):
+        return obj.isoformat()
+    return obj
+
+# Convert all datetime fields before JSON serialization
+for doc in documents:
+    if 'created_at' in doc and doc['created_at']:
+        doc['created_at'] = convert_datetime(doc['created_at'])
+```
+
 ---
 
 **Follow these standards to ensure robust error handling and comprehensive testing throughout the Living Truth Engine project.**
@@ -183,6 +272,14 @@ alwaysApply: false
 
 alwaysApply: false
 ---
+
+
+alwaysApply: false
+---
+
+alwaysApply: false
+---
+
 
 
 alwaysApply: false

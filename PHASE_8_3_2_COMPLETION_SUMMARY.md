@@ -1,11 +1,10 @@
 ---
-phase: 8.3.2
-title: Snapshot, Reconcile & Lock — Completion Summary
-date: 2025-08-12T00:03:33Z
-baseline: 8.3.1
-snapshot_file: docs/snapshots/snapshot_20250812T000333Z.md
-status: completed
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
 ---
+
 
 ## What we did
 - Captured one-click snapshot (containers, health/full, tools, analyze endpoints, envelopes, service probes, code/container hash, compose ports, Langflow grep, transcript call grep).

@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['src/runners/multisource_runner.py', 'PHASE_9.md', 'pdf_adapter.py', 'web_adapter.py', 'PHASE_9_2_COMPLETION_SUMMARY.md', 'pgvector_store.py', 'youtube_adapter.py']
+---
+
 # **PHASE 9.2 PLAN — Multi-Source Runner Backend & UI Integration**
 **Status:** Planned  
 **Phase:** 9.2  

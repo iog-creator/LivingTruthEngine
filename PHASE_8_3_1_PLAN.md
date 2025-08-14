@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['config/tool_registry.json']
+---
+
 # PHASE 8.3.1 PLAN
 
 ## Objective

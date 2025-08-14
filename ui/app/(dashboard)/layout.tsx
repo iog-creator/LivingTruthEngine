@@ -1,15 +1,20 @@
 'use client';
 
-import { QueryProvider } from '@/lib/query';
-import { ErrorBoundary } from '@/components/dashboard/ErrorBoundary';
-import { Sidebar } from '@/components/dashboard/Sidebar';
 import { Header } from '@/components/dashboard/Header';
+import { Sidebar } from '@/components/dashboard/Sidebar';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import MetricsDisplay from '@/components/MetricsDisplay';
+import { useClientMetrics } from '@/hooks/useClientMetrics';
+import { QueryProvider } from '@/lib/query';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Initialize client metrics
+  useClientMetrics();
+
   return (
     <ErrorBoundary>
       <QueryProvider>
@@ -23,6 +28,8 @@ export default function DashboardLayout({
               </main>
             </div>
           </div>
+          {/* Development metrics display */}
+          {process.env.NODE_ENV === 'development' && <MetricsDisplay />}
         </div>
       </QueryProvider>
     </ErrorBoundary>

@@ -85,16 +85,14 @@ export function HealthCards() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm">pgvector</span>
-              <Badge variant={healthData?.pgvector?.enabled ? 'default' : 'destructive'}>
-                {healthData?.pgvector?.enabled ? 'Enabled' : 'Disabled'}
+              <Badge variant={healthData?.pgvector?.status === 'ok' ? 'default' : 'destructive'}>
+                {healthData?.pgvector?.status === 'ok' ? 'Connected' : 'Disconnected'}
               </Badge>
             </div>
-            {healthData?.pgvector?.tables && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Tables</span>
-                <span className="text-sm">{healthData.pgvector.tables.length}</span>
-              </div>
-            )}
+            <div className="flex items-center justify-between">
+              <span className="text-sm">Connection</span>
+              <span className="text-sm font-mono truncate max-w-24">{healthData?.pgvector?.connection}</span>
+            </div>
             {healthData?.embedding_dim && (
               <div className="flex items-center justify-between">
                 <span className="text-sm">Dimensions</span>

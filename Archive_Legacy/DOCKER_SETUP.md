@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: archived
+last_reviewed: 2025-08-13
+related_files: []
+---
+
 # Living Truth Engine - Docker Setup Guide
 
 ## 🐳 Overview

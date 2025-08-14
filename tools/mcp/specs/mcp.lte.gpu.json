@@ -1,0 +1,13 @@
+{
+  "namespace": "mcp.lte.gpu",
+  "methods": {
+    "status": {
+      "params": {},
+      "result": { "present": true, "vram_total": 0, "active_allocations": [] }
+    },
+    "simulate_low_vram": {
+      "params": { "model": "reranker|llm|embedding" },
+      "result": { "ok": true, "fallback_triggered": true }
+    }
+  }
+}

@@ -1,12 +1,10 @@
 ---
-description: Always rebuild the master project log after modifying any PHASE_* file.
-alwaysApply: true
-globs:
-  - "PHASE_*_PLAN.md"
-  - "PHASE_*_COMPLETION_SUMMARY.md"
-  - "docs/PHASE_*_PLAN.md"
-  - "docs/PHASE_*_COMPLETION_SUMMARY.md"
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['docs/project_master_log.md', 'build_master_log.py']
 ---
+
 
 # Master Log Rebuild Rule
 

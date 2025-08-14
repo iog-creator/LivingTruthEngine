@@ -1,8 +1,244 @@
 {
   "version": "1.0.0",
   "last_updated": "2025-08-03",
-  "total_tools": 99,
+  "total_tools": 126,
   "servers": {
+    "phase9_mcp_server": {
+      "description": "Phase 9 MCP Server - Comprehensive development tooling",
+      "tools": [
+        {
+          "name": "validate_cursor_rules",
+          "description": "Validate all cursor rules (.mdc files) for proper frontmatter and structure",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "validate_cursor_rules",
+          "params_schema": {}
+        },
+        {
+          "name": "fix_cursor_rule_frontmatter",
+          "description": "Fix frontmatter for a specific cursor rule file",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "fix_cursor_rule_frontmatter",
+          "params_schema": {
+            "filename": {
+              "type": "string",
+              "required": true,
+              "description": "Name of the rule file to fix"
+            }
+          }
+        },
+        {
+          "name": "ruleset_archive_outdated",
+          "description": "Archive outdated rule files into rules/archive/ with index update",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "ruleset_archive_outdated",
+          "params_schema": {}
+        },
+        {
+          "name": "ruleset_apply_templates",
+          "description": "Apply rule templates to ensure consistency",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "ruleset_apply_templates",
+          "params_schema": {}
+        },
+        {
+          "name": "get_full_health",
+          "description": "Fetch /api/health/full and assert required keys",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "get_full_health",
+          "params_schema": {}
+        },
+        {
+          "name": "assert_health_ok",
+          "description": "Fail with diagnostics if any health gate is down",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "assert_health_ok",
+          "params_schema": {}
+        },
+        {
+          "name": "get_recent_fallbacks",
+          "description": "Get recent fallback events",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "get_recent_fallbacks",
+          "params_schema": {
+            "limit": {
+              "type": "int",
+              "required": false,
+              "default": 10,
+              "description": "Number of recent events to return"
+            }
+          }
+        },
+        {
+          "name": "registry_show",
+          "description": "Dump ModelRegistry configuration",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "registry_show",
+          "params_schema": {}
+        },
+        {
+          "name": "assert_embedding_dim",
+          "description": "Compare registry vs DB embedding dimensions",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "assert_embedding_dim",
+          "params_schema": {
+            "tables": {
+              "type": "list",
+              "required": true,
+              "description": "List of table names to check"
+            }
+          }
+        },
+        {
+          "name": "get_db_dimension",
+          "description": "Read vector dimension for a specific table",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "get_db_dimension",
+          "params_schema": {
+            "table": {
+              "type": "string",
+              "required": true,
+              "description": "Table name to check"
+            }
+          }
+        },
+        {
+          "name": "migrate_dimension",
+          "description": "Generate migration script for target dimension",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "migrate_dimension",
+          "params_schema": {
+            "target_dim": {
+              "type": "int",
+              "required": true,
+              "description": "Target dimension for migration"
+            }
+          }
+        },
+        {
+          "name": "reindex_ann",
+          "description": "Rebuild IVFFLAT indexes for a table",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "reindex_ann",
+          "params_schema": {
+            "table": {
+              "type": "string",
+              "required": true,
+              "description": "Table name to reindex"
+            }
+          }
+        },
+        {
+          "name": "smoke_proxy",
+          "description": "Smoke test for reverse proxy configuration",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "smoke_proxy",
+          "params_schema": {}
+        },
+        {
+          "name": "validate_envelopes",
+          "description": "Validate API envelope format across UI routes",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "validate_envelopes",
+          "params_schema": {}
+        },
+        {
+          "name": "playwright_smoke",
+          "description": "Run Playwright smoke tests for UI components",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "playwright_smoke",
+          "params_schema": {}
+        },
+        {
+          "name": "test_sources",
+          "description": "Test adapter pipelines with sample inputs",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "test_sources",
+          "params_schema": {}
+        },
+        {
+          "name": "transcript_mode_check",
+          "description": "Verify persisted transcript mode metadata",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "transcript_mode_check",
+          "params_schema": {}
+        },
+        {
+          "name": "get_gpu_status",
+          "description": "Get GPU status and allocation information",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "get_gpu_status",
+          "params_schema": {}
+        },
+        {
+          "name": "simulate_low_vram",
+          "description": "Simulate low VRAM scenario to test CPU fallback",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "simulate_low_vram",
+          "params_schema": {}
+        },
+        {
+          "name": "preview_timeline",
+          "description": "Preview timeline for a specific run",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "preview_timeline",
+          "params_schema": {
+            "run_id": {
+              "type": "string",
+              "required": true,
+              "description": "Run ID to preview timeline for"
+            }
+          }
+        },
+        {
+          "name": "run_phase_smoke",
+          "description": "Execute phase-specific smoke tests",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "run_phase_smoke",
+          "params_schema": {
+            "phase": {
+              "type": "string",
+              "required": true,
+              "description": "Phase identifier (e.g., '9.4.0', '9.4.2')"
+            }
+          }
+        },
+        {
+          "name": "generate_phase_completion_summary",
+          "description": "Generate completion summary for a sub-phase",
+          "server": "phase9_mcp_server",
+          "module": "src.mcp_servers.phase9_mcp_server",
+          "function": "generate_phase_completion_summary",
+          "params_schema": {
+            "subphase": {
+              "type": "string",
+              "required": true,
+              "description": "Sub-phase identifier (e.g., '9.4.2')"
+            }
+          }
+        }
+      ]
+    },
     "living_truth_fastmcp_server": {
       "description": "Living Truth Fastmcp Server MCP Server",
       "tools": [

@@ -1,7 +1,10 @@
 ---
-description: Rule for How To Make A Cursor Rule
-alwaysApply: false
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
 ---
+
 # How to Build Cursor Rules - Complete Guide
 
 ## Description

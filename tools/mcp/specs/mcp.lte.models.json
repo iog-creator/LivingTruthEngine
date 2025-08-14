@@ -1,0 +1,16 @@
+{
+  "namespace": "mcp.lte.models",
+  "methods": {
+    "registry_show": {
+      "params": {},
+      "result": {
+        "llm": { "provider": "string", "model": "string" },
+        "embedding": { "provider": "string", "model": "string", "dim": 0 }
+      }
+    },
+    "assert_embedding_dim": {
+      "params": { "tables": ["lte.doc_embeddings","lte.claim_embeddings"] },
+      "result": { "ok": true, "db_dims": {"lte.doc_embeddings": 0, "lte.claim_embeddings": 0}, "message": "string" }
+    }
+  }
+}

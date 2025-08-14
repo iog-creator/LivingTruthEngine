@@ -1,347 +1,300 @@
-# PHASE_9_MASTER_PLAN.md — Living Truth Engine (Guided Incremental PRs)
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['linking_pipeline.py']
+---
 
-> Source of truth for Phase 9 (9.3 → 9.5).  
-> Cursor protocol: **one PR per sub‑phase**, following the order below.  
-> For each PR:
-> 1) Create/commit files under “Files” for that sub‑phase only.  
-> 2) Add a short `PHASE_<subphase>_COMPLETION_SUMMARY.md` in repo root at merge time.  
-> 3) Run smoke (provided) and `python build_master_log.py append`.
+# Phase 9 Master Plan
+**Plans Only — Incorporates All Lessons Learned to Allow Full Replay from Scratch**
 
 ---
 
-## ✅ Phase 9.3 (context: already complete)
-**What’s done:** Entity/claim extraction, cross‑doc linking, Rulego checks, DSPy labels, `/api/graph/{run_id}`, basic Graph UI hook, pgvector tables (temporary), smoke/tests, completion summary & master log updates.
-
-**Hindsight items identified:**  
-- Embedding vector dimension must come from **SSOT** (no magic numbers like 768).  
-- UI split caused drift; we will unify UI in Phase 9.4.  
-- Health should surface `embedding_model` and `embedding_dim`.
-
----
-
-## 🔧 Phase 9.3.1 — Hardening & Consistency (Hotfix) — *PR #1*
-
+## 9.3.0 – Graph Extraction & Linking Pipeline
 **Objectives**
-- Fix completion summary generator & ensure `build_master_log.py` picks it up cleanly.
-- Add a real `scripts/p9_3_smoke.sh` (idempotent).
-- Make pgvector **dimension SSOT‑driven**; remove any hard‑coded dims.
-- Health endpoint surfaces `embedding_model` + `embedding_dim`.
+- Implement entity & claim extraction pipeline across ingested documents.
+- Link entities and claims across documents to form an evidence graph.
+- Integrate deterministic policy checks (Rulego).
+- Integrate AI corroboration (DSPy).
+- Expose read-only APIs for graph/timeline consumption.
+- Persist features & links in Postgres (pgvector + relational tables).
 
-**Deliverables**
-- `scripts/p9_3_smoke.sh` (prints node/edge counts; exits 0)
-- `docker/initdb/003b_graph_dim.sql` (safe migration shell; app handles D at runtime)
-- `src/storage/pgvector_store.py`: read embedding **D** from model registry; refuse mismatches; store `model_key`, `dim`.
-- `/api/health/full`: add fields `embedding_model`, `embedding_dim`.
-- Tests: `tests/test_pgvector_dim.py`, `tests/test_master_log.py`.
+**Key Steps**
+1. Create `003_graph.sql` schema with required tables & indexes.
+2. Implement `linking_pipeline.py` for extraction, linking, and snapshotting.
+3. Add CPU/GPU model fallback support.
+4. Add `/api/graph/{run_id}` and `/api/timeline/{run_id}` endpoints.
+5. Add minimal UI Graph tab to view output.
+6. Write smoke test `p9_3_smoke.sh`.
+7. **MCP/RULES Enforcement:**  
+   - Update MCP tools for graph/timeline APIs.  
+   - Update Cursor rules for graph build, validation, and smoke tests.  
+   - Validate with MCP server gates.
 
-**Acceptance**
-- Smoke passes; summary written; master log updated.
-- `/api/health/full` shows correct model & dim.
-- No magic dims left in code or DDL.
-
-**Files**
-- scripts/p9_3_smoke.sh
-- docker/initdb/003b_graph_dim.sql
-- src/storage/pgvector_store.py
-- src/common/model_registry.py (expose dim if needed)
-- tests/test_pgvector_dim.py
-- tests/test_master_log.py
+**Acceptance Criteria**
+- APIs return `{status,data,error}` envelope.
+- End-to-end smoke script passes.
+- MCP validation passes with updated tool definitions.
 
 ---
 
-## 🌐 Phase 9.4.0 — DevOps Cutover Skeleton (Single Origin) — *PR #2*
-
+## 9.3.1 – Hardening & Consistency
 **Objectives**
-- Single origin: `/api/**` → FastAPI `:8050`; `/` → new UI shell.
-- Keep `/status` for the legacy working state page.
-- Add CORS toggle via env for local UI dev (if needed).
+- Enforce schema constraints and envelope consistency.
+- Add idempotency and rebuild support for graph builds.
+- Improve error handling for extraction/linking.
 
-**Deliverables**
-- Reverse proxy config (Traefik/Nginx, compose override or docs).
-- CORS env in backend; keep envelope format unchanged.
-- `/api/health/full` adds `{ reverse_proxy: true, ui_origin }`.
+**Key Steps**
+1. Add `?rebuild=1` option to graph build.
+2. Wrap builds in transactions with `ON CONFLICT` upserts.
+3. Add detailed error messages with remediation hints.
+4. Expand smoke tests to cover rebuild.
+5. **MCP/RULES Enforcement:**  
+   - Update MCP tools for rebuild option and constraints.  
+   - Update Cursor rules for idempotent builds & DB validation.  
 
-**Acceptance**
-- `/` returns placeholder index.
-- `/status` returns legacy page unchanged.
-- `/api/health/full` lists `reverse_proxy: true`.
-
-**Files**
-- deploy/proxy/{nginx.conf, docker-compose.override.yml}
-- src/dashboard/unified_dashboard.py (CORS env toggle)
-- scripts/p9_4_0_smoke.sh
+**Acceptance Criteria**
+- No constraint violations on repeated builds.
+- MCP server health passes.
 
 ---
 
-## 🧱 Phase 9.4.1 — UI Foundation & Scaffold (Next.js) — *PR #3*
-
+## 9.4.0 – DevOps Cutover Skeleton
 **Objectives**
-- New **Next.js 14 + TypeScript + Tailwind + shadcn/ui** app.
-- API client + Zod envelope guards, React Query, global error boundary.
-- Route: `/overview` with placeholder health cards.
+- Single origin server: `/api/**` via FastAPI, `/` via new UI shell.
+- Reverse proxy configuration.
+- Dev environment parity for API/UI.
 
-**Deliverables**
-- `ui/` Next.js App Router project.
-- `ui/lib/{api.ts, schemas.ts, query.ts, state.ts}`.
-- `ui/app/(dashboard)/layout.tsx`, `ui/app/(dashboard)/overview/page.tsx`.
-- Scripts: `scripts/ui_dev.sh`, `scripts/ui_build.sh`.
+**Key Steps**
+1. Configure dashboard to serve both API & UI.
+2. Add reverse proxy for API routing.
+3. Update Docker Compose for single origin deployment.
+4. Add CI test to verify routing works.
+5. **MCP/RULES Enforcement:**  
+   - Update MCP tool for health check across reverse proxy.  
+   - Add Cursor rule to block merges if proxy health fails.
 
-**Acceptance**
-- `npm run dev` → `/overview` renders.
-- API client validates `{status,data,error}` (MSW mock ok).
-
-**Files**
-- ui/**
-- scripts/ui_dev.sh
-- scripts/ui_build.sh
+**Acceptance Criteria**
+- UI and API accessible under same origin.
+- Reverse proxy health passes in MCP tests.
 
 ---
 
-## ▶️ Phase 9.4.2 — Runs Flow (Start/List/Detail/Verify) — *PR #4*
-
+## 9.4.1 – CI Build & Phase Gate
 **Objectives**
-- `/runs` + `/runs/[runId]`.
-- StartRunForm (loading/disabled/toasts), RunList, RunDetail (manifest, metrics, merkle), Verify Proofs.
+- Add per-phase build & deploy gates.
+- Integrate MCP validation into CI.
 
-**Deliverables**
-- Components: `StartRunForm.tsx`, `RunList.tsx`, `RunDetail.tsx`.
-- E2E: `tests/e2e/runs.spec.ts`.
+**Key Steps**
+1. Add `scripts/ci/validate_phase9.sh` with per-phase checks.
+2. Add CI pipeline step for MCP validation.
+3. Enforce MCP ruleset sync before build.
+4. **MCP/RULES Enforcement:**  
+   - Add MCP tool for CI status reporting.  
+   - Update Cursor rules to run MCP before merge.
 
-**Acceptance**
-- E2E: start → list refresh → open → manifest & merkle visible.
-- Envelope errors become toasts; no dead buttons.
-
-**Files**
-- ui/app/(dashboard)/runs/**
-- ui/components/runs/**
-- tests/e2e/runs.spec.ts
+**Acceptance Criteria**
+- MCP server passes in CI.
+- Merge blocked on validation failure.
 
 ---
 
-## 🕸️ Phase 9.4.3 — Evidence Graph (MVP) — *PR #5*
-
+## 9.4.2 – UI Integration Gate
 **Objectives**
-- `/graph` renders force graph from `/api/graph/{run_id}`.
-- Stats bar (node/edge counts), findings list, search; **fallback list** if WebGL missing.
+- Standardize UI component integration process.
+- Enforce UI health in MCP validation.
 
-**Deliverables**
-- `GraphView.tsx` (Cytoscape or force-graph).
-- E2E: `tests/e2e/graph.spec.ts`.
+**Key Steps**
+1. Define UI build test in MCP.
+2. Update MCP server with `/ui/health` check.
+3. Add Cursor rule for UI build success gate.
+4. Add UI smoke test script.
+5. **MCP/RULES Enforcement:**  
+   - Update tools for UI validation & smoke run.  
 
-**Acceptance**
-- Given a `run_id`, graph renders without JS errors; fallback list triggers when needed.
-
-**Files**
-- ui/app/(dashboard)/graph/page.tsx
-- ui/components/graph/GraphView.tsx
-- tests/e2e/graph.spec.ts
+**Acceptance Criteria**
+- MCP UI health passes before deploy.
 
 ---
 
-## 📑 Phase 9.4.4 — Claims & Entities Tables — *PR #6*
-
+## 9.4.3 – Graph API Expansion
 **Objectives**
-- `/claims` and `/entities` with filters, pagination, row drawer (details + source links).
-- Claim badges: `corroborated|weak|contradicted`.
+- Add filters, search, and metadata to graph API.
+- Prepare for advanced UI graph interactions.
 
-**Deliverables**
-- Tables using TanStack Table + faceted filter controls.
+**Key Steps**
+1. Extend `/api/graph/{run_id}` with filters & search params.
+2. Add node/edge metadata in API.
+3. Update MCP tools for expanded graph API.
+4. **MCP/RULES Enforcement:**  
+   - Update Cursor rules for expanded API validation.  
 
-**Acceptance**
-- Tables load for a `run_id`; filters/pagination work; drawer shows metadata.
-
-**Files**
-- ui/app/(dashboard)/claims/page.tsx
-- ui/app/(dashboard)/entities/page.tsx
-- ui/components/tables/**
-- tests/e2e/tables.spec.ts
+**Acceptance Criteria**
+- Expanded graph API responds within 500 ms.
+- MCP graph tests pass.
 
 ---
 
-## 🧰 Phase 9.4.5 — Models, Health, Settings (Read‑only) — *PR #7*
-
+## 9.4.4 – API Envelope Enforcement
 **Objectives**
-- `/models`: model names, device, endpoint, checksum.
-- `/health`: gates + recent fallbacks.
-- `/settings`: flags read‑only mirrored from server.
+- Validate API envelope format across all endpoints.
+- Automate enforcement in CI.
 
-**Deliverables**
-- Pages wired to `/api/models` and `/api/health/full`.
+**Key Steps**
+1. Add MCP tool for envelope validation.
+2. Update Cursor rules to block on envelope failures.
+3. Integrate into `validate_phase9.sh`.
+4. **MCP/RULES Enforcement:**  
+   - Tool for bulk API validation.  
 
-**Acceptance**
-- Live data displayed; no writes yet.
-
-**Files**
-- ui/app/(dashboard)/models/page.tsx
-- ui/app/(dashboard)/health/page.tsx
-- ui/app/(dashboard)/settings/page.tsx
+**Acceptance Criteria**
+- 100% envelope compliance.
 
 ---
 
-## 🧯 Phase 9.4.6 — Client Observability & Reliability — *PR #8*
-
+## 9.4.5 – Health Gates Expansion
 **Objectives**
-- Global error boundary w/ copyable error details.
-- Minimal client metrics (pageview + API timings).
-- Retry policy: GETs only; never retry POST.
+- Expand `/api/health/full` with all phase metrics.
+- MCP tool for full health validation.
 
-**Deliverables**
-- `ui/components/system/ErrorBoundary.tsx`
-- `ui/lib/api.ts` retry/backoff rules
-- Unit tests for api client behavior.
+**Key Steps**
+1. Add metrics: GPU, embedding model/dim, recent fallbacks.
+2. Update MCP server to parse and validate health metrics.
+3. **MCP/RULES Enforcement:**  
+   - Cursor rules updated to require all health gates pass.
 
-**Acceptance**
-- Forced error triggers boundary; timings visible in logs; POSTs never auto‑retry.
-
-**Files**
-- ui/components/system/ErrorBoundary.tsx
-- ui/lib/api.ts
-- tests/unit/apiClient.test.ts
+**Acceptance Criteria**
+- Health gates fully cover system readiness.
 
 ---
 
-## 🧪 Phase 9.4.7 — Test & Contract Suite — *PR #9*
-
+## 9.4.6 – Error Handling & Observability
 **Objectives**
-- Zod schemas for all envelopes used by the UI.
-- Playwright smoke for Status/Run/Graph; local CI script.
+- Centralize error handling.
+- Improve observability via structured logging.
 
-**Deliverables**
-- `ui/lib/schemas.ts`
-- E2E specs: `status`, `ingest`, `graph`.
+**Key Steps**
+1. Add error codes and categories.
+2. Add structured logging to all APIs.
+3. Update MCP tools for error log scraping.
+4. **MCP/RULES Enforcement:**  
+   - Cursor rule requiring error budget compliance.
 
-**Acceptance**
-- All unit + e2e tests pass locally.
-
-**Files**
-- ui/lib/schemas.ts
-- tests/e2e/{status,ingest,graph}.spec.ts
-- package.json (scripts for CI)
+**Acceptance Criteria**
+- All errors logged with code/category.
+- MCP detects no unclassified errors.
 
 ---
 
-## 📥 Phase 9.5.0 — Real Adapters (YouTube/Web/PDF) — *PR #10*
-
+## 9.4.7 – CI/CD Auto-Remediation Hooks
 **Objectives**
-- Production adapters: normalize() → DocumentLike.
-- Dedupe by `sha256(text)`; min text length enforced.
-- Persist YouTube transcript mode.
+- Auto-remediate common failures in CI/CD.
+- Integrate MCP-triggered fixes.
 
-**Deliverables**
-- `src/adapters/{youtube,web,pdf}.py`
-- Runner integration; adapter tests.
+**Key Steps**
+1. Add remediation scripts for known errors.
+2. Update MCP tools to trigger remediation hooks.
+3. **MCP/RULES Enforcement:**  
+   - Cursor rule blocks if remediation fails.
 
-**Acceptance**
-- Multi‑source run yields ≥1 doc per selected source (sample inputs).
-- Smoke validates adapter paths; envelopes OK.
-
-**Files**
-- src/adapters/*
-- src/runners/multisource_runner.py (wire adapters)
-- tests/test_adapters_*.py
-- scripts/p9_5_0_smoke.sh
+**Acceptance Criteria**
+- CI/CD can auto-fix predefined failure modes.
 
 ---
 
-## 🧭 Phase 9.5.1 — Embedding Storage: Model‑Aware Dimensions — *PR #11*
-
+## 9.5.0 – Real Adapters
 **Objectives**
-- No magic dims; enforce **dim from SSOT**; allow multiple models safely.
-- Partition (or view) by `(model_key, dim)`; ANN indexes per partition.
-- Backfill/move script.
+- Implement real YouTube, Web, and PDF adapters.
+- Deduplicate by SHA256.
+- Persist transcript mode.
 
-**Deliverables**
-- Migration: `docker/initdb/004_embeddings.sql`.
-- Store writes tagged with `model_key`, `dim`, `version`.
-- Health shows `embedding_model`, `embedding_dim`, `dim_mismatch: false`.
+**Key Steps**
+1. Implement adapters in `src/adapters/`.
+2. Add enhanced multi-source runner.
+3. Integrate into API.
+4. Smoke test `p9_5_0_smoke.sh`.
+5. **MCP/RULES Enforcement:**  
+   - Update MCP tools for adapter tests.
 
-**Acceptance**
-- Inserts land in correct partition; KNN works with ANN index.
-
-**Files**
-- docker/initdb/004_embeddings.sql
-- src/storage/pgvector_store.py
-- scripts/migrations/move_embeddings_by_model.py
-- tests/test_pgvector_dim.py
+**Acceptance Criteria**
+- ≥1 doc/source in multi-source run.
+- MCP adapter tests pass.
 
 ---
 
-## 🖥️ Phase 9.5.2 — GPU Scheduler + Health Upgrades — *PR #12*
-
+## 9.5.0a – Adapter Internals Upgrade
 **Objectives**
-- VRAM probing + per‑model reservations.
-- Lazy model load/unload; fallback logging.
-- Health exposes GPU info and recent fallbacks.
+- Upgrade Web/PDF adapters with high-quality extraction libraries.
 
-**Deliverables**
-- `src/common/gpu_scheduler.py`
-- `/api/health/full` adds `gpu:{present,vram_total,active_allocations}` and `fallbacks[]`.
+**Key Steps**
+1. Web: Trafilatura + readability + JS render fallback.
+2. PDF: PyMuPDF + pdfplumber + OCR fallback.
+3. Add robust fallback chain.
+4. Update smoke tests.
+5. **MCP/RULES Enforcement:**  
+   - MCP tool for extraction quality metrics.
 
-**Acceptance**
-- Force low VRAM → CPU fallback logged and visible in health.
-
-**Files**
-- src/common/gpu_scheduler.py
-- src/dashboard/unified_dashboard.py (health fields)
-- tests/test_gpu_scheduler.py
+**Acceptance Criteria**
+- Enhanced extraction quality.
+- MCP extraction tests pass.
 
 ---
 
-## 🕰️ Phase 9.5.3 — Timeline API + Graph Polish — *PR #13*
-
+## 9.5.1 – Model-Aware Embedding Storage
 **Objectives**
-- `GET /api/timeline/{run_id}` items `{id,type,label,ts_first,ts_last,refs}`.
-- Graph filters, pinning, selection drawer polish.
+- Remove magic dimensions.
+- Partition by `(model_key, dim)`.
+- Backfill embeddings.
 
-**Deliverables**
-- Timeline API + UI view (in Graph page).
-- Timeline test; Graph polish.
+**Key Steps**
+1. Schema migration.
+2. Update embedding store ops.
+3. Health gate for dim mismatch.
+4. **MCP/RULES Enforcement:**  
+   - Tool for embedding validation.
 
-**Acceptance**
-- Timeline renders <1s on sample; smooth interactions.
-
-**Files**
-- src/dashboard/unified_dashboard.py (timeline endpoint)
-- ui/app/(dashboard)/graph/page.tsx (polish)
-- tests/test_timeline_api.py
+**Acceptance Criteria**
+- No dim mismatches.
+- MCP embedding test passes.
 
 ---
 
-## 🚀 Phase 9.5.4 — Performance Gates & Hardening — *PR #14*
-
+## 9.5.2 – Embedding Backfill & Verification
 **Objectives**
-- Perf harness for `/api/graph`/Timeline; LCP and bundle size budgets.
-- Optional CI gates (warn/fail on regression).
-
-**Deliverables**
-- `scripts/perf_harness.py`
-- Tests asserting p95 API latencies; Next.js bundle analyzer.
-
-**Acceptance**
-- `/api/graph` p95 ≤ 1.5s on demo corpus; Timeline ≤ 1.0s.
-- UI initial JS ≤ 250KB; LCP ≤ 2.5s (dev box).
-
-**Files**
-- scripts/perf_harness.py
-- tests/perf/test_perf_targets.py
-- ui/next.config.mjs (analyze)
+- Backfill missing embeddings.
+- Verify all embeddings match model/dim.
 
 ---
 
-# Cursor Working Protocol (strict)
-
-- **One PR per sub‑phase** in the order above.  
-- **Commit format**: `phase<subphase>: <short summary> [verified]`.  
-- On each PR merge:
-  1) Create/update `PHASE_<subphase>_COMPLETION_SUMMARY.md` in repo root (brief: what shipped, evidence of acceptance).  
-  2) Run the sub‑phase smoke script (if present).  
-  3) `python build_master_log.py append`.
-
-# Ground Rules
-
-- No changes to API envelope `{status,data?,error?}` without plan amendments.  
-- No edits to the legacy `home.html`; keep `/status` page functional.  
-- Embedding dimension must come from SSOT (model registry/env).  
-- If health detects a schema/model mismatch, return a clear 5xx with remediation steps.
+## 9.5.3 – Timeline API + Graph Polish
+**Objectives**
+- `/api/timeline/{run_id}` endpoint.
+- Graph UX filters/pinning polish.
 
 ---
+
+## 9.5.4 – Performance Gates
+**Objectives**
+- p95 latency measurement.
+- LCP budget enforcement.
+- Bundle size optimization.
+- CI gates for regressions.
+
+---
+
+## 9.5.5 – Error Budgeting & Recovery Automation
+**Objectives**
+- Error budget enforcement.
+- Automated recovery workflows.
+
+---
+
+## 9.6.x – Full GPU / Real Model Integration
+**Objectives**
+- GPU model serving for embeddings, reranking, LLM tasks.
+
+---
+
+## 9.7.x – Advanced Evidence Graph & UI Overhaul
+**Objectives**
+- New UI with real-time graph interactions and advanced filters.

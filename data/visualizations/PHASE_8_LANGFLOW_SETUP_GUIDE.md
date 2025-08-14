@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['phase8_advanced_flow.json', 'PHASE_8.md', 'data/visualizations/phase8_advanced_flow.json', 'data/visualizations/phase8_basic_flow.json', 'phase8_langflow_project.json', 'phase8_basic_flow.json']
+---
+
 # Phase 8 Langflow Setup Guide for MCP Integration
 
 This guide will help you set up the Phase 8 real data ingestion pipeline flows in Langflow and expose them as MCP tools.

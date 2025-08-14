@@ -299,6 +299,39 @@ class LinkingPipeline:
             entity_links = self.pgvector_store.get_entity_links_by_run(run_id)
             claim_links = self.pgvector_store.get_claim_links_by_run(run_id)
             
+            # Convert datetime objects to ISO format strings for JSON serialization
+            def convert_datetime(obj):
+                if hasattr(obj, 'isoformat'):
+                    return obj.isoformat()
+                return obj
+            
+            # Convert all datetime fields in documents
+            for doc in documents:
+                if 'created_at' in doc and doc['created_at']:
+                    doc['created_at'] = convert_datetime(doc['created_at'])
+                if 'published_at' in doc and doc['published_at']:
+                    doc['published_at'] = convert_datetime(doc['published_at'])
+            
+            # Convert all datetime fields in entities
+            for entity in entities:
+                if 'created_at' in entity and entity['created_at']:
+                    entity['created_at'] = convert_datetime(entity['created_at'])
+            
+            # Convert all datetime fields in claims
+            for claim in claims:
+                if 'created_at' in claim and claim['created_at']:
+                    claim['created_at'] = convert_datetime(claim['created_at'])
+            
+            # Convert all datetime fields in entity_links
+            for link in entity_links:
+                if 'created_at' in link and link['created_at']:
+                    link['created_at'] = convert_datetime(link['created_at'])
+            
+            # Convert all datetime fields in claim_links
+            for link in claim_links:
+                if 'created_at' in link and link['created_at']:
+                    link['created_at'] = convert_datetime(link['created_at'])
+            
             # Initialize Rulego and DSPy components
             rulego_client = RulegoClient()
             corroboration_program = CorroborationProgram(llm=None)  # Mock for Phase 9.3
@@ -391,83 +424,165 @@ class LinkingPipeline:
         
         return intersection / union if union > 0 else 0.0
     
-    def process_run(self, run_id: str, documents: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def process_run(self, run_id: str, documents: List[Dict[str, Any]], rebuild: bool = False) -> Dict[str, Any]:
         """
         Process a complete run through the linking pipeline.
         
         Args:
             run_id: Run identifier
             documents: List of documents to process
+            rebuild: If True, clear existing data before processing
             
         Returns:
             Processing results summary
         """
+        import time
+        start_time = time.time()
+        
         try:
-            self.logger.info(f"Starting linking pipeline for run {run_id} with {len(documents)} documents")
+            self.logger.info(f"Starting linking pipeline for run {run_id} with {len(documents)} documents (rebuild={rebuild})")
             
-            all_entities = []
-            all_claims = []
-            all_entity_embeddings = []
-            all_claim_embeddings = []
+            # Start transaction with timeout
+            self.pgvector_store.db.autocommit = False
             
-            # Process each document
-            for doc in documents:
-                # Extract entities and claims
-                entities = self.extract_entities(doc)
-                claims = self.extract_claims(doc)
+            try:
+                # Set transaction timeout to 30 seconds
+                with self.pgvector_store.db.cursor() as cur:
+                    cur.execute("SET statement_timeout = '30s'")
                 
-                # Generate embeddings
-                entity_embeddings, claim_embeddings = self.embed_entities_claims(entities, claims)
+                # Clear existing data if rebuild requested
+                if rebuild:
+                    self.logger.info(f"Clearing existing data for run {run_id}")
+                    self.pgvector_store.clear_run_data(run_id)
                 
-                # Store in database
-                doc_id = self.pgvector_store.store_document(doc)
+                all_entities = []
+                all_claims = []
+                all_entity_embeddings = []
+                all_claim_embeddings = []
                 
-                # Store entities with embeddings
-                for entity, embedding in zip(entities, entity_embeddings):
-                    entity_id = self.pgvector_store.store_entity(doc_id, entity)
-                    self.pgvector_store.store_entity_embedding(entity_id, embedding)
-                    all_entities.append(entity)
-                    all_entity_embeddings.append(embedding)
+                # Track operation counts for observability
+                insert_counts = {"entities": 0, "claims": 0, "entity_links": 0, "claim_links": 0}
+                upsert_counts = {"entities": 0, "claims": 0, "entity_links": 0, "claim_links": 0}
+                conflict_counts = {"entities": 0, "claims": 0, "entity_links": 0, "claim_links": 0}
                 
-                # Store claims with embeddings
-                for claim, embedding in zip(claims, claim_embeddings):
-                    claim_id = self.pgvector_store.store_claim(doc_id, claim)
-                    self.pgvector_store.store_claim_embedding(claim_id, embedding)
-                    all_claims.append(claim)
-                    all_claim_embeddings.append(embedding)
-            
-            # Create cross-document links
-            entity_links = self.link_entities_across_docs(run_id)
-            claim_links = self.link_claims_across_docs(run_id)
-            
-            # Store links
-            for link in entity_links:
-                self.pgvector_store.store_entity_link(link)
-            
-            for link in claim_links:
-                self.pgvector_store.store_claim_link(link)
-            
-            # Generate graph snapshot
-            graph = self.snapshot_graph(run_id)
-            
-            results = {
-                'run_id': run_id,
-                'documents_processed': len(documents),
-                'entities_extracted': len(all_entities),
-                'claims_extracted': len(all_claims),
-                'entity_links_created': len(entity_links),
-                'claim_links_created': len(claim_links),
-                'graph_snapshot': graph,
-                'status': 'completed'
-            }
-            
-            self.logger.info(f"Linking pipeline completed for run {run_id}: {results}")
-            return results
+                # Process each document
+                for doc in documents:
+                    # Extract entities and claims
+                    entities = self.extract_entities(doc)
+                    claims = self.extract_claims(doc)
+                    
+                    # Generate embeddings
+                    entity_embeddings, claim_embeddings = self.embed_entities_claims(entities, claims)
+                    
+                    # Store in database
+                    doc_id = self.pgvector_store.store_document(doc)
+                    
+                    # Store entities with embeddings
+                    for entity, embedding in zip(entities, entity_embeddings):
+                        entity_id = self.pgvector_store.store_entity(doc_id, entity)
+                        self.pgvector_store.store_entity_embedding(entity_id, embedding)
+                        all_entities.append(entity)
+                        all_entity_embeddings.append(embedding)
+                        insert_counts["entities"] += 1
+                    
+                    # Store claims with embeddings
+                    for claim, embedding in zip(claims, claim_embeddings):
+                        claim_id = self.pgvector_store.store_claim(doc_id, claim)
+                        self.pgvector_store.store_claim_embedding(claim_id, embedding)
+                        all_claims.append(claim)
+                        all_claim_embeddings.append(embedding)
+                        insert_counts["claims"] += 1
+                
+                # Create cross-document links
+                entity_links = self.link_entities_across_docs(run_id)
+                claim_links = self.link_claims_across_docs(run_id)
+                
+                # Store links
+                for link in entity_links:
+                    self.pgvector_store.store_entity_link(link)
+                    insert_counts["entity_links"] += 1
+                
+                for link in claim_links:
+                    self.pgvector_store.store_claim_link(link)
+                    insert_counts["claim_links"] += 1
+                
+                # Generate graph snapshot
+                graph = self.snapshot_graph(run_id)
+                
+                # Commit transaction
+                self.pgvector_store.db.commit()
+                
+                # Calculate duration
+                duration_ms = int((time.time() - start_time) * 1000)
+                
+                # Log performance metrics
+                self.logger.info(f"Graph build completed for run {run_id} in {duration_ms}ms: {insert_counts}")
+                
+                # Record performance event for health monitoring
+                self._record_graph_build_event(run_id, insert_counts, upsert_counts, conflict_counts, duration_ms)
+                
+                results = {
+                    'run_id': run_id,
+                    'documents_processed': len(documents),
+                    'entities_extracted': len(all_entities),
+                    'claims_extracted': len(all_claims),
+                    'entity_links_created': len(entity_links),
+                    'claim_links_created': len(claim_links),
+                    'graph_snapshot': graph,
+                    'status': 'completed',
+                    'performance': {
+                        'duration_ms': duration_ms,
+                        'inserted': insert_counts,
+                        'upserted': upsert_counts,
+                        'conflicts': conflict_counts
+                    }
+                }
+                
+                self.logger.info(f"Linking pipeline completed for run {run_id}: {results}")
+                return results
+                
+            except Exception as e:
+                # Rollback transaction on error
+                self.pgvector_store.db.rollback()
+                duration_ms = int((time.time() - start_time) * 1000)
+                self.logger.error(f"Linking pipeline failed for run {run_id} after {duration_ms}ms, rolling back: {e}")
+                raise
+                
+            finally:
+                # Restore autocommit
+                self.pgvector_store.db.autocommit = True
             
         except Exception as e:
-            self.logger.error(f"Linking pipeline failed for run {run_id}: {e}")
+            duration_ms = int((time.time() - start_time) * 1000)
+            self.logger.error(f"Linking pipeline failed for run {run_id} after {duration_ms}ms: {e}")
             return {
                 'run_id': run_id,
                 'status': 'failed',
-                'error': str(e)
+                'error': str(e),
+                'performance': {
+                    'duration_ms': duration_ms,
+                    'inserted': {},
+                    'upserted': {},
+                    'conflicts': {}
+                }
             }
+    
+    def _record_graph_build_event(self, run_id: str, insert_counts: Dict[str, int], 
+                                 upsert_counts: Dict[str, int], conflict_counts: Dict[str, int], 
+                                 duration_ms: int) -> None:
+        """Record graph build performance event for health monitoring."""
+        try:
+            # This would integrate with the health monitoring system
+            # For now, just log the event
+            event = {
+                'timestamp': datetime.utcnow().isoformat(),
+                'type': 'graph_builder',
+                'run_id': run_id,
+                'inserts': sum(insert_counts.values()),
+                'upserts': sum(upsert_counts.values()),
+                'conflicts': sum(conflict_counts.values()),
+                'duration_ms': duration_ms
+            }
+            self.logger.info(f"Graph build event: {event}")
+        except Exception as e:
+            self.logger.warning(f"Failed to record graph build event: {e}")

@@ -1,11 +1,10 @@
 ---
-description: Documentation of migrated functionality from living_truth_agent, showing
-  operational status and usage patterns
-globs:
-- '**/src/**'
-- '**/docs/**'
-alwaysApply: false
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['src/integration/agi_integration.py', 'src/visualization/advanced_viz.py', 'scripts/testing/test_migrated_functionality_comprehensive.py', 'src/analysis/research_analysis.py', 'test_migrated_functionality.py', 'src/config/living_truth_config.py', 'src/processing/channel_archiver.py', 'src/mcp_servers/living_truth_fastmcp_server.py', 'src/analysis/hybrid_retrieval.py']
 ---
+
 
 
 ### **1. Configuration System** ✅ **OPERATIONAL** (with minor attribute differences)

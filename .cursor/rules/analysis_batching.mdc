@@ -1,11 +1,10 @@
 ---
-description: Analysis scripts location and MCP-first batching usage
-globs:
-- '**/scripts/analyze/**'
-- '**/src/analysis/**'
-- '**/src/dashboard/**'
-alwaysApply: false
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['scripts/analyze/archive_imagination_podcast*.py', 'scripts/analyze/analyze_imagination_podcast_*.py']
 ---
+
 
 
 # Analysis Scripts and MCP-First Batching
