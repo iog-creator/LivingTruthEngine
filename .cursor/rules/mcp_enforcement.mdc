@@ -23,6 +23,26 @@ alwaysApply: false
 - **Specialized Rules**: All other `.mdc` files - Agent decides based on context
 - **Archive Rules**: `.cursor/rules/archive/` - Historical rules, never auto-applied
 
+### **User Rules Policy**
+- **User Rules** (Cursor Settings → Rules) should be **minimal and focused**
+- Use User Rules for **global preferences** like communication style or coding conventions
+- **Avoid duplicating** project-specific rules in User Rules
+- Keep User Rules **concise** and **cross-project applicable**
+- **Example User Rule**:
+  ```
+  Please reply in a concise style. Avoid unnecessary repetition or filler language.
+  ```
+
+### **Rule Type Guidelines**
+Based on [Cursor documentation](https://docs.cursor.com/en/context/rules#user-rules):
+
+| Rule Type | When to Use | Example |
+|-----------|-------------|---------|
+| **Always** | Only for essential global guidelines | `00-global.mdc` |
+| **Auto Attached** | File-specific patterns | Component rules for `ui/**` |
+| **Agent Requested** | Specialized knowledge | Domain-specific rules |
+| **Manual** | Rarely used utilities | `@ruleName` invocation |
+
 ## 📋 **Mandatory Tool Rituals**
 **These MCP checks are REQUIRED for ALL changes:**
 
@@ -50,6 +70,7 @@ python -c "from src.mcp_servers.living_truth_fastmcp_server import validate_curs
 - Phase cannot be marked complete if validation fails
 - **Both MCP servers must validate successfully**
 - **Verify alwaysApply policy** - only 00-global.mdc should have `alwaysApply: true`
+- **Check User Rules** - ensure they're minimal and not duplicating project rules
 
 ### **Rule Update Requirements**
 - Any new phase introducing APIs, data models, or workflows must update relevant Cursor Rules
@@ -171,6 +192,7 @@ Before closing any phase:
 - [ ] MCP tools updated and validated (both servers)
 - [ ] Cursor rules updated and validated
 - [ ] **AlwaysApply policy verified** - only 00-global.mdc has `alwaysApply: true`
+- [ ] **User Rules reviewed** - ensure minimal and not duplicating project rules
 - [ ] MDC addenda updated
 - [ ] CI green with all new gates/tests
 - [ ] Docs: plan + completion + master log updated
@@ -185,6 +207,7 @@ Before closing any phase:
 - All MCP errors must be surfaced — silent failure is prohibited
 - **MCP_REQUIREMENTS_REFERENCE.md must be consulted and updated for every MCP-related change**
 - **AlwaysApply policy must be enforced** - only global rule auto-applies
+- **User Rules must be minimal** and not duplicate project-specific rules
 
 ## 📋 **Required Actions**
 
@@ -215,5 +238,6 @@ Before closing any phase:
 - **ALWAYS consult MCP_REQUIREMENTS_REFERENCE.md** before making MCP-related decisions
 - **ALWAYS validate both MCP servers** - Phase9 and FastMCP
 - **ALWAYS enforce alwaysApply policy** - only 00-global.mdc auto-applies
+- **ALWAYS keep User Rules minimal** - avoid duplicating project-specific rules
 - All MCP errors must be surfaced — silent failure is prohibited
 - **MCP_REQUIREMENTS_REFERENCE.md must be consulted and updated for every MCP-related change**
