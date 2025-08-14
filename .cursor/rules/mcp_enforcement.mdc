@@ -9,6 +9,7 @@ alwaysApply: false
 - Ensure **every phase** has MCP tools, Cursor Rules, and MDC updates **as needed**
 - Ensure MCP server functions are validated and errors surfaced (never silently skipped)
 - Maintain **documentation discipline** — master log, completion summaries, and MCP tool specs must be updated per phase
+- **Enforce documentation organization** — important docs must be in root for easy access
 
 ## 📋 **Cursor Rules Policy**
 
@@ -43,6 +44,37 @@ Based on [Cursor documentation](https://docs.cursor.com/en/context/rules#user-ru
 | **Agent Requested** | Specialized knowledge | Domain-specific rules |
 | **Manual** | Rarely used utilities | `@ruleName` invocation |
 
+## 📋 **Documentation Organization Policy**
+
+### **Root Directory (Frequently Accessed)**
+**MUST be in root for easy access:**
+- `README.md` - Project overview and quick start
+- `project_master_log.md` - Complete project history (persistently updated)
+- `MCP_REQUIREMENTS_REFERENCE.md` - MCP tool requirements (persistently updated)
+- `PHASE_*_COMPLETION_SUMMARY.md` - Phase completion summaries (frequently referenced)
+- `SERVICES_MANIFEST.md` - Service configurations (frequently referenced)
+
+### **docs/ (Reference Documentation)**
+**Static reference documentation:**
+- `PROJECT_STRUCTURE.md` - File organization
+- `SYSTEM_ARCHITECTURE.md` - Technical architecture
+- `DEPLOYMENT_GUIDE.md` - Setup instructions
+- `TESTING_OVERVIEW.md` - Testing strategies
+- `MCP_SERVERS_OVERVIEW.md` - MCP tools documentation
+
+### **archive/docs/ (Historical Documentation)**
+**Legacy and historical documentation:**
+- Old status reports and legacy documentation
+- Completed phase plans and summaries
+- Migration guides and historical context
+- Outdated implementation guides
+
+### **Enforcement Rules**
+- **Phase completions MUST be in root** - `PHASE_*_COMPLETION_SUMMARY.md`
+- **Persistently updated docs MUST be in root** - `project_master_log.md`, `MCP_REQUIREMENTS_REFERENCE.md`
+- **Reference docs go in docs/** - Architecture, setup, guides
+- **Historical docs go in archive/docs/** - Old status, legacy docs
+
 ## 📋 **Mandatory Tool Rituals**
 **These MCP checks are REQUIRED for ALL changes:**
 
@@ -58,141 +90,48 @@ python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; server
 python -c "from src.mcp_servers.living_truth_fastmcp_server import validate_cursor_rules; result = validate_cursor_rules(); print('FastMCP Validation:', result)"
 ```
 
-### **Enforcement Policy**
-- **Block completion** if any MCP validation fails
-- **Always run all three checks** before marking any change complete
-- **No exceptions** - MCP validation is mandatory for all development work
+### **Documentation Organization Check (Non-Negotiable)**
+```bash
+# 4. Verify important docs are in root
+ls -la *.md | grep -E "(PHASE_.*_COMPLETION_SUMMARY|project_master_log|MCP_REQUIREMENTS_REFERENCE)"
 
-## 1. **Cursor Rules Enforcement**
+# 5. Verify no important docs are buried in subdirectories
+find docs/ -name "*.md" | grep -E "(PHASE_.*_COMPLETION_SUMMARY|project_master_log|MCP_REQUIREMENTS_REFERENCE)" && echo "ERROR: Important docs found in docs/ - move to root"
+```
 
-### **Validation Before Completion**
-- Run `validate_cursor_rules()` before closing a phase
-- Phase cannot be marked complete if validation fails
-- **Both MCP servers must validate successfully**
-- **Verify alwaysApply policy** - only 00-global.mdc should have `alwaysApply: true`
-- **Check User Rules** - ensure they're minimal and not duplicating project rules
+## 🚨 **Validation Before Completion**
 
-### **Rule Update Requirements**
-- Any new phase introducing APIs, data models, or workflows must update relevant Cursor Rules
-- Add phase-specific rules to `.cursor/rules/` with:
-  - Frontmatter metadata (phase, description, enforcement scope)
-  - Build-Verify-Iterate section
-  - References to updated MCP tools
-  - **Always set `alwaysApply: false`** for new rules
+### **MCP Tools Validation**
+- [ ] **Phase9 MCP Server**: All cursor rules valid
+- [ ] **FastMCP Server**: All cursor rules valid
+- [ ] **MCP Sync**: Tool registry current
+- [ ] **Logging Schema**: No raw print() in prod code
 
-### **Rule Archive**
-- Outdated rules moved to `archive/` with phase tag
-- Archive rules must have `alwaysApply: false`
+### **Documentation Organization Validation**
+- [ ] **Phase completions in root**: `PHASE_*_COMPLETION_SUMMARY.md`
+- [ ] **Master log in root**: `project_master_log.md`
+- [ ] **MCP requirements in root**: `MCP_REQUIREMENTS_REFERENCE.md`
+- [ ] **Services manifest in root**: `SERVICES_MANIFEST.md`
+- [ ] **No important docs in docs/**: Check for misplaced files
+- [ ] **Historical docs in archive/**: Old status reports moved
 
-## 2. **MCP Server Requirements**
+### **AlwaysApply Policy Validation**
+- [ ] **Only 00-global.mdc has alwaysApply: true**
+- [ ] **All other rules have alwaysApply: false**
+- [ ] **Archive rules have alwaysApply: false**
 
-### **Tool Lifecycle**
-- Add or update MCP tools per phase scope
-- Each MCP tool:
-  - Has `spec` JSON file in `/specs`
-  - Has unit tests in `/tests/mcp_tools/`
-  - Implements full envelope response: `{status, data?, error?}`
+### **User Rules Policy Validation**
+- [ ] **User Rules are minimal**: Not duplicating project rules
+- [ ] **User Rules are global**: Cross-project applicable
+- [ ] **User Rules are focused**: Communication style, coding conventions
 
-### **Function Validation**
-- Test MCP server functions with known good inputs
-- Fail phase if any tool errors out during validation
-- **Both Phase9 and FastMCP servers must be validated**
-
-### **Error Handling**
-- No silent failures: log every MCP server error
-- Fallbacks explicitly reported in MCP tool output
-
-## 3. **MDC (Master Development Contract) Enforcement**
-
-### **Per-Phase MDC Addenda**
-- Each phase updates `PHASE_9_MASTER_PLAN__MCP_ADDENDA.md`
-- Addenda must include:
-  - New MCP tools
-  - Updated Cursor Rules
-  - New CI/CD gates
-
-### **Exit Gate Checks**
-- MDC requires these checks before phase close:
-  - MCP validation (both servers)
-  - CI green with all new tests
-  - Documentation updates committed
-  - Master log updated
-
-## 4. **CI/CD Integration Requirements**
-
-### **Validation Scripts**
-- `scripts/ci/validate_phaseX.sh` must:
-  - Validate MCP tools (both servers)
-  - Run unit/integration tests
-  - Verify cursor rules are updated
-
-### **Performance/Error Gates**
-- Performance budgets enforced in CI (p95 latencies, LCP, bundle sizes)
-- Error budgets enforced in CI starting Phase 9.5.5
-
-## 5. **MCP Tool Categories (Phase 9 Baseline)**
-
-### **System Health**
-- `get_health_status`
-- `validate_cursor_rules`
-- `list_tools`
-
-### **Data & Analysis**
-- `build_graph`
-- `fetch_timeline`
-- `analyze_veritas_summary`
-- `analyze_veritas_claims`
-
-### **Ingestion & Adapters**
-- `test_youtube_adapter`
-- `test_web_adapter`
-- `test_pdf_adapter`
-- `run_multi_source_job`
-
-### **Monitoring & Recovery**
-- `get_error_budget_status` (Phase 9.5.5)
-- `trigger_recovery_action` (Phase 9.5.5)
-- `run_chaos_test` (Phase 9.5.5)
-
-### **MCP Enforcement**
-- `validate_mcp_requirements_reference` - Validate MCP requirements reference document
-- `enforce_mcp_compliance` - Enforce MCP compliance before phase completion
-- `update_mcp_requirements_reference` - Update sections in MCP requirements reference
-
-### **Error Budget & Recovery (Phase 9.5.5)**
-- `validate_error_budget` - Validate error budget status and configuration
-- `trigger_recovery_action` - Trigger recovery actions for services
-- `run_chaos_test` - Execute chaos engineering tests
-
-## 6. **Documentation & Logging**
-
-### **Per-Phase Docs**
-- `PHASE_X_PLAN.md`
-- `PHASE_X_COMPLETION_SUMMARY.md`
-- Update `project_master_log.md`
-- Update consolidated completion summary
-
-### **MCP Tool Specs**
-- Update `/specs` with any new or modified tool spec
-- Include:
-  - Tool name & version
-  - Input schema
-  - Output schema
-  - Error codes
-
-### **Logging**
-- MCP server logs must show:
-  - Tool start/end
-  - Input parameters
-  - Outcome (success/fail/fallback)
-  - Execution time
-
-## 7. **Phase Close Checklist**
+## 📋 **Phase Close Checklist**
 Before closing any phase:
 - [ ] MCP tools updated and validated (both servers)
 - [ ] Cursor rules updated and validated
 - [ ] **AlwaysApply policy verified** - only 00-global.mdc has `alwaysApply: true`
 - [ ] **User Rules reviewed** - ensure minimal and not duplicating project rules
+- [ ] **Documentation organization verified** - important docs in root
 - [ ] MDC addenda updated
 - [ ] CI green with all new gates/tests
 - [ ] Docs: plan + completion + master log updated
@@ -200,44 +139,34 @@ Before closing any phase:
 - [ ] All errors handled and logged
 - [ ] **MCP_REQUIREMENTS_REFERENCE.md updated**
 
-## 🔒 **Enforcement Summary**
-- No phase is complete without **passing MCP + Rules validation**
-- No undocumented MCP tool changes allowed
-- Cursor must always **self-update** its rules, tools, and docs when phase scope changes
-- All MCP errors must be surfaced — silent failure is prohibited
-- **MCP_REQUIREMENTS_REFERENCE.md must be consulted and updated for every MCP-related change**
-- **AlwaysApply policy must be enforced** - only global rule auto-applies
-- **User Rules must be minimal** and not duplicate project-specific rules
+## 🎯 **Error Handling**
 
-## 📋 **Required Actions**
+### **MCP Tool Failures**
+- **Block completion** if any MCP validation fails
+- **Surface errors explicitly** - never silently skip
+- **Log all validation results** for traceability
+- **Fix tool issues** before proceeding
 
-### **Before Any MCP Change**
-1. Run `validate_mcp_requirements_reference()` to check current state
-2. Read `MCP_REQUIREMENTS_REFERENCE.md` for current requirements
-3. Check if change affects existing MCP tools or rules
-4. Plan updates to reference document if needed
+### **Documentation Organization Violations**
+- **Move important docs to root** if found in subdirectories
+- **Update tool rituals** to catch violations
+- **Add validation checks** to prevent future violations
+- **Document the policy** in all relevant rules
 
-### **After Any MCP Change**
-1. Run `update_mcp_requirements_reference()` to update the reference document
-2. Update `MCP_REQUIREMENTS_REFERENCE.md` with new requirements
-3. Validate all MCP tools still function (both servers)
-4. Update relevant Cursor rules
-5. Update phase documentation
+### **AlwaysApply Policy Violations**
+- **Fix frontmatter** to set correct alwaysApply values
+- **Validate all rules** after changes
+- **Update policy documentation** if needed
+- **Prevent rule bloat** by enforcing agent selection
 
-### **Before Phase Completion**
-1. Run `enforce_mcp_compliance(phase)` to validate all requirements
-2. Ensure `MCP_REQUIREMENTS_REFERENCE.md` reflects all changes
-3. Validate all MCP tools and rules (both servers)
-4. Update master log and completion summaries
-5. Run full CI validation
+## 📚 **References**
 
-## 🚨 **Critical Requirements**
-- **NEVER skip MCP validation** - always run validation before completion
-- **NEVER make undocumented MCP changes** - always update reference document
-- **NEVER allow silent failures** - all errors must be surfaced and logged
-- **ALWAYS consult MCP_REQUIREMENTS_REFERENCE.md** before making MCP-related decisions
-- **ALWAYS validate both MCP servers** - Phase9 and FastMCP
-- **ALWAYS enforce alwaysApply policy** - only 00-global.mdc auto-applies
-- **ALWAYS keep User Rules minimal** - avoid duplicating project-specific rules
-- All MCP errors must be surfaced — silent failure is prohibited
-- **MCP_REQUIREMENTS_REFERENCE.md must be consulted and updated for every MCP-related change**
+- [Cursor Rules Documentation](https://docs.cursor.com/en/context/rules#user-rules)
+- [Global Rule](.cursor/rules/00-global.mdc)
+- [MCP Requirements Reference](MCP_REQUIREMENTS_REFERENCE.md)
+- [Project Master Log](project_master_log.md)
+- [Services Manifest](SERVICES_MANIFEST.md)
+
+**Status**: ✅ Active and Enforced  
+**Last Updated**: 2025-08-14  
+**Validation**: All policies enforced, documentation organized correctly

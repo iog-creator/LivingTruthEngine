@@ -8,7 +8,6 @@ globs:
   - "**/*"
 ---
 
-
 # Global Canon (follow for EVERY change)
 - **Envelope everywhere**: APIs & tools return `{status, data?, error?{code,message}}`.
 - **Commit-complete**: code + tests + docs + rules updated in the same change.
@@ -29,9 +28,16 @@ globs:
   - `python scripts/verify_service_docs_complete.py`
   - `python scripts/verify_compose_healthchecks.py`
   - `python scripts/audit_models.py`  # uses LM Studio; keep core models present
+- **Documentation Organization** (REQUIRED for all changes):
+  - `python scripts/verify_doc_organization.py`
+  - **Phase completions MUST be in root** - `PHASE_*_COMPLETION_SUMMARY.md`
+  - **Persistently updated docs MUST be in root** - `project_master_log.md`, `MCP_REQUIREMENTS_REFERENCE.md`
+  - **Reference docs go in docs/** - Architecture, setup, guides
+  - **Historical docs go in archive/docs/** - Old status, legacy docs
 - **Definition of Done** (before proposing a commit):
   - All above pass; README & master log updated if scope changed.
   - **MCP validation MUST pass** - no exceptions.
+  - **Documentation organization verified** - important docs in root.
 
 ## MCP Requirements (non‑negotiable)
 - **Always validate cursor rules** before completing any change
@@ -39,6 +45,23 @@ globs:
 - **Always check both MCP servers** (Phase9 and FastMCP) for validation
 - **Block completion** if any MCP validation fails
 - **Update MCP tools** if you modify cursor rules or add new functionality
+
+## Documentation Organization Policy
+- **Root Directory** (frequently accessed):
+  - `README.md` - Project overview and quick start
+  - `project_master_log.md` - Complete project history
+  - `MCP_REQUIREMENTS_REFERENCE.md` - MCP tool requirements
+  - `PHASE_*_COMPLETION_SUMMARY.md` - Phase completion summaries
+  - `SERVICES_MANIFEST.md` - Service configurations
+- **docs/** (reference documentation):
+  - `PROJECT_STRUCTURE.md` - File organization
+  - `SYSTEM_ARCHITECTURE.md` - Technical architecture
+  - `DEPLOYMENT_GUIDE.md` - Setup instructions
+  - `TESTING_OVERVIEW.md` - Testing strategies
+- **archive/docs/** (historical documentation):
+  - Old status reports and legacy documentation
+  - Completed phase plans and summaries
+  - Migration guides and historical context
 
 ## Playwright Requirements (non‑negotiable)
 - Always add or update a **Playwright test** when editing UI. Use deterministic `data-testid`s.
@@ -56,6 +79,15 @@ globs:
 - Don't write new features without tests.
 - Don't leave TODO comments; implement or open a tracked task with a failing test.
 - Don't create duplicate docs; update the SSOT files instead.
+- Don't skip MCP validation - it's required for all changes.
+- Don't bury important docs in subdirectories - keep frequently accessed docs in root.
+
+## When I ask you to "implement/fix X", you MUST:
+1) Update code **and** tests.
+2) Run the Tool Rituals above; post outputs (or the diff if green).
+3) **Verify MCP validation passes** - this is mandatory.
+4) **Verify documentation organization** - important docs in root.
+5) Only then propose a commit message summarizing code + tests + docs changes.
 - Don't skip MCP validation - it's required for all changes.
 
 ## When I ask you to "implement/fix X", you MUST:
