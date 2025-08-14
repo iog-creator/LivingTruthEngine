@@ -34,6 +34,11 @@ globs:
   - **Persistently updated docs MUST be in root** - `project_master_log.md`, `MCP_REQUIREMENTS_REFERENCE.md`
   - **Reference docs go in docs/** - Architecture, setup, guides
   - **Historical docs go in archive/docs/** - Old status, legacy docs
+- **SSOT Bundle Verification** (REQUIRED for all changes):
+  - `python scripts/verify_ssot_bundle.py`
+  - **SSOT files MUST be in root** - `README.md`, `project_master_log.md`, `MCP_REQUIREMENTS_REFERENCE.md`, `SERVICES_MANIFEST.md`
+  - **No duplicates allowed** - SSOT files must not exist in docs/ or archive/docs/
+  - **Frontmatter validation** - All phase completions must have correct frontmatter
 - **Definition of Done** (before proposing a commit):
   - All above pass; README & master log updated if scope changed.
   - **MCP validation MUST pass** - no exceptions.
@@ -46,13 +51,18 @@ globs:
 - **Block completion** if any MCP validation fails
 - **Update MCP tools** if you modify cursor rules or add new functionality
 
-## Documentation Organization Policy
-- **Root Directory** (frequently accessed):
+## SSOT (Single Source of Truth) Bundle Policy
+- **SSOT Bundle** (authoritative reference files in root):
   - `README.md` - Project overview and quick start
-  - `project_master_log.md` - Complete project history
-  - `MCP_REQUIREMENTS_REFERENCE.md` - MCP tool requirements
-  - `PHASE_*_COMPLETION_SUMMARY.md` - Phase completion summaries
-  - `SERVICES_MANIFEST.md` - Service configurations
+  - `project_master_log.md` - Complete project history (persistently updated)
+  - `MCP_REQUIREMENTS_REFERENCE.md` - MCP tool requirements (persistently updated)
+  - `SERVICES_MANIFEST.md` - Service configurations (authoritative single source)
+  - `PHASE_*_COMPLETION_SUMMARY.md` - All phase completions (must be in root)
+- **SSOT Rules**:
+  - All SSOT files must be in the project root directory
+  - No duplicates in `docs/` or `archive/docs/`
+  - Phase completions must have correct frontmatter
+  - Always load and reference SSOT bundle before making changes
 - **docs/** (reference documentation):
   - `PROJECT_STRUCTURE.md` - File organization
   - `SYSTEM_ARCHITECTURE.md` - Technical architecture
@@ -75,12 +85,23 @@ globs:
 - **Prompts** live in `prompts/registry.yaml` + `src/ai/prompt_manager.py`.
 - **Resilience UI** scope: Phase 9.5.7.x; keep tests and routes in sync.
 
+## SSOT Bundle Loading (REQUIRED)
+- **Before making any changes**, always load and reference the SSOT bundle:
+  - `README.md` - Project overview and quick start
+  - `project_master_log.md` - Complete project history
+  - `MCP_REQUIREMENTS_REFERENCE.md` - MCP tool requirements
+  - `SERVICES_MANIFEST.md` - Service configurations
+  - `PHASE_*_COMPLETION_SUMMARY.md` - All phase completions
+- **Ensure consistency** by working from the same synchronized baseline
+- **Reference SSOT files** when making decisions about project structure or functionality
+
 ## What NOT to do
 - Don't write new features without tests.
 - Don't leave TODO comments; implement or open a tracked task with a failing test.
 - Don't create duplicate docs; update the SSOT files instead.
 - Don't skip MCP validation - it's required for all changes.
 - Don't bury important docs in subdirectories - keep frequently accessed docs in root.
+- Don't make changes without referencing the SSOT bundle first.
 
 ## When I ask you to "implement/fix X", you MUST:
 1) Update code **and** tests.

@@ -1,8 +1,10 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: ['scripts/setup/fix_cursor_rule_alwaysapply.py', 'src/analysis/dash_app.py', 'src/aux_services/devdocs_server.py', 'docs/PROJECT_SETUP.md', 'docs/PROJECT_STRUCTURE.md', 'tests/test_services_operational.py', 'src/aux_services/solver_server.py', 'tests/test_phase6_veritas.py', 'src/ingestion_general/runners.py', 'src/ingestion_general/provenance.py', 'README.md', 'src/mcp_servers/langflow_mcp_server.py', 'src/mcp_servers/living_truth_fastmcp_server.py', 'tests/test_smoke_job_runs.py', 'src/aux_services/rulego_server.py']
+phase: 6
+status: completed
+completion_date: 2025-08-04
+depends_on:
+  - 5
+summary: Service Stabilization, MCP Integration, and Verifiable Runs
 ---
 
 # Phase 6 Completion Summary — Service Stabilization, MCP Integration, and Verifiable Runs

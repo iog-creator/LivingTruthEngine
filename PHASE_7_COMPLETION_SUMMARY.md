@@ -1,8 +1,10 @@
 ---
-phase: 9.3
-status: active
-last_reviewed: 2025-08-13
-related_files: ['src/analysis/dash_app.py', 'tests/test_phase8_youtube_run.py', 'PHASE_7_COMPLETION_SUMMARY.md', 'manifest.json', 'src/ingestion_general/runners.py', 'metrics.json', 'PHASE_7.md', 'tests/test_phase7_veritas.py', 'src/mcp_servers/living_truth_fastmcp_server.py', 'merkle.json']
+phase: 7
+status: completed
+completion_date: 2025-08-09
+depends_on:
+  - 6
+summary: Generalist Ingestion + Job Runs
 ---
 
 # Phase 7 Completion Summary — Generalist Ingestion + Job Runs

@@ -90,13 +90,13 @@ python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; server
 python -c "from src.mcp_servers.living_truth_fastmcp_server import validate_cursor_rules; result = validate_cursor_rules(); print('FastMCP Validation:', result)"
 ```
 
-### **Documentation Organization Check (Non-Negotiable)**
+### **SSOT Bundle Verification (Non-Negotiable)**
 ```bash
-# 4. Verify important docs are in root
-ls -la *.md | grep -E "(PHASE_.*_COMPLETION_SUMMARY|project_master_log|MCP_REQUIREMENTS_REFERENCE)"
+# 4. SSOT Bundle Verification
+python scripts/verify_ssot_bundle.py
 
-# 5. Verify no important docs are buried in subdirectories
-find docs/ -name "*.md" | grep -E "(PHASE_.*_COMPLETION_SUMMARY|project_master_log|MCP_REQUIREMENTS_REFERENCE)" && echo "ERROR: Important docs found in docs/ - move to root"
+# 5. Documentation Organization Check
+python scripts/verify_doc_organization.py
 ```
 
 ## 🚨 **Validation Before Completion**

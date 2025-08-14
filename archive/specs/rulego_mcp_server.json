@@ -1,7 +1,7 @@
 {
   "name": "rulego_mcp_server",
   "version": "1.0.0",
-  "updated": "2025-08-14T18:19:49.857211",
+  "updated": "2025-08-14T18:22:55.113471",
   "envelope": {
     "status": "ok|error",
     "data?": {},
