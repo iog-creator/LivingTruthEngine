@@ -1,0 +1,25 @@
+name: Repo Health
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install pyyaml
+      - name: Inventory + Archive + Services
+        run: |
+          python scripts/repo_inventory.py
+          python scripts/archive_sweep.py
+          python scripts/service_usage_audit.py
+      - name: Commit archive (if any)
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -m "nightly: repo health (inventory+archive+service audit)" || true
+          git push || true
