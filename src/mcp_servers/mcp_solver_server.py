@@ -203,7 +203,7 @@ def get_solver_info() -> str:
 
 if __name__ == "__main__":
     logger.info("MCP Solver Server starting...")
-    print("MCP Solver Server started...")
+    logger.info("MCP Solver Server started...")
     try:
         mcp.run()
     except KeyboardInterrupt:

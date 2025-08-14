@@ -191,7 +191,7 @@ def get_rulego_info() -> str:
 
 if __name__ == "__main__":
     logger.info("Rulego MCP Server starting...")
-    print("Rulego MCP Server started...")
+    logger.info("Rulego MCP Server started...")
     try:
         mcp.run()
     except KeyboardInterrupt:

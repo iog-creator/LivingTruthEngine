@@ -1,0 +1,13 @@
+{
+  "name": "mcp_solver_server",
+  "version": "1.0.0",
+  "updated": "2025-08-14T15:20:48.626858",
+  "envelope": {
+    "status": "ok|error",
+    "data?": {},
+    "error?": {
+      "code": "STRING",
+      "message": "STRING"
+    }
+  }
+}

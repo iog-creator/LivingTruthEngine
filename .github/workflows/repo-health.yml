@@ -11,11 +11,16 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.11" }
       - run: pip install pyyaml
-      - name: Inventory + Archive + Services
+      - name: Repo Health (Phase 9.5.7.1)
         run: |
           python scripts/repo_inventory.py
           python scripts/archive_sweep.py
           python scripts/service_usage_audit.py
+          python scripts/mcp_sync.py
+          python scripts/gen_service_docs.py
+          python scripts/logging_schema_check.py
+          python scripts/readme_sync.py
+          python scripts/update_master_log.py
       - name: Commit archive (if any)
         run: |
           git config --local user.email "action@github.com"

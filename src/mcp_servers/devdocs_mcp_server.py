@@ -149,7 +149,7 @@ def get_devdocs_info() -> str:
 
 if __name__ == "__main__":
     logger.info("DevDocs MCP Server starting...")
-    print("DevDocs MCP Server started...")
+    logger.info("DevDocs MCP Server started...")
     try:
         mcp.run()
     except KeyboardInterrupt:
