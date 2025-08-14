@@ -1,7 +1,7 @@
 {
   "name": "phase9_mcp_server",
   "version": "1.0.0",
-  "updated": "2025-08-14T15:39:22.489575",
+  "updated": "2025-08-14T15:40:50.688356",
   "envelope": {
     "status": "ok|error",
     "data?": {},
