@@ -22,7 +22,7 @@ lm-tools:
 	LMSTUDIO_TOOLS_PORT=8756 python scripts/bridge/lmstudio_tools_bridge.py
 
 lm-mcp:
-	python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; Phase9MCPServer().serve_stdio()"
+	python src/mcp_servers/phase9_mcp_server.py
 
 
 

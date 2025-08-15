@@ -12,6 +12,14 @@
 - Terminal A: `make lm-tools`  (starts FastAPI bridge on 127.0.0.1:8756)
 - Terminal B: Optional `make lm-mcp` (runs our MCP server over stdio)
 
+## MCP Setup for LM Studio
+1. In LM Studio UI: **Settings → MCP**
+2. Add server with command: `python src/mcp_servers/phase9_mcp_server.py`
+3. Ask questions like:
+   - "Can you validate the cursor rules?"
+   - "Can you run health checks?"
+   - "Can you validate the SSOT bundle?"
+
 ## Recommended LM Studio setup
 - Use your preferred model (e.g., `llama-3.2-3b-instruct`) with **function/tools** enabled.
 - Register tools as simple HTTP calls to the endpoints above, or connect to MCP:
