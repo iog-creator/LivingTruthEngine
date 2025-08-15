@@ -39,3 +39,14 @@ python scripts/verify_ssot_bundle.py
 - No duplicate SSOT files under `docs/` or `archive/docs/`.
 - No UI changes without Playwright specs.
 - No phase closeouts without updated SSOT + `[SSOT Verified]` commit.
+
+## LM Studio Helper (Local Only)
+- You may call the local LM Studio *tools bridge* for analysis/drafts:
+  - `POST http://127.0.0.1:8756/tools/verify_ssot`
+  - `POST http://127.0.0.1:8756/tools/read_ssot_report`
+  - `POST http://127.0.0.1:8756/tools/draft_patches`
+- Never apply writes from LM Studio. All edits must pass:
+```bash
+python scripts/verify_complete_ssot_system.py
+```
+and commit with `[SSOT Verified]`.
