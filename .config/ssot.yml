@@ -1,0 +1,39 @@
+version: 3
+ai:
+  enabled: false
+  endpoint: "http://localhost:1234/v1"
+  model: "llama-3.2-3b-instruct"
+  timeout_seconds: 15
+scan:
+  # global time budget (seconds) by scope
+  time_budget:
+    fast: 45
+    full: 180
+    ai: 120
+  # max files to inspect by scope (upper bound; stops early)
+  max_files:
+    fast: 400
+    full: 5000
+    ai: 600
+  # max bytes per file read (prevents huge file stalls)
+  max_bytes_per_file: 262144
+  # exclude and include globs (minimize traversal)
+  exclude_globs:
+    - ".git/**"
+    - "node_modules/**"
+    - "venv/**"
+    - "__pycache__/**"
+    - "dist/**"
+    - "build/**"
+    - "coverage/**"
+    - ".cursor/cache/**"
+    - "reports/**"
+  include_hint_globs:
+    - "*.md"
+    - "*.mdc"
+    - "scripts/**/*.py"
+    - "src/**/*.py"
+    - ".cursor/rules/*.mdc"
+outputs:
+  json: "reports/ssot_report.json"
+  sarif: "reports/ssot_report.sarif"

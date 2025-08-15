@@ -33,7 +33,7 @@ def run(cmd: str) -> tuple[int, str]:
 @app.post("/tools/verify_ssot")
 def verify_ssot(_: ToolRequest):
     os.environ["CI"] = "true"  # force non-AI mode
-    code, out = run('python scripts/verify_complete_ssot_system.py --json reports/ssot_report.json --sarif reports/ssot_report.sarif')
+    code, out = run('python scripts/verify_complete_ssot_system.py --scope fast --json reports/ssot_report.json --sarif reports/ssot_report.sarif')
     return {"status": "ok" if code == 0 else "fail", "output": out}
 
 @app.post("/tools/read_ssot_report")

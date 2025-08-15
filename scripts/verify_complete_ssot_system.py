@@ -25,13 +25,18 @@ import yaml
 import difflib
 import requests
 import json
+import argparse
+import time
+import os
 from typing import List, Dict, Tuple, Set, Optional
 from collections import defaultdict
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+from scripts._ssot.paths import iter_files, read_bounded, load_cfg
+
 ERRORS = []
 FIXES_APPLIED = []
-AI_ANALYSIS_ENABLED = "--ai" in sys.argv
+WARNINGS = []
 
 class LMStudioAIAnalyzer:
     """AI-powered analysis using LM Studio for intelligent SSOT validation"""
@@ -199,17 +204,8 @@ class LMStudioAIAnalyzer:
         except Exception as e:
             return {"error": f"Analysis failed: {str(e)[:50]}"}
 
-# Initialize AI analyzer
+# Initialize AI analyzer (will be set in main())
 ai_analyzer = None
-if AI_ANALYSIS_ENABLED:
-    print("🤖 Initializing AI analysis capabilities...")
-    try:
-        ai_analyzer = LMStudioAIAnalyzer()
-        print("✅ AI analysis initialized successfully")
-    except Exception as e:
-        print(f"⚠️ AI analysis initialization failed: {e}")
-        print("   Continuing with standard validation only")
-        ai_analyzer = None
 
 def run_cmd(cmd: str, description: str) -> Tuple[bool, str]:
     """Run a command and return success status and output"""
@@ -1052,11 +1048,50 @@ def auto_fix_cursor_rules():
 
 def main():
     """Main validation and fix routine"""
+    # Parse arguments
+    parser = argparse.ArgumentParser(description="Complete SSOT System Validation")
+    parser.add_argument("--scope", choices=["fast", "full", "ai"], default="fast", 
+                       help="Validation scope: fast (45s), full (180s), ai (120s)")
+    parser.add_argument("--fix", action="store_true", help="Auto-fix issues")
+    parser.add_argument("--ai", action="store_true", help="Enable AI analysis")
+    parser.add_argument("--json", help="Output JSON report path")
+    parser.add_argument("--sarif", help="Output SARIF report path")
+    args = parser.parse_args()
+    
+    # Load configuration
+    cfg = load_cfg()
+    scan = cfg.get("scan", {})
+    scope = args.scope
+    
+    # CI defaults to fast scope
+    CI = os.getenv("CI", "false").lower() == "true"
+    if CI:
+        scope = "fast"
+    
+    TIME_BUDGET = (scan.get("time_budget") or {}).get(scope, 60)
+    MAX_BYTES = int(scan.get("max_bytes_per_file", 262144))
+    AI_ANALYSIS_ENABLED = args.ai and not CI
+    
+    # Initialize AI analyzer if enabled
+    global ai_analyzer
+    if AI_ANALYSIS_ENABLED:
+        print("🤖 Initializing AI analysis capabilities...")
+        try:
+            ai_analyzer = LMStudioAIAnalyzer()
+            print("✅ AI analysis initialized successfully")
+        except Exception as e:
+            print(f"⚠️ AI analysis initialization failed: {e}")
+            print("   Continuing with standard validation only")
+            ai_analyzer = None
+    
     print("🚀 Complete SSOT System Validation")
     print("=" * 50)
+    print(f"📋 Scope: {scope} (budget: {TIME_BUDGET}s, max files: {scan.get('max_files', {}).get(scope, 'unlimited')})")
+    
+    start_ts = time.time()
     
     # Check if --fix flag is provided
-    auto_fix = "--fix" in sys.argv
+    auto_fix = args.fix
     
     print(f"📋 Starting validation... (Auto-fix: {auto_fix})")
     print("⏳ This may take a few minutes for large repositories...")
@@ -1173,10 +1208,25 @@ def main():
         for error in ERRORS:
             print(f"  - {error}")
     
+    # Check time budget
+    elapsed = time.time() - start_ts
+    if elapsed > TIME_BUDGET:
+        WARNINGS.append({
+            'kind': 'budget',
+            'rule': 'time_budget', 
+            'message': f'Exceeded time budget {TIME_BUDGET}s in scope={scope} (elapsed: {elapsed:.1f}s)'
+        })
+        print(f"⚠️  WARNING: Exceeded time budget ({elapsed:.1f}s > {TIME_BUDGET}s)")
+    
+    if WARNINGS:
+        print(f"\n⚠️  Warnings:")
+        for warning in WARNINGS:
+            print(f"  - {warning['message']}")
+    
     print(f"\n{'🎉 ALL VALIDATIONS PASSED' if all_passed else '🚨 VALIDATION FAILED'}")
     
     if not all_passed:
-        print("\n💡 To auto-fix issues, run: python scripts/verify_complete_ssot_system.py --fix")
+        print("\n💡 To auto-fix issues, run: python scripts/verify_complete_ssot_system.py --scope full --fix")
         sys.exit(1)
     
     print("\n✅ SSOT system is fully validated and consistent!")

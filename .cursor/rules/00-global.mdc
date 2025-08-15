@@ -50,3 +50,7 @@ python scripts/verify_ssot_bundle.py
 python scripts/verify_complete_ssot_system.py
 ```
 and commit with `[SSOT Verified]`.
+
+## SSOT Scope Discipline
+- Pre-edit check: `python scripts/verify_complete_ssot_system.py --scope fast`
+- Post-fix gate: `python scripts/verify_complete_ssot_system.py --scope full` (local) or CI nightly full.
