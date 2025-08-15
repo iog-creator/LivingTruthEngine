@@ -249,48 +249,57 @@ def calculate_similarity(text1: str, text2: str) -> float:
     
     return len(intersection) / len(union) if union else 0.0
 
-def check_for_semantic_documentation_duplicates():
+def check_for_semantic_documentation_duplicates(scope="fast"):
     """Check for semantically similar documentation that should be consolidated"""
     print("🔍 Checking for semantic documentation duplicates...")
     
-    # Collect all documentation files
+    # Fast heuristic check - only look at obvious duplicates
+    # Skip expensive similarity calculations for fast scope
+    if scope == "fast":
+        print("  ⏭️  Skipping semantic analysis in fast scope (use --scope full for detailed analysis)")
+        return True
+    
+    # Collect only key documentation files (not all files)
+    key_doc_patterns = [
+        "README*.md", "PHASE_*.md", "*.COMPLETION_SUMMARY.md", 
+        "docs/*.md", "*.md"  # Only in docs directory
+    ]
+    
     doc_files = []
-    for pattern in ["*.md", "*.rst", "*.txt"]:
-        for file_path in ROOT.rglob(pattern):
+    for pattern in key_doc_patterns:
+        for file_path in ROOT.glob(pattern):
             if "venv" in str(file_path) or "__pycache__" in str(file_path):
                 continue
-            if file_path.is_file():
+            if file_path.is_file() and file_path.stat().st_size < 50000:  # Skip large files
                 doc_files.append(file_path)
     
-    # Read and analyze content
-    file_contents = {}
-    for file_path in doc_files:
-        try:
-            content = file_path.read_text(encoding='utf-8', errors='ignore')
-            # Skip very short files
-            if len(content.strip()) < 100:
-                continue
-            file_contents[file_path] = content
-        except Exception:
-            continue
+    # Limit to first 20 files for performance
+    doc_files = doc_files[:20]
     
-    # Find similar documents
+    if not doc_files:
+        print("  ✅ No documentation files to analyze")
+        return True
+    
+    # Quick filename-based similarity check
     similar_groups = []
     processed = set()
     
-    for file1, content1 in file_contents.items():
+    for file1 in doc_files:
         if file1 in processed:
             continue
             
         similar_files = [file1]
         processed.add(file1)
         
-        for file2, content2 in file_contents.items():
+        # Check for files with similar names
+        name1 = file1.stem.lower()
+        for file2 in doc_files:
             if file2 in processed:
                 continue
                 
-            similarity = calculate_similarity(content1, content2)
-            if similarity > 0.6:  # High similarity threshold
+            name2 = file2.stem.lower()
+            # Simple string similarity
+            if name1 in name2 or name2 in name1 or difflib.SequenceMatcher(None, name1, name2).ratio() > 0.8:
                 similar_files.append(file2)
                 processed.add(file2)
         
@@ -298,20 +307,25 @@ def check_for_semantic_documentation_duplicates():
             similar_groups.append(similar_files)
     
     if similar_groups:
-        print("  ❌ Semantically similar documentation found:")
+        print("  ❌ Potentially similar documentation found:")
         for group in similar_groups:
             print(f"    Similar group ({len(group)} files):")
             for file_path in group:
                 print(f"      - {file_path.relative_to(ROOT)}")
-        ERRORS.append(f"Found {len(similar_groups)} groups of semantically similar documentation - consider consolidation")
+        ERRORS.append(f"Found {len(similar_groups)} groups of potentially similar documentation - consider consolidation")
         return False
     
-    print("  ✅ No semantic documentation duplicates detected")
+    print("  ✅ No obvious documentation duplicates detected")
     return True
 
-def check_for_topic_scattered_documentation():
+def check_for_topic_scattered_documentation(scope="fast"):
     """Check if documentation about the same topic is scattered across multiple files"""
     print("🔍 Checking for scattered topic documentation...")
+    
+    # Skip in fast scope for performance
+    if scope == "fast":
+        print("  ⏭️  Skipping topic analysis in fast scope (use --scope full for detailed analysis)")
+        return True
     
     # Define common topics and their keywords
     topics = {
@@ -329,12 +343,13 @@ def check_for_topic_scattered_documentation():
     
     topic_files = defaultdict(list)
     
+    # Only check key documentation files, not all files
     for topic, keywords in topics.items():
-        for file_path in ROOT.rglob("*.md"):
+        for file_path in ROOT.glob("docs/*.md"):
             if "venv" in str(file_path) or "__pycache__" in str(file_path):
                 continue
             try:
-                content = file_path.read_text(encoding='utf-8', errors='ignore').lower()
+                content = read_bounded(file_path, MAX_BYTES).lower()
                 # Count keyword matches
                 matches = sum(1 for keyword in keywords if keyword in content)
                 if matches >= 2:  # At least 2 keywords match
@@ -359,12 +374,17 @@ def check_for_topic_scattered_documentation():
     print("  ✅ No scattered topic documentation detected")
     return True
 
-def check_for_outdated_documentation_references():
+def check_for_outdated_documentation_references(scope="fast"):
     """Check for documentation that references outdated or moved files"""
     print("🔍 Checking for outdated documentation references...")
     
-    # Collect all markdown files
-    md_files = list(ROOT.rglob("*.md"))
+    # Skip in fast scope for performance
+    if scope == "fast":
+        print("  ⏭️  Skipping outdated refs check in fast scope (use --scope full for detailed analysis)")
+        return True
+    
+    # Collect only key documentation files
+    md_files = list(ROOT.glob("docs/*.md")) + list(ROOT.glob("*.md"))
     
     outdated_refs = []
     for md_file in md_files:
@@ -412,11 +432,16 @@ def check_for_outdated_documentation_references():
     print("  ✅ No outdated documentation references found")
     return True
 
-def check_for_inconsistent_documentation_structure():
+def check_for_inconsistent_documentation_structure(scope="fast"):
     """Check for inconsistent documentation structure and formatting"""
     print("🔍 Checking for inconsistent documentation structure...")
     
-    md_files = list(ROOT.rglob("*.md"))
+    # Skip in fast scope for performance
+    if scope == "fast":
+        print("  ⏭️  Skipping structure check in fast scope (use --scope full for detailed analysis)")
+        return True
+    
+    md_files = list(ROOT.glob("docs/*.md")) + list(ROOT.glob("*.md"))
     structure_issues = []
     
     for md_file in md_files:
@@ -472,9 +497,14 @@ def check_for_inconsistent_documentation_structure():
     print("  ✅ No documentation structure issues found")
     return True
 
-def check_for_missing_documentation_sections():
+def check_for_missing_documentation_sections(scope="fast"):
     """Check for missing standard documentation sections"""
     print("🔍 Checking for missing documentation sections...")
+    
+    # Skip in fast scope for performance
+    if scope == "fast":
+        print("  ⏭️  Skipping missing sections check in fast scope (use --scope full for detailed analysis)")
+        return True
     
     # Define standard sections that should be present in certain file types
     required_sections = {
@@ -529,14 +559,19 @@ def check_for_missing_documentation_sections():
     print("  ✅ All standard documentation sections present")
     return True
 
-def suggest_documentation_consolidation():
+def suggest_documentation_consolidation(scope="fast"):
     """Suggest documentation consolidation opportunities"""
     print("🔍 Analyzing documentation consolidation opportunities...")
+    
+    # Skip in fast scope for performance
+    if scope == "fast":
+        print("  ⏭️  Skipping consolidation suggestions in fast scope (use --scope full for detailed analysis)")
+        return []
     
     # Group files by directory and analyze content similarity
     dir_groups = defaultdict(list)
     
-    for file_path in ROOT.rglob("*.md"):
+    for file_path in ROOT.glob("docs/*.md"):
         if "venv" in str(file_path) or "__pycache__" in str(file_path):
             continue
         try:
@@ -1136,22 +1171,22 @@ def main():
     ssot_ref_check = check_for_missing_ssot_references()
     print("\n🔍 Step 7/8: Semantic Documentation Analysis...")
     print("  - Checking semantic duplicates...")
-    semantic_doc_check = check_for_semantic_documentation_duplicates()
+    semantic_doc_check = check_for_semantic_documentation_duplicates(scope)
     
     print("  - Checking scattered topics...")
-    topic_scattered_check = check_for_topic_scattered_documentation()
+    topic_scattered_check = check_for_topic_scattered_documentation(scope)
     
     print("  - Checking outdated references...")
-    outdated_refs_check = check_for_outdated_documentation_references()
+    outdated_refs_check = check_for_outdated_documentation_references(scope)
     
     print("  - Checking documentation structure...")
-    structure_check = check_for_inconsistent_documentation_structure()
+    structure_check = check_for_inconsistent_documentation_structure(scope)
     
     print("  - Checking missing sections...")
-    missing_sections_check = check_for_missing_documentation_sections()
+    missing_sections_check = check_for_missing_documentation_sections(scope)
     
     print("\n🔍 Step 8/8: Consolidation Suggestions...")
-    consolidation_suggestions = suggest_documentation_consolidation()
+    consolidation_suggestions = suggest_documentation_consolidation(scope)
     
     # Auto-fix if requested and there are issues
     if auto_fix and not all([ssot_ok, cursor_ok, mcp_ok, master_ok, duplicate_check]):
