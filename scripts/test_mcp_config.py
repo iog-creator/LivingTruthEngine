@@ -11,7 +11,7 @@ def test_mcp_config():
     """Test that the MCP configuration is correct"""
     print("🔍 Testing MCP configuration...")
     
-    config_path = "/home/mccoy/.lmstudio/mcp.json"
+    config_path = os.path.expanduser("~/.lmstudio/mcp.json")
     
     if not os.path.exists(config_path):
         print(f"❌ MCP config not found at {config_path}")

@@ -165,7 +165,7 @@ def main():
     print("=" * 50)
     
     # Langflow path
-    langflow_path = "/home/mccoy/Projects/NotebookLM/langflow"
+    langflow_path = os.getenv("LANGFLOW_PATH", str(Path(__file__).parent.parent.parent.parent / "langflow"))
     
     if not Path(langflow_path).exists():
         print(f"❌ Langflow path not found: {langflow_path}")

@@ -38,7 +38,7 @@ def test_phase8_youtube_channel_run():
     print(f"Started Phase 8 run: {run_id}")
     
     # Check output directory
-    out_dir = Path("/home/mccoy/Projects/NotebookLM/data/outputs/runs")
+    out_dir = Path(__file__).parent.parent / "data/outputs/runs"
     assert out_dir.exists(), "Output directory should exist"
     
     # Wait up to 10s for writers (longer for real data)

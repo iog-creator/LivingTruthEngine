@@ -1,5 +1,7 @@
 # LM Studio Integration (Local Only)
 
+This document describes how to integrate LM Studio with the Living Truth Engine's Single Source of Truth (SSOT) validation system.
+
 ## What you get
 - **OpenAI tools-style bridge** at `http://127.0.0.1:8756`:
   - `POST /tools/verify_ssot` → runs deterministic SSOT check (CI-safe mode)

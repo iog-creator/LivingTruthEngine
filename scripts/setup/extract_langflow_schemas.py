@@ -153,8 +153,8 @@ def main():
     print("🚀 Langflow Component Schema Extraction")
     print("=" * 50)
     
-    # Langflow path
-    langflow_path = "/home/mccoy/Projects/NotebookLM/langflow"
+    # Langflow path - use environment variable or default
+    langflow_path = os.getenv("LANGFLOW_PATH", str(Path(__file__).parent.parent.parent.parent / "langflow"))
     
     if not Path(langflow_path).exists():
         print(f"❌ Langflow path not found: {langflow_path}")

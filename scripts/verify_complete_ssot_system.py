@@ -803,6 +803,8 @@ def check_for_hardcoded_paths():
         for file_path in ROOT.rglob("*.py"):
             if "venv" in str(file_path) or "__pycache__" in str(file_path):
                 continue
+            if file_path.name == "verify_complete_ssot_system.py":
+                continue  # Skip the SSOT script itself
             try:
                 content = file_path.read_text(encoding='utf-8', errors='ignore')
                 if re.search(pattern, content):
@@ -824,35 +826,40 @@ def check_for_inconsistent_terminology():
     """Check for inconsistent terminology across documentation"""
     print("🔍 Checking for inconsistent terminology...")
     
-    # Define expected terminology
-    expected_terms = {
-        "SSOT": ["Single Source of Truth", "SSOT"],
-        "Living Truth Engine": ["Living Truth Engine", "LTE"],
-        "Phase": ["Phase", "phase"],
-        "MCP": ["MCP", "Master Control Program"]
-    }
-    
+    # Check for terminology issues
     inconsistent_files = []
-    for term, variants in expected_terms.items():
-        for file_path in ROOT.rglob("*.md"):
-            if "venv" in str(file_path) or "__pycache__" in str(file_path):
-                continue
-            try:
-                content = file_path.read_text(encoding='utf-8', errors='ignore')
-                found_variants = []
-                for variant in variants:
-                    if variant in content:
-                        found_variants.append(variant)
+    
+    for file_path in ROOT.rglob("*.md"):
+        if "venv" in str(file_path) or "__pycache__" in str(file_path):
+            continue
+        try:
+            content = file_path.read_text(encoding='utf-8', errors='ignore')
+            
+            # Check SSOT usage
+            if 'SSOT' in content and 'Single Source of Truth' not in content:
+                inconsistent_files.append((file_path, 'SSOT used without definition'))
+            
+            # Check LTE usage
+            if re.search(r'\bLTE\b', content) and 'Living Truth Engine' not in content:
+                inconsistent_files.append((file_path, 'LTE used without definition'))
+            
+            # Check inconsistent Phase capitalization
+            if re.search(r'\bphase\b.*\bPhase\b|\bPhase\b.*\bphase\b', content):
+                inconsistent_files.append((file_path, 'Inconsistent Phase capitalization'))
+            
+            # Check MCP usage (only flag if it's clearly technical documentation that should define it)
+            if (re.search(r'\bMCP\b', content) and 
+                'Master Control Program' not in content and
+                ('server' in content.lower() or 'tool' in content.lower() or 'protocol' in content.lower())):
+                inconsistent_files.append((file_path, 'MCP used without definition'))
                 
-                if len(found_variants) > 1:
-                    inconsistent_files.append((file_path, term, found_variants))
-            except Exception:
-                continue
+        except Exception:
+            continue
     
     if inconsistent_files:
         print("  ❌ Inconsistent terminology found:")
-        for file_path, term, variants in inconsistent_files[:5]:  # Limit output
-            print(f"    - {file_path.relative_to(ROOT)} ({term}: {variants})")
+        for file_path, description in inconsistent_files[:5]:  # Limit output
+            print(f"    - {file_path.relative_to(ROOT)}: {description}")
         if len(inconsistent_files) > 5:
             print(f"    ... and {len(inconsistent_files) - 5} more")
         ERRORS.append(f"Found {len(inconsistent_files)} files with inconsistent terminology")

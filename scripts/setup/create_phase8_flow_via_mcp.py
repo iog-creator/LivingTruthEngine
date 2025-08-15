@@ -218,14 +218,14 @@ def create_mcp_configuration():
             "mcp_hub_server": {
                 "command": "python3",
                 "args": [
-                    "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/mcp_hub_server.py"
+                    str(Path(__file__).parent.parent.parent / "src/mcp_servers/mcp_hub_server.py")
                 ],
                 "env": {
                     "LANGFLOW_API_ENDPOINT": "http://localhost:7860",
                     "LANGFLOW_API_KEY": "${LANGFLOW_API_KEY}",
                     "LANGFLOW_PROJECT_ID": "399a0977-d08a-4d61-ba52-fd9811676762",
                     "LM_STUDIO_ENDPOINT": "http://localhost:1234",
-                    "PYTHONPATH": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src"
+                    "PYTHONPATH": str(Path(__file__).parent.parent.parent / "src")
                 },
                 "description": "MCP Hub Server - Includes Phase 8 Langflow tools"
             }

@@ -11,7 +11,7 @@ def test_plugin_installation():
     """Test that the plugin is properly installed"""
     print("🔍 Testing LM Studio plugin installation...")
     
-    plugin_path = "/home/mccoy/.lmstudio/extensions/plugins/lmstudio-mcp-tools"
+    plugin_path = os.path.expanduser("~/.lmstudio/extensions/plugins/lmstudio-mcp-tools")
     
     # Check if plugin directory exists
     if not os.path.exists(plugin_path):

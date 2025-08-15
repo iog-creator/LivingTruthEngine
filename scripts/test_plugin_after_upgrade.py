@@ -11,7 +11,7 @@ def test_plugin_installation():
     print("🔍 Testing LM Studio plugin installation after upgrade...")
     
     # Check plugin directory
-    plugin_dir = Path("/home/mccoy/.lmstudio/extensions/plugins/lmstudio-mcp-tools")
+    plugin_dir = Path.home() / ".lmstudio/extensions/plugins/lmstudio-mcp-tools"
     if not plugin_dir.exists():
         print("❌ Plugin directory not found")
         return False

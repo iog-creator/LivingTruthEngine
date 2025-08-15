@@ -28,7 +28,7 @@ def test_phase7_smoke_run():
     run_id = run_data["run_id"]
     
     # Check output directory
-    out_dir = Path("/home/mccoy/Projects/NotebookLM/data/outputs/runs")
+    out_dir = Path(__file__).parent.parent / "data/outputs/runs"
     assert out_dir.exists(), "Output directory should exist"
     
     # Wait up to 5s for writers

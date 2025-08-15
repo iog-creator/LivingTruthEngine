@@ -13,8 +13,8 @@ def test_mcp_server():
     """Test the MCP server functionality"""
     
     # Path to the MCP server
-    server_path = "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/basic_mcp_server.py"
-    python_path = "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/living_venv/bin/python3"
+    server_path = str(Path(__file__).parent.parent.parent / "basic_mcp_server.py")
+    python_path = str(Path(__file__).parent.parent.parent / "living_venv/bin/python3")
     
     print("🔍 Testing MCP Server Detection...")
     print(f"Server Path: {server_path}")
@@ -168,7 +168,7 @@ def check_cursor_mcp_config():
     """Check the Cursor MCP configuration"""
     print("\n🔧 Checking Cursor MCP Configuration...")
     
-    mcp_config_path = "/home/mccoy/.cursor/mcp.json"
+    mcp_config_path = Path.home() / ".cursor/mcp.json"
     
     if not os.path.exists(mcp_config_path):
         print("❌ MCP config file not found!")
