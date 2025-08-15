@@ -1058,28 +1058,64 @@ def main():
     # Check if --fix flag is provided
     auto_fix = "--fix" in sys.argv
     
-    # Run all validations
+    print(f"📋 Starting validation... (Auto-fix: {auto_fix})")
+    print("⏳ This may take a few minutes for large repositories...")
+    
+    # Run all validations with progress indicators
+    print("\n🔍 Step 1/8: SSOT Bundle Verification...")
     ssot_ok = run_ssot_bundle_verification()
+    
+    print("\n🔍 Step 2/8: Cursor Rules Validation...")
     cursor_ok = run_cursor_rules_validation()
+    
+    print("\n🔍 Step 3/8: MCP Validation...")
     mcp_ok = run_mcp_validation()
+    
+    print("\n🔍 Step 4/8: Master Log Build...")
     master_ok = run_master_log_build()
+    
+    print("\n🔍 Step 5/8: Phase Summary Check...")
     duplicate_check = check_for_duplicate_phase_summaries()
     
-    # Run proactive checks
+    # Run proactive checks with progress indicators
+    print("\n🔍 Step 6/8: Proactive Issue Detection...")
+    print("  - Checking TODO comments...")
     todo_check = check_for_todo_comments()
+    
+    print("  - Checking silent fallbacks...")
     fallback_check = check_for_silent_fallbacks()
+    
+    print("  - Checking missing tests...")
     test_check = check_for_missing_tests()
+    
+    print("  - Checking hardcoded paths...")
     path_check = check_for_hardcoded_paths()
+    
+    print("  - Checking terminology consistency...")
     terminology_check = check_for_inconsistent_terminology()
+    
+    print("  - Checking circular dependencies...")
     dependency_check = check_for_circular_dependencies()
+    
+    print("  - Checking SSOT references...")
     ssot_ref_check = check_for_missing_ssot_references()
+    print("\n🔍 Step 7/8: Semantic Documentation Analysis...")
+    print("  - Checking semantic duplicates...")
     semantic_doc_check = check_for_semantic_documentation_duplicates()
+    
+    print("  - Checking scattered topics...")
     topic_scattered_check = check_for_topic_scattered_documentation()
+    
+    print("  - Checking outdated references...")
     outdated_refs_check = check_for_outdated_documentation_references()
+    
+    print("  - Checking documentation structure...")
     structure_check = check_for_inconsistent_documentation_structure()
+    
+    print("  - Checking missing sections...")
     missing_sections_check = check_for_missing_documentation_sections()
     
-    # Run consolidation suggestions (informational only)
+    print("\n🔍 Step 8/8: Consolidation Suggestions...")
     consolidation_suggestions = suggest_documentation_consolidation()
     
     # Auto-fix if requested and there are issues
