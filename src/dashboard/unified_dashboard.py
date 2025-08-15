@@ -1263,7 +1263,7 @@ class UnifiedDashboard:
                         end_time = datetime.fromisoformat(manifest['completed_at'].replace('Z', '+00:00'))
                         duration = end_time - start_time
                         total_duration_minutes = int(duration.total_seconds() / 60)
-                    except:
+                    except (ValueError, TypeError):
                         pass
                 
                 return envelope_ok({

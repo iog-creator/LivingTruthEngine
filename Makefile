@@ -24,6 +24,9 @@ lm-tools:
 lm-mcp:
 	python src/mcp_servers/phase9_mcp_server.py
 
+mcp-diagnostics:
+	python scripts/mcp_router_diagnostics.py --cmd "make lm-mcp" --timeout 8 --max-seconds 20
+
 
 
 

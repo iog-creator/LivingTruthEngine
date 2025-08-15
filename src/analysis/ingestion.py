@@ -20,7 +20,7 @@ from src.analysis.hybrid_retrieval import LMStudioEmbeddings
 
 try:
     from langchain_community.vectorstores.pgvector import PGVector
-except Exception:  # pragma: no cover
+except (ImportError, ModuleNotFoundError):  # pragma: no cover
     PGVector = None  # type: ignore
 
 
@@ -66,7 +66,7 @@ class IngestionPipeline:
             with self.stream_file.open("a", encoding="utf-8") as f:
                 f.write(json.dumps(record, ensure_ascii=False) + "\n")
             self.status_file.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
-        except Exception:
+        except (FileNotFoundError, PermissionError, OSError):
             pass
 
     def _vector_store_handle(self):

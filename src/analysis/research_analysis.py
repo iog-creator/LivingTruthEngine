@@ -19,7 +19,7 @@ try:
     import tkinter as tk
     from tkinter import ttk, messagebox, filedialog, simpledialog
     GUI_AVAILABLE = True
-except Exception:  # ImportError or missing tk runtime in headless/container
+except (ImportError, ModuleNotFoundError):  # Missing tk runtime in headless/container
     GUI_AVAILABLE = False
     tk = None
     # Provide minimal placeholders to avoid NameErrors if referenced indirectly
@@ -36,7 +36,7 @@ import matplotlib
 matplotlib.use('Agg')  # Use non-interactive backend for Docker
 try:
     from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg  # noqa: F401
-except Exception:
+except (ImportError, ModuleNotFoundError):
     # In headless environments without Tk, skip the TkAgg backend import
     FigureCanvasTkAgg = None
 import webbrowser

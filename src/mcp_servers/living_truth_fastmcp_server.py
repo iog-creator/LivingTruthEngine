@@ -1342,7 +1342,7 @@ class LivingTruthEngine:
                             if "text" not in doc and "content" in doc:
                                 doc["text"] = doc["content"]
                             documents.append(doc)
-                    except Exception:
+                    except (json.JSONDecodeError, KeyError, TypeError):
                         continue
             
             if not documents:
@@ -1537,7 +1537,7 @@ Format your response as JSON:
                             if "text" not in d and "content" in d:
                                 d["text"] = d["content"]
                             docs.append(d)
-                    except Exception:
+                    except (json.JSONDecodeError, KeyError, TypeError):
                         continue
             
             if not docs:

@@ -107,6 +107,6 @@ try:
             return {"status": "ok", "data": {"kind": kind, "status": status, **meta}, "error": None}
         except Exception as e:
             return {"status": "error", "data": None, "error": str(e)}
-except Exception:
+except (ImportError, ModuleNotFoundError):
     router = None
 

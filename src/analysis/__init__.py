@@ -21,7 +21,7 @@ try:  # Lightweight retrieval components
         BiblicalReranker,
         LMStudioEmbeddings,
     )
-except Exception:  # pragma: no cover - optional in minimal environments
+except (ImportError, ModuleNotFoundError):  # pragma: no cover - optional in minimal environments
     pass
 
 try:  # Research components may require GUI deps in some environments
@@ -32,7 +32,7 @@ try:  # Research components may require GUI deps in some environments
         Entity,
         Relationship,
     )
-except Exception:  # pragma: no cover - optional in minimal environments
+except (ImportError, ModuleNotFoundError):  # pragma: no cover - optional in minimal environments
     pass
 
 try:  # Notebook agent utilities
@@ -44,7 +44,7 @@ try:  # Notebook agent utilities
         ContextManager,
         create_youtube_transcript_tool,
     )
-except Exception:  # pragma: no cover - optional in minimal environments
+except (ImportError, ModuleNotFoundError):  # pragma: no cover - optional in minimal environments
     pass
 
 __all__ = [name for name in globals().keys() if not name.startswith("_")]

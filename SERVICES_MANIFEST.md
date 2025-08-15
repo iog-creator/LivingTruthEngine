@@ -126,3 +126,20 @@ This document is the **single source of truth** for all services used in Phase 9
 **Healthcheck**: `GET http://localhost:8501/health` → 200  
 **Code Paths**: `src/services/veritas_console/main.py`  
 **Tests**: `tests/services/test_veritas_console_smoke.py`
+
+---
+
+## Diagnostic Tools
+
+### mcp_router_diagnostics (diagnostic)
+**Role**: Safe, read-only MCP server diagnostics tool that performs protocol negotiation, tool enumeration, and health analysis.  
+**Command**: `python scripts/mcp_router_diagnostics.py --cmd "make lm-mcp"`  
+**Output**: JSON envelope + markdown report in `./reports/`  
+**Features**:
+- Protocol version negotiation (2025-06-18)
+- Tool enumeration with pagination
+- Schema validation and duplicate detection
+- Latency metrics (p50/p95/max)
+- Namespace analysis and health proxies
+- No side effects (read-only probe)
+**Tests**: `tests/test_mcp_router_diagnostics.py`

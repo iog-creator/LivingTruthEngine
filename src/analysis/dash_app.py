@@ -509,7 +509,7 @@ def _get_hub_server():
         try:
             from src.mcp_servers.mcp_hub_server import MCPHubServer
             _get_hub_server._hub = MCPHubServer()
-        except Exception:
+        except (ImportError, ModuleNotFoundError, RuntimeError):
             _get_hub_server._hub = None
     return _get_hub_server._hub
 
@@ -571,7 +571,7 @@ async def api_start_youtube_run(request: Request):
             from src.api.ai_activity import bus as activity_bus
             import asyncio as _asyncio
             _asyncio.create_task(activity_bus.emit("llm", "working", {"stage": "start_run"}))
-        except Exception:
+        except (ImportError, ModuleNotFoundError, RuntimeError):
             pass
 
         result = hub.execute_tool("start_veritas_run", params)
@@ -581,7 +581,7 @@ async def api_start_youtube_run(request: Request):
             from src.api.ai_activity import bus as activity_bus
             import asyncio as _asyncio
             _asyncio.create_task(activity_bus.emit("llm", "error", {"error": str(e)}))
-        except Exception:
+        except (ImportError, ModuleNotFoundError, RuntimeError):
             pass
         return {"status": "error", "error": {"code": "start_failed", "msg": str(e)}}
 
@@ -601,7 +601,7 @@ async def api_execute_tool(request: Request):
         # Attempt to parse JSON responses
         try:
             parsed = json.loads(result)
-        except Exception:
+        except (json.JSONDecodeError, TypeError):
             parsed = result
         return {"status": "ok", "data": parsed}
     except Exception as e:
@@ -625,7 +625,7 @@ async def api_ai_chat(request: Request):
             from src.api.ai_activity import bus as activity_bus
             import asyncio as _asyncio
             _asyncio.create_task(activity_bus.emit("llm", "inference", {"context_run_id": context_run_id}))
-        except Exception:
+        except (ImportError, ModuleNotFoundError, RuntimeError):
             pass
 
         tool_name = "generate_lm_studio_text"
@@ -636,13 +636,13 @@ async def api_ai_chat(request: Request):
             from src.api.ai_activity import bus as activity_bus
             import asyncio as _asyncio
             _asyncio.create_task(activity_bus.emit("llm", "done", {"context_run_id": context_run_id}))
-        except Exception:
+        except (ImportError, ModuleNotFoundError, RuntimeError):
             pass
 
         # Try parse JSON
         try:
             parsed = json.loads(result)
-        except Exception:
+        except (json.JSONDecodeError, TypeError):
             parsed = result
         return {"status": "ok", "data": parsed}
     except Exception as e:
@@ -650,7 +650,7 @@ async def api_ai_chat(request: Request):
             from src.api.ai_activity import bus as activity_bus
             import asyncio as _asyncio
             _asyncio.create_task(activity_bus.emit("llm", "error", {"error": str(e)}))
-        except Exception:
+        except (ImportError, ModuleNotFoundError, RuntimeError):
             pass
         return {"status": "error", "error": {"code": "chat_failed", "msg": str(e)}}
 
@@ -667,7 +667,7 @@ async def ai_activity_ws(websocket: WebSocket):
     except Exception as e:
         try:
             await websocket.send_json({"ai_type": "system", "status": "error", "meta": {"msg": str(e)}})
-        except Exception:
+        except (RuntimeError, ConnectionError):
             pass
         await websocket.close()
 

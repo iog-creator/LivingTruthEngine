@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Iterable, Iterator, Tuple, Dict, Any
 try:
     import yaml
-except Exception:
+except (ImportError, ModuleNotFoundError):
     yaml = None
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -52,5 +52,5 @@ def read_bounded(path: Path, max_bytes: int) -> str:
         with open(path, "rb") as fh:
             data = fh.read(max_bytes)
         return data.decode("utf-8", errors="ignore")
-    except Exception:
+    except (FileNotFoundError, PermissionError, UnicodeDecodeError):
         return ""

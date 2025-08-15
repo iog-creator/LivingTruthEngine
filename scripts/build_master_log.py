@@ -21,7 +21,7 @@ def human_date_to_iso(s: str) -> str:
     ]:
         try:
             return datetime.strptime(s, fmt).strftime("%Y-%m-%d")
-        except Exception:
+        except (ValueError, TypeError):
             pass
     # fallback: return original string
     return s
@@ -55,7 +55,7 @@ def discover_phase_files(limit_phase_prefix=None):
 def read_text(p: Path) -> str:
     try:
         return p.read_text(encoding="utf-8")
-    except Exception:
+    except (UnicodeDecodeError, FileNotFoundError, PermissionError):
         return f"_Unable to read file: {p}_"
 
 def load_git_date(path: Path) -> str:
@@ -68,7 +68,7 @@ def load_git_date(path: Path) -> str:
             stderr=subprocess.DEVNULL,
         ).decode().strip()
         return out
-    except Exception:
+    except (subprocess.CalledProcessError, FileNotFoundError, OSError):
         return ""
 
 def section_for_phase(phase: str, plan_p: Path|None, comp_p: Path|None) -> dict:
