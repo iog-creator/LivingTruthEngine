@@ -48,10 +48,10 @@ class LMStudioAIAnalyzer:
     def _test_connection(self):
         """Test LM Studio connection"""
         try:
+            # Just test if the server is reachable without loading all models
             response = requests.get(f"{self.lm_studio_url}/models", timeout=5)
             if response.status_code == 200:
-                models = response.json()
-                print(f"🤖 AI Analysis: LM Studio connected. Available models: {len(models.get('data', []))}")
+                print(f"🤖 AI Analysis: LM Studio connected")
                 return True
             else:
                 print(f"⚠️ AI Analysis: LM Studio responded with status {response.status_code}")

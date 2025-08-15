@@ -9,6 +9,12 @@ import re
 def test_model(model_id, test_name):
     """Test a specific model"""
     print(f"\n🤖 Testing {model_id} ({test_name})...")
+    
+    # Skip models that might not be available to avoid loading them
+    if model_id in ["meta/llama-3.3-70b", "mistralai/devstral-small-2505", "google/gemma-3-4b"]:
+        print(f"⏭️ Skipping {model_id} to avoid loading large models")
+        return False
+        
     try:
         payload = {
             "model": model_id,
@@ -57,14 +63,10 @@ def test_quick_ai():
     print("🚀 Testing Different Models for Structured Output")
     print("=" * 50)
     
-    # Test different models
+    # Test only the models we know work and won't cause loading issues
     models_to_test = [
         ("llama-3.2-3b-instruct", "Llama 3.2 3B Instruct"),
-        ("llama-3.2-1b-instruct", "Llama 3.2 1B Instruct"),
-        ("meta/llama-3.3-70b", "Llama 3.3 70B"),
-        ("mistralai/devstral-small-2505", "Mistral Devstral Small"),
-        ("google/gemma-3-4b", "Gemma 3 4B"),
-        ("qwen/qwen3-8b", "Qwen 3 8B (current)")
+        ("llama-3.2-1b-instruct", "Llama 3.2 1B Instruct")
     ]
     
     results = {}
