@@ -3,12 +3,44 @@
 ## ✅ Verification Complete
 LM Studio is running and responding (0.07s inference time). The tools bridge is working.
 
-## 🔧 Next Steps: Configure LM Studio to Use Tools
+## 🔧 Next Steps: Use LM Studio with Tools
 
-### Option 1: OpenAI Tools Format (Recommended)
+### Option 1: OpenAI-Compatible API (Recommended)
 
-1. **In LM Studio, go to Settings → Tools**
-2. **Add these tool definitions:**
+LM Studio uses the OpenAI-compatible API. Tools are sent in the chat completion request:
+
+```python
+import requests
+
+payload = {
+    "model": "llama-3.2-3b-instruct",
+    "messages": [
+        {"role": "user", "content": "Can you verify the SSOT status?"}
+    ],
+    "tools": [
+        {
+            "type": "function",
+            "function": {
+                "name": "verify_ssot",
+                "description": "Run comprehensive SSOT validation check",
+                "parameters": {
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }
+            }
+        }
+    ],
+    "tool_choice": "auto"
+}
+
+response = requests.post("http://localhost:1234/v1/chat/completions", json=payload)
+```
+
+**Test it:**
+```bash
+python scripts/test_lmstudio_with_tools.py
+```
 
 ```json
 [
@@ -17,7 +49,9 @@ LM Studio is running and responding (0.07s inference time). The tools bridge is 
     "description": "Run comprehensive SSOT validation check",
     "url": "http://127.0.0.1:8756/tools/verify_ssot",
     "method": "POST",
-    "headers": {"Content-Type": "application/json"},
+    "headers": {
+      "Content-Type": "application/json"
+    },
     "body": "{}"
   },
   {
@@ -25,7 +59,9 @@ LM Studio is running and responding (0.07s inference time). The tools bridge is 
     "description": "Read the latest SSOT validation report",
     "url": "http://127.0.0.1:8756/tools/read_ssot_report",
     "method": "POST",
-    "headers": {"Content-Type": "application/json"},
+    "headers": {
+      "Content-Type": "application/json"
+    },
     "body": "{}"
   },
   {
@@ -33,7 +69,9 @@ LM Studio is running and responding (0.07s inference time). The tools bridge is 
     "description": "Get suggested code patches (read-only)",
     "url": "http://127.0.0.1:8756/tools/draft_patches", 
     "method": "POST",
-    "headers": {"Content-Type": "application/json"},
+    "headers": {
+      "Content-Type": "application/json"
+    },
     "body": "{}"
   }
 ]
