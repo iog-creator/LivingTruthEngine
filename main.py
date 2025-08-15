@@ -46,7 +46,7 @@ async def telemetry_status() -> JSONResponse:
         return JSONResponse({"status": "idle"})
     try:
         return JSONResponse(content=json.loads(status_file.read_text(encoding="utf-8")))
-    except Exception:
+    except (FileNotFoundError, json.JSONDecodeError, UnicodeDecodeError):
         return JSONResponse({"error": "Failed reading status"}, status_code=500)
 
 
@@ -59,7 +59,7 @@ async def telemetry_stream(lines: int = 200) -> PlainTextResponse:
     try:
         content = stream_file.read_text(encoding="utf-8").splitlines()[-lines:]
         return PlainTextResponse("\n".join(content))
-    except Exception:
+    except (FileNotFoundError, UnicodeDecodeError):
         return PlainTextResponse("", status_code=500)
 
 
@@ -81,7 +81,7 @@ async def ingest(channel: Optional[str] = None) -> JSONResponse:
             "started_at": summary.started_at,
             "completed_at": summary.completed_at,
         })
-    except Exception as e:
+    except (ValueError, RuntimeError, ImportError) as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
@@ -93,7 +93,7 @@ async def ingest_telemetry(lines: int = 200) -> PlainTextResponse:
         return PlainTextResponse("")
     try:
         return PlainTextResponse("\n".join(stream.read_text(encoding="utf-8").splitlines()[-lines:]))
-    except Exception:
+    except (FileNotFoundError, UnicodeDecodeError):
         return PlainTextResponse("", status_code=500)
 
 if __name__ == "__main__":

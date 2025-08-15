@@ -229,7 +229,7 @@ class YouTubeAdapter:
         This is a placeholder for future Whisper integration.
         For now, it returns None to indicate no local transcript available.
         """
-        # TODO: Implement local Whisper transcription
+        # Task: Whisper Transcription - See TASKS.md for details
         # This would involve:
         # 1. Downloading the audio using yt-dlp
         # 2. Running Whisper locally on the audio

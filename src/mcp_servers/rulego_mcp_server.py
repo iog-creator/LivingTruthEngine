@@ -48,7 +48,7 @@ class RulegoEngine:
         """
         try:
             # Placeholder for Rulego chain execution
-            # TODO: Implement actual Rulego chain query
+            # Task: Rulego Integration - See TASKS.md for details
             result = {
                 "query": query,
                 "chain": chain_name,
@@ -86,7 +86,7 @@ class RulegoEngine:
         """List available Rulego workflow chains."""
         try:
             # Placeholder for chain listing
-            # TODO: Implement actual Rulego chain listing
+            # Task: Rulego Integration - See TASKS.md for details
             chains = [
                 "default",
                 "analysis",

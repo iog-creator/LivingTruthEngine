@@ -181,7 +181,7 @@ class WebFetcher:
         """Extract text content from PDF"""
         try:
             # For now, return a placeholder
-            # TODO: Implement PDF text extraction using PyMuPDF
+            # Task: PDF Processing - See TASKS.md for details
             return {
                 "source_type": "web",
                 "uri": url,

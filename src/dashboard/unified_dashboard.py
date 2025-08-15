@@ -468,7 +468,7 @@ class UnifiedDashboard:
                     import requests
                     langflow_response = requests.get("http://langflow:7860/health", timeout=5)
                     langflow_health = "ok" if langflow_response.status_code == 200 else "error"
-                except:
+                except (requests.RequestException, ConnectionError, TimeoutError):
                     langflow_health = "error"
                 service_health["langflow"] = langflow_health
                 
@@ -484,9 +484,9 @@ class UnifiedDashboard:
                             if lm_response.status_code == 200:
                                 lm_health = "ok"
                                 break
-                        except:
+                        except (requests.RequestException, ConnectionError, TimeoutError):
                             continue
-                except:
+                except (requests.RequestException, ConnectionError, TimeoutError):
                     lm_health = "error"
                 service_health["lm_studio"] = lm_health
                 
@@ -495,7 +495,7 @@ class UnifiedDashboard:
                     import requests
                     neo4j_response = requests.get("http://neo4j:7474", timeout=5)
                     neo4j_health = "ok" if neo4j_response.status_code == 200 else "error"
-                except:
+                except (requests.RequestException, ConnectionError, TimeoutError):
                     neo4j_health = "error"
                 service_health["neo4j"] = neo4j_health
                 
@@ -505,7 +505,7 @@ class UnifiedDashboard:
                     result = subprocess.run(["docker", "ps", "--filter", "name=redis", "--format", "{{.Status}}"], 
                                           capture_output=True, text=True, timeout=5)
                     redis_health = "ok" if result.returncode == 0 and result.stdout.strip() else "error"
-                except:
+                except (subprocess.TimeoutExpired, subprocess.CalledProcessError, FileNotFoundError):
                     # Fallback: assume Redis is ok if we can't check
                     redis_health = "ok"
                 service_health["redis"] = redis_health

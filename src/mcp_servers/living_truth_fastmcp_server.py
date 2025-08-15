@@ -1960,7 +1960,7 @@ globs: ["**/*"]
                     health_checks.append("✅ Dashboard: Healthy")
                 else:
                     health_checks.append("❌ Dashboard: Unhealthy")
-            except:
+            except (requests.RequestException, ConnectionError, TimeoutError):
                 health_checks.append("❌ Dashboard: Unreachable")
             
             # Check LM Studio
@@ -1970,7 +1970,7 @@ globs: ["**/*"]
                     health_checks.append("✅ LM Studio: Healthy")
                 else:
                     health_checks.append("❌ LM Studio: Unhealthy")
-            except:
+            except (requests.RequestException, ConnectionError, TimeoutError):
                 health_checks.append("❌ LM Studio: Unreachable")
             
             # Check Langflow
@@ -1980,7 +1980,7 @@ globs: ["**/*"]
                     health_checks.append("✅ Langflow: Healthy")
                 else:
                     health_checks.append("❌ Langflow: Unhealthy")
-            except:
+            except (requests.RequestException, ConnectionError, TimeoutError):
                 health_checks.append("❌ Langflow: Unreachable")
             
             return "\n".join(health_checks)

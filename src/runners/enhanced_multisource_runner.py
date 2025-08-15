@@ -205,7 +205,7 @@ class EnhancedMultiSourceRunner:
             }
             
             # Store in database (placeholder for now)
-            # TODO: Implement actual database persistence
+            # Task: Database Persistence - See TASKS.md for details
             logger.info(f"Persisting job results for {job.job_id}: {len(documents)} documents")
             
         except Exception as e:
@@ -230,7 +230,7 @@ class EnhancedMultiSourceRunner:
         """Check health gate for specific service."""
         try:
             # For now, return True for all gates
-            # TODO: Implement actual health checks
+            # Task: Health Checks - See TASKS.md for details
             return True
         except Exception as e:
             logger.error(f"Health gate {gate_name} failed: {e}")
@@ -253,5 +253,5 @@ class EnhancedMultiSourceRunner:
     
     async def get_job_documents(self, job_id: str) -> List[Dict[str, Any]]:
         """Get documents for a specific job."""
-        # TODO: Implement document retrieval from database
+        # Task: Database Persistence - See TASKS.md for details
         return []

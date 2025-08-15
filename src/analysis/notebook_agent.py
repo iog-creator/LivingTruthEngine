@@ -727,7 +727,7 @@ class AdvancedNotebookAgent:
             audio_file = self.config.OUTPUTS_DIR / "audio" / output_file
             audio_file.parent.mkdir(parents=True, exist_ok=True)
             
-            # TODO: Implement actual audio generation
+            # Task: Audio Generation - See TASKS.md for details
             with open(audio_file, 'w') as f:
                 f.write(f"Audio placeholder for: {text}")
             

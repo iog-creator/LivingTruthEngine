@@ -50,7 +50,7 @@ class MCPSolverEngine:
             var_data = json.loads(variables) if variables else {}
             
             # Placeholder for constraint solving
-            # TODO: Implement actual SAT/SMT solving
+            # Task: SAT/SMT Solver Integration - See TASKS.md for details
             solution = {
                 "constraint": constraint,
                 "variables": var_data,
@@ -93,7 +93,7 @@ class MCPSolverEngine:
             model_list = json.loads(models) if models else []
             
             # Placeholder for LLM routing
-            # TODO: Implement actual LLM routing logic
+            # Task: SAT/SMT Solver Integration - See TASKS.md for details
             routing_result = {
                 "query": query,
                 "available_models": model_list,

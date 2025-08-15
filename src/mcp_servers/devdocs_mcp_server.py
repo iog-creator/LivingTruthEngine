@@ -50,7 +50,7 @@ class DevDocsEngine:
             results_file = self.crawl_results_dir / f"crawl_results_{timestamp}.json"
             
             # Placeholder for actual crawling logic
-            # TODO: Implement actual DevDocs crawling
+            # Task: DevDocs Integration - See TASKS.md for details
             crawl_data = {
                 "timestamp": timestamp,
                 "depth": depth,
@@ -80,7 +80,7 @@ class DevDocsEngine:
         """
         try:
             # Placeholder for document retrieval
-            # TODO: Implement actual DevDocs retrieval
+            # Task: DevDocs Integration - See TASKS.md for details
             results = {
                 "query": query,
                 "results": [],

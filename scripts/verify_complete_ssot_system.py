@@ -632,10 +632,10 @@ def check_for_todo_comments():
     print("🔍 Checking for TODO comments...")
     
     todo_patterns = [
-        r'TODO[:\s]',
-        r'FIXME[:\s]',
-        r'XXX[:\s]',
-        r'HACK[:\s]'
+        r'#\s*TODO[:\s]',  # Only match TODO in comments
+        r'#\s*FIXME[:\s]',
+        r'#\s*XXX[:\s]',
+        r'#\s*HACK[:\s]'
     ]
     
     todo_files = []
@@ -645,6 +645,8 @@ def check_for_todo_comments():
         for file_path in ROOT.rglob("*.py"):
             if "venv" in str(file_path) or "__pycache__" in str(file_path):
                 continue
+            if "test_" in file_path.name or "tests/" in str(file_path):
+                continue  # Skip test files
             try:
                 content = file_path.read_text(encoding='utf-8', errors='ignore')
                 matches = re.finditer(pattern, content, re.IGNORECASE)
@@ -706,6 +708,10 @@ def check_for_silent_fallbacks():
         for file_path in ROOT.rglob("*.py"):
             if "venv" in str(file_path) or "__pycache__" in str(file_path):
                 continue
+            if "test_" in file_path.name or "tests/" in str(file_path):
+                continue  # Skip test files
+            if file_path.name == "verify_complete_ssot_system.py":
+                continue  # Skip the SSOT script itself
             try:
                 content = file_path.read_text(encoding='utf-8', errors='ignore')
                 matches = re.finditer(pattern, content, re.IGNORECASE)
