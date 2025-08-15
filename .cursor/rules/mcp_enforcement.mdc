@@ -78,24 +78,30 @@ Based on [Cursor documentation](https://docs.cursor.com/en/context/rules#user-ru
 ## 📋 **Mandatory Tool Rituals**
 **These MCP checks are REQUIRED for ALL changes:**
 
+### **SSOT Bundle Verification (NON-NEGOTIABLE - FIRST PRIORITY)**
+```bash
+# 1. SSOT Bundle Verification (MUST RUN FIRST)
+python scripts/verify_ssot_bundle.py
+
+# 2. Cursor Rules Frontmatter Validation
+python scripts/verify_cursor_rules_frontmatter.py
+```
+
 ### **MCP Validation (Non-Negotiable)**
 ```bash
-# 1. MCP Sync and Logging Check
+# 3. MCP Sync and Logging Check
 python scripts/mcp_sync.py && python scripts/logging_schema_check.py
 
-# 2. Phase9 MCP Server Validation
+# 4. Phase9 MCP Server Validation
 python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; server = Phase9MCPServer(); result = server.validate_cursor_rules(); print('MCP Validation:', result)"
 
-# 3. FastMCP Server Validation
+# 5. FastMCP Server Validation
 python -c "from src.mcp_servers.living_truth_fastmcp_server import validate_cursor_rules; result = validate_cursor_rules(); print('FastMCP Validation:', result)"
 ```
 
-### **SSOT Bundle Verification (Non-Negotiable)**
+### **Documentation Organization Check**
 ```bash
-# 4. SSOT Bundle Verification
-python scripts/verify_ssot_bundle.py
-
-# 5. Documentation Organization Check
+# 6. Documentation Organization Check
 python scripts/verify_doc_organization.py
 ```
 
@@ -105,6 +111,12 @@ python scripts/verify_doc_organization.py
 - **After any change**: Re-run SSOT verification and confirm PASS
 - **Commit messages**: Must include `[SSOT Verified]` prefix
 - **Block completion**: If SSOT verification fails, fix before proceeding
+
+**NEW CHAT ENFORCEMENT (CRITICAL):**
+- **In EVERY new chat session**: Run SSOT verification FIRST before any work
+- **Show SSOT output**: Always display the verification results
+- **Load SSOT context**: Always reference SSOT files when making decisions
+- **Prevent rule violations**: This stops "implement rules but don't follow them" mistakes
 
 ## 🚨 **Validation Before Completion**
 

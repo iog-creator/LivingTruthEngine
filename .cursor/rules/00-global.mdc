@@ -119,11 +119,17 @@ globs:
 2) Run the Tool Rituals above; post outputs (or the diff if green).
 3) **Verify MCP validation passes** - this is mandatory.
 4) **Verify documentation organization** - important docs in root.
-5) Only then propose a commit message summarizing code + tests + docs changes.
+5) **MANDATORY SSOT VERIFICATION** - Run `python scripts/verify_ssot_bundle.py` and show output
+6) Only then propose a commit message with `[SSOT Verified]` prefix.
 - Don't skip MCP validation - it's required for all changes.
+- **NEVER skip SSOT verification** - this is non-negotiable.
 
-## When I ask you to "implement/fix X", you MUST:
-1) Update code **and** tests.
-2) Run the Tool Rituals above; post outputs (or the diff if green).
-3) **Verify MCP validation passes** - this is mandatory.
-4) Only then propose a commit message summarizing code + tests + docs changes.
+## SSOT Enforcement in New Chats (CRITICAL)
+**In EVERY new chat session, before making ANY changes:**
+1. **Load SSOT bundle** into context (README.md, project_master_log.md, etc.)
+2. **Run SSOT verification** before starting work: `python scripts/verify_ssot_bundle.py`
+3. **After ANY changes**, re-run SSOT verification and show output
+4. **Use `[SSOT Verified]`** in all commit messages
+5. **Block completion** if SSOT verification fails
+
+**This prevents the "implement rules but don't follow them" mistake.**
