@@ -8,6 +8,7 @@ This script combines all SSOT validation tools and automatically fixes common is
 3. MCP validation
 4. Master log generation (with correct root location)
 5. Auto-fix common frontmatter issues
+6. Proactive detection of common project issues
 
 Usage:
   python scripts/verify_complete_ssot_system.py
@@ -17,6 +18,7 @@ import sys
 import subprocess
 import pathlib
 import re
+import yaml
 from typing import List, Dict, Tuple
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -34,6 +36,272 @@ def run_cmd(cmd: str, description: str) -> Tuple[bool, str]:
         return success, output
     except Exception as e:
         return False, f"Command failed: {e}"
+
+def check_for_todo_comments():
+    """Check for TODO comments that should be converted to proper tasks"""
+    print("🔍 Checking for TODO comments...")
+    
+    todo_patterns = [
+        r'TODO[:\s]',
+        r'FIXME[:\s]',
+        r'XXX[:\s]',
+        r'HACK[:\s]'
+    ]
+    
+    todo_files = []
+    for pattern in todo_patterns:
+        for file_path in ROOT.rglob("*.py"):
+            if "venv" in str(file_path) or "__pycache__" in str(file_path):
+                continue
+            try:
+                content = file_path.read_text(encoding='utf-8', errors='ignore')
+                if re.search(pattern, content, re.IGNORECASE):
+                    todo_files.append((file_path, pattern))
+            except Exception:
+                continue
+    
+    if todo_files:
+        print("  ❌ TODO comments found in code files:")
+        for file_path, pattern in todo_files:
+            print(f"    - {file_path.relative_to(ROOT)} ({pattern})")
+        ERRORS.append(f"Found {len(todo_files)} files with TODO comments - convert to proper tasks")
+        return False
+    
+    print("  ✅ No TODO comments found in code files")
+    return True
+
+def check_for_silent_fallbacks():
+    """Check for silent fallbacks instead of explicit error handling"""
+    print("🔍 Checking for silent fallbacks...")
+    
+    silent_patterns = [
+        r'except\s*:',
+        r'except\s+Exception\s*:',
+        r'except\s+BaseException\s*:',
+        r'pass\s*#\s*silent',
+        r'return\s+None\s*#\s*fallback'
+    ]
+    
+    silent_files = []
+    for pattern in silent_patterns:
+        for file_path in ROOT.rglob("*.py"):
+            if "venv" in str(file_path) or "__pycache__" in str(file_path):
+                continue
+            try:
+                content = file_path.read_text(encoding='utf-8', errors='ignore')
+                if re.search(pattern, content, re.IGNORECASE):
+                    silent_files.append((file_path, pattern))
+            except Exception:
+                continue
+    
+    if silent_files:
+        print("  ❌ Silent fallbacks found:")
+        for file_path, pattern in silent_files:
+            print(f"    - {file_path.relative_to(ROOT)} ({pattern})")
+        ERRORS.append(f"Found {len(silent_files)} files with silent fallbacks - use explicit error handling")
+        return False
+    
+    print("  ✅ No silent fallbacks found")
+    return True
+
+def check_for_missing_tests():
+    """Check for new functionality without corresponding tests"""
+    print("🔍 Checking for missing tests...")
+    
+    # Check if new Python files have corresponding test files
+    python_files = []
+    test_files = []
+    
+    for file_path in ROOT.rglob("*.py"):
+        if "venv" in str(file_path) or "__pycache__" in str(file_path):
+            continue
+        if "test" in file_path.name.lower():
+            test_files.append(file_path)
+        elif file_path.parent.name != "tests":
+            python_files.append(file_path)
+    
+    missing_tests = []
+    for py_file in python_files:
+        if py_file.parent.name == "scripts":
+            continue  # Skip scripts directory
+        
+        # Look for corresponding test file
+        test_file = ROOT / "tests" / f"test_{py_file.stem}.py"
+        if not test_file.exists():
+            missing_tests.append(py_file)
+    
+    if missing_tests:
+        print("  ❌ Missing test files:")
+        for file_path in missing_tests[:10]:  # Limit output
+            print(f"    - {file_path.relative_to(ROOT)}")
+        if len(missing_tests) > 10:
+            print(f"    ... and {len(missing_tests) - 10} more")
+        ERRORS.append(f"Found {len(missing_tests)} Python files without corresponding tests")
+        return False
+    
+    print("  ✅ All Python files have corresponding tests")
+    return True
+
+def check_for_hardcoded_paths():
+    """Check for hardcoded paths that might break"""
+    print("🔍 Checking for hardcoded paths...")
+    
+    hardcoded_patterns = [
+        r'/home/[^/]+/',
+        r'C:\\',
+        r'/usr/local/',
+        r'/opt/',
+        r'\.\./\.\./\.\./'
+    ]
+    
+    hardcoded_files = []
+    for pattern in hardcoded_patterns:
+        for file_path in ROOT.rglob("*.py"):
+            if "venv" in str(file_path) or "__pycache__" in str(file_path):
+                continue
+            try:
+                content = file_path.read_text(encoding='utf-8', errors='ignore')
+                if re.search(pattern, content):
+                    hardcoded_files.append((file_path, pattern))
+            except Exception:
+                continue
+    
+    if hardcoded_files:
+        print("  ❌ Hardcoded paths found:")
+        for file_path, pattern in hardcoded_files:
+            print(f"    - {file_path.relative_to(ROOT)} ({pattern})")
+        ERRORS.append(f"Found {len(hardcoded_files)} files with hardcoded paths")
+        return False
+    
+    print("  ✅ No hardcoded paths found")
+    return True
+
+def check_for_inconsistent_terminology():
+    """Check for inconsistent terminology across documentation"""
+    print("🔍 Checking for inconsistent terminology...")
+    
+    # Define expected terminology
+    expected_terms = {
+        "SSOT": ["Single Source of Truth", "SSOT"],
+        "Living Truth Engine": ["Living Truth Engine", "LTE"],
+        "Phase": ["Phase", "phase"],
+        "MCP": ["MCP", "Master Control Program"]
+    }
+    
+    inconsistent_files = []
+    for term, variants in expected_terms.items():
+        for file_path in ROOT.rglob("*.md"):
+            if "venv" in str(file_path) or "__pycache__" in str(file_path):
+                continue
+            try:
+                content = file_path.read_text(encoding='utf-8', errors='ignore')
+                found_variants = []
+                for variant in variants:
+                    if variant in content:
+                        found_variants.append(variant)
+                
+                if len(found_variants) > 1:
+                    inconsistent_files.append((file_path, term, found_variants))
+            except Exception:
+                continue
+    
+    if inconsistent_files:
+        print("  ❌ Inconsistent terminology found:")
+        for file_path, term, variants in inconsistent_files[:5]:  # Limit output
+            print(f"    - {file_path.relative_to(ROOT)} ({term}: {variants})")
+        if len(inconsistent_files) > 5:
+            print(f"    ... and {len(inconsistent_files) - 5} more")
+        ERRORS.append(f"Found {len(inconsistent_files)} files with inconsistent terminology")
+        return False
+    
+    print("  ✅ Terminology is consistent across documentation")
+    return True
+
+def check_for_circular_dependencies():
+    """Check for circular dependencies in phase files"""
+    print("🔍 Checking for circular dependencies...")
+    
+    phase_files = list(ROOT.glob("PHASE_*_COMPLETION_SUMMARY.md"))
+    dependencies = {}
+    
+    for phase_file in phase_files:
+        try:
+            content = phase_file.read_text(encoding='utf-8', errors='ignore')
+            # Extract phase number
+            phase_match = re.search(r'phase:\s*([^\n]+)', content)
+            if phase_match:
+                phase = phase_match.group(1).strip()
+                
+                # Extract dependencies
+                deps_match = re.search(r'depends_on:\s*\n((?:\s*-\s*[^\n]+\n?)+)', content)
+                if deps_match:
+                    deps_text = deps_match.group(1)
+                    deps = re.findall(r'-\s*([^\n]+)', deps_text)
+                    dependencies[phase] = [dep.strip() for dep in deps]
+        except Exception:
+            continue
+    
+    # Check for circular dependencies
+    def has_cycle(phase, visited, rec_stack):
+        visited.add(phase)
+        rec_stack.add(phase)
+        
+        for dep in dependencies.get(phase, []):
+            if dep not in visited:
+                if has_cycle(dep, visited, rec_stack):
+                    return True
+            elif dep in rec_stack:
+                return True
+        
+        rec_stack.remove(phase)
+        return False
+    
+    circular_deps = []
+    for phase in dependencies:
+        if has_cycle(phase, set(), set()):
+            circular_deps.append(phase)
+    
+    if circular_deps:
+        print("  ❌ Circular dependencies found:")
+        for phase in circular_deps:
+            print(f"    - Phase {phase}")
+        ERRORS.append(f"Found {len(circular_deps)} phases with circular dependencies")
+        return False
+    
+    print("  ✅ No circular dependencies found")
+    return True
+
+def check_for_missing_ssot_references():
+    """Check if important files reference SSOT files"""
+    print("🔍 Checking for missing SSOT references...")
+    
+    ssot_files = ["README.md", "project_master_log.md", "SERVICES_MANIFEST.md"]
+    important_files = ["README.md", "docs/*.md", "scripts/*.py"]
+    
+    missing_refs = []
+    for pattern in important_files:
+        for file_path in ROOT.glob(pattern):
+            if file_path.name in ssot_files:
+                continue
+            try:
+                content = file_path.read_text(encoding='utf-8', errors='ignore')
+                has_ssot_ref = any(ssot_file in content for ssot_file in ssot_files)
+                if not has_ssot_ref:
+                    missing_refs.append(file_path)
+            except Exception:
+                continue
+    
+    if missing_refs:
+        print("  ❌ Files missing SSOT references:")
+        for file_path in missing_refs[:5]:  # Limit output
+            print(f"    - {file_path.relative_to(ROOT)}")
+        if len(missing_refs) > 5:
+            print(f"    ... and {len(missing_refs) - 5} more")
+        ERRORS.append(f"Found {len(missing_refs)} files missing SSOT references")
+        return False
+    
+    print("  ✅ All important files reference SSOT files")
+    return True
 
 def fix_cursor_rule_frontmatter(file_path: pathlib.Path) -> bool:
     """Fix common frontmatter issues in cursor rules"""
@@ -126,19 +394,6 @@ def run_master_log_build() -> bool:
     
     return success
 
-def auto_fix_cursor_rules():
-    """Auto-fix common cursor rule issues"""
-    print("🔧 Auto-fixing cursor rule issues...")
-    cursor_rules_dir = ROOT / ".cursor" / "rules"
-    
-    if not cursor_rules_dir.exists():
-        print("  ❌ .cursor/rules directory not found")
-        return
-        
-    for mdc_file in cursor_rules_dir.glob("*.mdc"):
-        if not fix_cursor_rule_frontmatter(mdc_file):
-            ERRORS.append(f"Failed to fix frontmatter in {mdc_file.name}")
-
 def check_for_duplicate_phase_summaries():
     """Check for duplicate phase completion summaries that should be consolidated"""
     print("🔍 Checking for duplicate phase completion summaries...")
@@ -175,6 +430,19 @@ def check_for_duplicate_phase_summaries():
     print("  ✅ No duplicate phase completion summaries detected")
     return True
 
+def auto_fix_cursor_rules():
+    """Auto-fix common cursor rule issues"""
+    print("🔧 Auto-fixing cursor rule issues...")
+    cursor_rules_dir = ROOT / ".cursor" / "rules"
+    
+    if not cursor_rules_dir.exists():
+        print("  ❌ .cursor/rules directory not found")
+        return
+        
+    for mdc_file in cursor_rules_dir.glob("*.mdc"):
+        if not fix_cursor_rule_frontmatter(mdc_file):
+            ERRORS.append(f"Failed to fix frontmatter in {mdc_file.name}")
+
 def main():
     """Main validation and fix routine"""
     print("🚀 Complete SSOT System Validation")
@@ -189,6 +457,15 @@ def main():
     mcp_ok = run_mcp_validation()
     master_ok = run_master_log_build()
     duplicate_check = check_for_duplicate_phase_summaries()
+    
+    # Run proactive checks
+    todo_check = check_for_todo_comments()
+    fallback_check = check_for_silent_fallbacks()
+    test_check = check_for_missing_tests()
+    path_check = check_for_hardcoded_paths()
+    terminology_check = check_for_inconsistent_terminology()
+    dependency_check = check_for_circular_dependencies()
+    ssot_ref_check = check_for_missing_ssot_references()
     
     # Auto-fix if requested and there are issues
     if auto_fix and not all([ssot_ok, cursor_ok, mcp_ok, master_ok, duplicate_check]):
@@ -209,13 +486,24 @@ def main():
     print("📊 VALIDATION SUMMARY")
     print("=" * 50)
     
-    all_passed = all([ssot_ok, cursor_ok, mcp_ok, master_ok, duplicate_check])
+    all_passed = all([
+        ssot_ok, cursor_ok, mcp_ok, master_ok, duplicate_check,
+        todo_check, fallback_check, test_check, path_check,
+        terminology_check, dependency_check, ssot_ref_check
+    ])
     
     print(f"SSOT Bundle:        {'✅ PASS' if ssot_ok else '❌ FAIL'}")
     print(f"Cursor Rules:       {'✅ PASS' if cursor_ok else '❌ FAIL'}")
     print(f"MCP Validation:     {'✅ PASS' if mcp_ok else '❌ FAIL'}")
     print(f"Master Log:         {'✅ PASS' if master_ok else '❌ FAIL'}")
     print(f"Phase Summaries:    {'✅ PASS' if duplicate_check else '❌ FAIL'}")
+    print(f"TODO Comments:      {'✅ PASS' if todo_check else '❌ FAIL'}")
+    print(f"Silent Fallbacks:   {'✅ PASS' if fallback_check else '❌ FAIL'}")
+    print(f"Missing Tests:      {'✅ PASS' if test_check else '❌ FAIL'}")
+    print(f"Hardcoded Paths:    {'✅ PASS' if path_check else '❌ FAIL'}")
+    print(f"Terminology:        {'✅ PASS' if terminology_check else '❌ FAIL'}")
+    print(f"Dependencies:       {'✅ PASS' if dependency_check else '❌ FAIL'}")
+    print(f"SSOT References:    {'✅ PASS' if ssot_ref_check else '❌ FAIL'}")
     
     if FIXES_APPLIED:
         print(f"\n🔧 Fixes Applied:")
