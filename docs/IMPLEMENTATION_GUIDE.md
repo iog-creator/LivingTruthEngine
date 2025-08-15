@@ -6,6 +6,8 @@ related_files: ['scripts/comprehensive_model_test.py', 'tests/test_missing_compo
 ---
 
 # Implementation Guide
+
+**Note**: This documentation is part of the Living Truth Engine's Single Source of Truth (SSOT) system. For the complete project overview, see the main [README.md](../README.md) and [project_master_log.md](../project_master_log.md).
 ## Step-by-Step Rebuild Instructions for Missing Components
 
 **Date**: August 14, 2025  

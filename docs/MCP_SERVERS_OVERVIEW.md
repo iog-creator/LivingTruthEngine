@@ -10,6 +10,8 @@ related_files: ['src/mcp_servers/mcp_solver_server.py', 'src/mcp_servers/mcp_hub
 ## Description
 This document provides a comprehensive overview of all MCP (Model Context Protocol) servers in the Living Truth Engine system, including their tools, purposes, and integration patterns.
 
+**Note**: This documentation is part of the Living Truth Engine's Single Source of Truth (SSOT) system. For the complete project overview, see the main [README.md](../README.md) and [project_master_log.md](../project_master_log.md).
+
 ## 🎯 **MCP Server Architecture**
 
 ### **MCP Hub Server (Primary Gateway)**

@@ -9,6 +9,8 @@ related_files: []
 
 This is the fastest way to run the Living Truth Engine and get your first result in under 60 seconds.
 
+**Note**: This documentation is part of the Living Truth Engine's Single Source of Truth (SSOT) system. For the complete project overview, see the main [README.md](../README.md) and [project_master_log.md](../project_master_log.md).
+
 ## Requirements
 - Docker + Docker Compose
 - Python 3.13 (optional for local tooling)

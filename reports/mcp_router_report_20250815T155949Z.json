@@ -1,0 +1,65 @@
+{
+  "status": "ok",
+  "data": {
+    "protocol_negotiated": "2025-06-18",
+    "tools_count": 34,
+    "duplicates": [],
+    "namespaces_top": [
+      [
+        "get",
+        6
+      ],
+      [
+        "validate",
+        4
+      ],
+      [
+        "assert",
+        2
+      ],
+      [
+        "ruleset",
+        2
+      ],
+      [
+        "run",
+        2
+      ],
+      [
+        "simulate",
+        2
+      ],
+      [
+        "trigger",
+        2
+      ],
+      [
+        "enforce",
+        1
+      ],
+      [
+        "export",
+        1
+      ],
+      [
+        "fix",
+        1
+      ]
+    ],
+    "schema_issues": {},
+    "list_latency": {
+      "calls": 1,
+      "p50_ms": 7.31,
+      "p95_ms": 7.31,
+      "max_ms": 7.31
+    },
+    "long_descriptions": [
+      "mcp_router_diagnostics"
+    ],
+    "time_sec": 0.28,
+    "notes": [
+      "This is a discovery-only probe; no tools were invoked.",
+      "Large toolsets are fine when router discovery & pagination are fast and names are collision-free."
+    ]
+  }
+}

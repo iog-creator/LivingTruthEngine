@@ -7,6 +7,8 @@ related_files: ['LivingTruthEngine/src/visualization/advanced_viz.py', 'living_t
 
 # Living Truth Agent → LivingTruthEngine Integration Plan
 
+**Note**: This documentation is part of the Living Truth Engine's Single Source of Truth (SSOT) system. For the complete project overview, see the main [README.md](../README.md) and [project_master_log.md](../project_master_log.md).
+
 ## Overview
 This document outlines the comprehensive plan to integrate the advanced functionality from the `living_truth_agent` system into the modern `LivingTruthEngine` architecture. **✅ ALL PHASES SUCCESSFULLY COMPLETED** - The integration is now complete and fully operational.
 

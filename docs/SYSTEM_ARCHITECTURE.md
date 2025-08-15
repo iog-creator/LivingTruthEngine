@@ -7,6 +7,8 @@ related_files: ['src/mcp_servers/mcp_hub_server.py']
 
 # System Architecture
 
+**Note**: This documentation is part of the Living Truth Engine's Single Source of Truth (SSOT) system. For the complete project overview, see the main [README.md](../README.md) and [project_master_log.md](../project_master_log.md).
+
 ## Description
 This document provides a comprehensive overview of the Living Truth Engine system architecture, including service components, data flow, and integration patterns.
 

@@ -7,6 +7,8 @@ related_files: ['.cursor/mcp.json']
 
 # Langflow MCP Server Integration
 
+**Note**: This documentation is part of the Living Truth Engine's Single Source of Truth (SSOT) system. For the complete project overview, see the main [README.md](../README.md) and [project_master_log.md](../project_master_log.md).
+
 ## Overview
 
 This document describes the integration of Langflow with the Model Context Protocol (MCP) system, providing direct access to Langflow operations through Cursor's MCP interface.

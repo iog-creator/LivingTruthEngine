@@ -9,6 +9,8 @@ related_files: ['living_truth_full_flow.json']
 
 A comprehensive AI-powered system for survivor testimony corroboration and evidence analysis using advanced language models and workflow automation.
 
+**Note**: This documentation is part of the Living Truth Engine's Single Source of Truth (SSOT) system. For the complete project overview, see the main [README.md](../README.md) and [project_master_log.md](../project_master_log.md).
+
 ## 🚀 Quick Start
 
 ### Prerequisites
