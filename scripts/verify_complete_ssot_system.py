@@ -139,6 +139,42 @@ def auto_fix_cursor_rules():
         if not fix_cursor_rule_frontmatter(mdc_file):
             ERRORS.append(f"Failed to fix frontmatter in {mdc_file.name}")
 
+def check_for_duplicate_phase_summaries():
+    """Check for duplicate phase completion summaries that should be consolidated"""
+    print("🔍 Checking for duplicate phase completion summaries...")
+    
+    # Look for patterns that suggest duplicates
+    phase_files = list(ROOT.glob("PHASE_*_COMPLETION_SUMMARY.md"))
+    
+    # Group by major phase number
+    phase_groups = {}
+    for file_path in phase_files:
+        # Extract phase number (e.g., "9" from "PHASE_9_5_7_3_COMPLETION_SUMMARY.md")
+        match = re.search(r'PHASE_(\d+)', file_path.name)
+        if match:
+            major_phase = match.group(1)
+            if major_phase not in phase_groups:
+                phase_groups[major_phase] = []
+            phase_groups[major_phase].append(file_path)
+    
+    # Check for groups with multiple files (potential duplicates)
+    duplicates_found = []
+    for major_phase, files in phase_groups.items():
+        if len(files) > 1:
+            duplicates_found.append((major_phase, files))
+    
+    if duplicates_found:
+        print("  ❌ Potential duplicate phase completion summaries found:")
+        for major_phase, files in duplicates_found:
+            print(f"    Phase {major_phase}: {len(files)} files")
+            for file_path in files:
+                print(f"      - {file_path.name}")
+        ERRORS.append(f"Found {len(duplicates_found)} phase(s) with multiple completion summaries - consolidate into single document")
+        return False
+    
+    print("  ✅ No duplicate phase completion summaries detected")
+    return True
+
 def main():
     """Main validation and fix routine"""
     print("🚀 Complete SSOT System Validation")
@@ -152,9 +188,10 @@ def main():
     cursor_ok = run_cursor_rules_validation()
     mcp_ok = run_mcp_validation()
     master_ok = run_master_log_build()
+    duplicate_check = check_for_duplicate_phase_summaries()
     
     # Auto-fix if requested and there are issues
-    if auto_fix and not all([ssot_ok, cursor_ok, mcp_ok, master_ok]):
+    if auto_fix and not all([ssot_ok, cursor_ok, mcp_ok, master_ok, duplicate_check]):
         print("\n🔧 Applying auto-fixes...")
         auto_fix_cursor_rules()
         fix_master_log_location()
@@ -165,18 +202,20 @@ def main():
         cursor_ok = run_cursor_rules_validation()
         mcp_ok = run_mcp_validation()
         master_ok = run_master_log_build()
+        duplicate_check = check_for_duplicate_phase_summaries()
     
     # Summary
     print("\n" + "=" * 50)
     print("📊 VALIDATION SUMMARY")
     print("=" * 50)
     
-    all_passed = all([ssot_ok, cursor_ok, mcp_ok, master_ok])
+    all_passed = all([ssot_ok, cursor_ok, mcp_ok, master_ok, duplicate_check])
     
     print(f"SSOT Bundle:        {'✅ PASS' if ssot_ok else '❌ FAIL'}")
     print(f"Cursor Rules:       {'✅ PASS' if cursor_ok else '❌ FAIL'}")
     print(f"MCP Validation:     {'✅ PASS' if mcp_ok else '❌ FAIL'}")
     print(f"Master Log:         {'✅ PASS' if master_ok else '❌ FAIL'}")
+    print(f"Phase Summaries:    {'✅ PASS' if duplicate_check else '❌ FAIL'}")
     
     if FIXES_APPLIED:
         print(f"\n🔧 Fixes Applied:")

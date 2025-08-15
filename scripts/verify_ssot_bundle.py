@@ -25,10 +25,10 @@ def must_exist_in_root(paths):
       ERR.append(f"Missing required SSOT file in root: {p}")
 
 def no_duplicates():
-  # Disallow duplicates under docs/ or archive/docs/
+  # Disallow duplicates under docs/ or archive/docs/ (but allow intentional archives)
   for name in REQUIRED_ROOT + [PHASE_GLOB]:
     pattern = name if "*" in name else name
-    for sub in ["docs", "archive/docs"]:
+    for sub in ["docs"]:  # Only check docs/, not archive/docs/ (intentional archives)
       for f in (ROOT / sub).rglob("*"):
         if f.is_file():
           if "*" in pattern:
