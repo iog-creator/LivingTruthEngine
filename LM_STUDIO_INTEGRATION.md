@@ -27,3 +27,28 @@
 - SSOT enforcement remains the arbiter; LM Studio only drafts.
 - No `--fix` or write operations are exposed via the bridge.
 - CI does not call LM Studio.
+
+## Agent Mode (Phase 9.5.7.4.7)
+
+A deterministic, read‑only agent sequences SSOT tasks via the local bridge. It never writes to the repo; Cursor applies patches with SSOT gating.
+
+**Run (deterministic, no LLM path):**
+```bash
+make ssot-agent
+# or
+python -m src.agents.ssot_langchain_agent --config config/agents/ssot_agent.yaml
+```
+
+**Optional LangChain path (still read‑only):**
+```bash
+python -m src.agents.ssot_langchain_agent --config config/agents/ssot_agent.yaml --langchain
+```
+
+**Output**
+- JSON envelope saved to `reports/ssot_agent_output_<UTC>.json`
+- Also printed to STDOUT as `{status,data?,error?}`
+
+**Safety**
+- Bridge is local-only (`127.0.0.1:8756`)
+- CI does not call the agent
+- SSOT enforcement remains the gate for all edits

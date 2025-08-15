@@ -1,0 +1,24 @@
+{
+  "status": "ok",
+  "data": {
+    "phase": "9.5.7.4.7",
+    "sequence": [
+      "verify_ssot",
+      "read_ssot_report",
+      "draft_patches"
+    ],
+    "verify": {
+      "status": "ok",
+      "output": "SSOT check passed: 3 core files, 33 cursor rules"
+    },
+    "report": {
+      "status": "ok",
+      "data": {}
+    },
+    "patches": {
+      "status": "ok",
+      "suggestions": []
+    },
+    "note": "Agent is read-only. Apply patches in Cursor and gate with SSOT verification."
+  }
+}

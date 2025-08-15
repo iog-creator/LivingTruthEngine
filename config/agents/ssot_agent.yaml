@@ -1,0 +1,6 @@
+model: llama-3.2-3b-instruct
+bridge_url: http://127.0.0.1:8756
+tools:
+  - verify_ssot
+  - read_ssot_report
+  - draft_patches

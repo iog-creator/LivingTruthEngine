@@ -1,4 +1,4 @@
-.PHONY: check fix check-full ai ai-quick ai-only ssot masterlog lm-tools lm-mcp
+.PHONY: check fix check-full ai ai-quick ai-only ssot ssot-agent masterlog lm-tools lm-mcp
 check:
 	python scripts/verify_complete_ssot_system.py --scope fast
 fix:
@@ -12,6 +12,8 @@ ai-quick:
 ai-only:
 	python scripts/test_ai_only.py
 ssot: fix
+ssot-agent:
+	python -m src.agents.ssot_langchain_agent --config config/agents/ssot_agent.yaml
 masterlog:
 	@python build_master_log.py rebuild
 	@echo "docs/project_master_log.md rebuilt"
