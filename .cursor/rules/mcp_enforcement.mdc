@@ -99,6 +99,13 @@ python scripts/verify_ssot_bundle.py
 python scripts/verify_doc_organization.py
 ```
 
+**SSOT Bundle Enforcement Rules:**
+- **Before any change**: Load all SSOT files into context
+- **Before any change**: Run `python scripts/verify_ssot_bundle.py`
+- **After any change**: Re-run SSOT verification and confirm PASS
+- **Commit messages**: Must include `[SSOT Verified]` prefix
+- **Block completion**: If SSOT verification fails, fix before proceeding
+
 ## 🚨 **Validation Before Completion**
 
 ### **MCP Tools Validation**
@@ -170,3 +177,14 @@ Before closing any phase:
 **Status**: ✅ Active and Enforced  
 **Last Updated**: 2025-08-14  
 **Validation**: All policies enforced, documentation organized correctly
+
+---
+rule: SSOT Bundle Enforcement (MCP)
+status: active
+priority: highest
+applies_to: all_changes
+description: MCP validation requires SSOT verification prior to execution approval.
+commands:
+  - "python scripts/verify_ssot_bundle.py"
+on_fail:
+  - "echo 'SSOT violation. Fix before proceeding.' && exit 1"

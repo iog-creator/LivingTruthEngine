@@ -1,7 +1,7 @@
 {
   "name": "living_truth_fastmcp_server",
   "version": "1.0.0",
-  "updated": "2025-08-14T18:22:55.113471",
+  "updated": "2025-08-14T18:36:32.253326",
   "envelope": {
     "status": "ok|error",
     "data?": {},

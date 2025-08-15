@@ -36,3 +36,8 @@
 - `docker compose -f docker/docker-compose.yml up -d --build`
 - App: http://localhost:8050
 - CI smoke: `bash scripts/resilience_dashboard_test.sh`
+
+---
+
+### SSOT Policy
+This repository enforces a Single Source of Truth (SSOT) for critical docs: `README.md`, `project_master_log.md`, `MCP_REQUIREMENTS_REFERENCE.md`, `SERVICES_MANIFEST.md`, and all `PHASE_*_COMPLETION_SUMMARY.md` in root. CI runs `scripts/verify_ssot_bundle.py` on PRs and nightly.

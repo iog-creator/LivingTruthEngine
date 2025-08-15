@@ -1,8 +1,8 @@
 name: Repo Health
 on:
+  pull_request:
   schedule:
-    - cron: "0 2 * * *"
-  workflow_dispatch:
+    - cron: "17 2 * * *"
 jobs:
   health:
     runs-on: ubuntu-latest
@@ -10,21 +10,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.11" }
-      - run: pip install pyyaml
-      - name: Repo Health (Phase 9.5.7.1)
-        run: |
-          python scripts/repo_inventory.py
-          python scripts/archive_sweep.py
-          python scripts/service_usage_audit.py
-          python scripts/mcp_sync.py
-          python scripts/gen_service_docs.py
-          python scripts/logging_schema_check.py
-          python scripts/update_readme_github_action.py
-          python scripts/update_master_log.py
-      - name: Commit archive (if any)
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add -A
-          git commit -m "nightly: repo health (inventory+archive+service audit)" || true
-          git push || true
+      - run: pip install pyyaml requests
+      - name: SSOT bundle
+        run: python scripts/verify_ssot_bundle.py
+      - name: Compose healthchecks
+        run: python scripts/verify_compose_healthchecks.py || true
+      - name: Models audit (LM Studio may be absent on CI)
+        env: { LM_STUDIO_ENDPOINT: http://localhost:1234/v1 }
+        run: python scripts/audit_models.py || true
