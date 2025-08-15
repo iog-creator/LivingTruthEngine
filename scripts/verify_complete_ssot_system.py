@@ -10,10 +10,12 @@ This script combines all SSOT validation tools and automatically fixes common is
 5. Auto-fix common frontmatter issues
 6. Proactive detection of common project issues
 7. Semantic documentation analysis and consolidation
+8. AI-powered analysis and intelligent suggestions
 
 Usage:
   python scripts/verify_complete_ssot_system.py
   python scripts/verify_complete_ssot_system.py --fix  # auto-fix issues
+  python scripts/verify_complete_ssot_system.py --ai   # enable AI analysis
 """
 import sys
 import subprocess
@@ -21,12 +23,193 @@ import pathlib
 import re
 import yaml
 import difflib
-from typing import List, Dict, Tuple, Set
+import requests
+import json
+from typing import List, Dict, Tuple, Set, Optional
 from collections import defaultdict
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ERRORS = []
 FIXES_APPLIED = []
+AI_ANALYSIS_ENABLED = "--ai" in sys.argv
+
+class LMStudioAIAnalyzer:
+    """AI-powered analysis using LM Studio for intelligent SSOT validation"""
+    
+    def __init__(self):
+        self.lm_studio_url = "http://localhost:1234/v1"
+        self.model = "llama-3.2-3b-instruct"  # Better for structured output
+        self.temperature = 0.1
+        self.max_tokens = 100  # Smaller token limit for faster responses
+        
+        # Test LM Studio connection
+        self._test_connection()
+    
+    def _test_connection(self):
+        """Test LM Studio connection"""
+        try:
+            response = requests.get(f"{self.lm_studio_url}/models", timeout=5)
+            if response.status_code == 200:
+                models = response.json()
+                print(f"🤖 AI Analysis: LM Studio connected. Available models: {len(models.get('data', []))}")
+                return True
+            else:
+                print(f"⚠️ AI Analysis: LM Studio responded with status {response.status_code}")
+                return False
+        except Exception as e:
+            print(f"❌ AI Analysis: LM Studio connection failed: {e}")
+            return False
+    
+    def _is_available(self):
+        """Check if AI analysis is available"""
+        return self._test_connection()
+    
+    def quick_analyze_todo(self, todo_content: str, file_path: str) -> Dict[str, any]:
+        """Quick AI analysis of TODO comments"""
+        if not self._is_available():
+            return {"error": "LM Studio not available"}
+        
+        # Extract just the TODO line, limit to 200 chars
+        todo_line = todo_content[:200]
+        
+        prompt = f"TODO: {todo_line}\nFile: {file_path}\nRespond ONLY with JSON: {{\"task_type\": \"bug|feature|improvement\", \"priority\": \"high|medium|low\", \"effort\": \"low|medium|high\"}}"
+        
+        try:
+            payload = {
+                "model": self.model,
+                "messages": [
+                    {"role": "system", "content": "You are a JSON-only responder. Never explain, only provide valid JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.1,
+                "max_tokens": 100
+            }
+            
+            response = requests.post(
+                f"{self.lm_studio_url}/chat/completions",
+                json=payload,
+                timeout=15  # Shorter timeout
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                content = result["choices"][0]["message"]["content"]
+                
+                try:
+                    json_match = re.search(r'\{.*\}', content, re.DOTALL)
+                    if json_match:
+                        return json.loads(json_match.group())
+                    else:
+                        return {"error": "Could not parse response", "raw": content[:100]}
+                except json.JSONDecodeError:
+                    return {"error": "Invalid JSON", "raw": content[:100]}
+            else:
+                return {"error": f"API error: {response.status_code}"}
+                
+        except Exception as e:
+            return {"error": f"Analysis failed: {str(e)[:50]}"}
+    
+    def quick_analyze_error_handling(self, code_snippet: str, file_path: str) -> Dict[str, any]:
+        """Quick AI analysis of error handling"""
+        if not self._is_available():
+            return {"error": "LM Studio not available"}
+        
+        # Limit code snippet to 300 chars
+        code_preview = code_snippet[:300]
+        
+        prompt = f"Code: {code_preview}\nFile: {file_path}\nRespond ONLY with JSON: {{\"issues\": [\"top issue\"], \"priority\": \"high|medium|low\"}}"
+        
+        try:
+            payload = {
+                "model": self.model,
+                "messages": [
+                    {"role": "system", "content": "You are a JSON-only responder. Never explain, only provide valid JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.1,
+                "max_tokens": 100
+            }
+            
+            response = requests.post(
+                f"{self.lm_studio_url}/chat/completions",
+                json=payload,
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                content = result["choices"][0]["message"]["content"]
+                
+                try:
+                    json_match = re.search(r'\{.*\}', content, re.DOTALL)
+                    if json_match:
+                        return json.loads(json_match.group())
+                    else:
+                        return {"error": "Could not parse response", "raw": content[:100]}
+                except json.JSONDecodeError:
+                    return {"error": "Invalid JSON", "raw": content[:100]}
+            else:
+                return {"error": f"API error: {response.status_code}"}
+                
+        except Exception as e:
+            return {"error": f"Analysis failed: {str(e)[:50]}"}
+    
+    def quick_analyze_documentation(self, content: str, file_path: str) -> Dict[str, any]:
+        """Quick AI analysis of documentation quality"""
+        if not self._is_available():
+            return {"error": "LM Studio not available"}
+        
+        # Limit content to 400 chars
+        content_preview = content[:400]
+        
+        prompt = f"Doc: {content_preview}\nFile: {file_path}\nRespond ONLY with JSON: {{\"quality_score\": 0-100, \"main_issue\": \"top issue\", \"priority\": \"high|medium|low\"}}"
+        
+        try:
+            payload = {
+                "model": self.model,
+                "messages": [
+                    {"role": "system", "content": "You are a JSON-only responder. Never explain, only provide valid JSON."},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.1,
+                "max_tokens": 100
+            }
+            
+            response = requests.post(
+                f"{self.lm_studio_url}/chat/completions",
+                json=payload,
+                timeout=15
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                content = result["choices"][0]["message"]["content"]
+                
+                try:
+                    json_match = re.search(r'\{.*\}', content, re.DOTALL)
+                    if json_match:
+                        return json.loads(json_match.group())
+                    else:
+                        return {"error": "Could not parse response", "raw": content[:100]}
+                except json.JSONDecodeError:
+                    return {"error": "Invalid JSON", "raw": content[:100]}
+            else:
+                return {"error": f"API error: {response.status_code}"}
+                
+        except Exception as e:
+            return {"error": f"Analysis failed: {str(e)[:50]}"}
+
+# Initialize AI analyzer
+ai_analyzer = None
+if AI_ANALYSIS_ENABLED:
+    print("🤖 Initializing AI analysis capabilities...")
+    try:
+        ai_analyzer = LMStudioAIAnalyzer()
+        print("✅ AI analysis initialized successfully")
+    except Exception as e:
+        print(f"⚠️ AI analysis initialization failed: {e}")
+        print("   Continuing with standard validation only")
+        ai_analyzer = None
 
 def run_cmd(cmd: str, description: str) -> Tuple[bool, str]:
     """Run a command and return success status and output"""
@@ -326,6 +509,24 @@ def check_for_missing_documentation_sections():
         print("  ❌ Missing standard documentation sections:")
         for file_path, missing in missing_sections:
             print(f"    - {file_path.relative_to(ROOT)}: missing {', '.join(missing)}")
+        
+        # AI analysis of documentation quality
+        if ai_analyzer and missing_sections:
+            print("  🤖 AI Analysis of documentation quality:")
+            for file_path, missing in missing_sections[:3]:  # Limit to first 3 for analysis
+                try:
+                    content = file_path.read_text(encoding='utf-8', errors='ignore')
+                    analysis = ai_analyzer.quick_analyze_documentation(content, str(file_path.relative_to(ROOT)))
+                    if "error" not in analysis:
+                        print(f"    📊 {file_path.relative_to(ROOT)}:")
+                        print(f"      Quality Score: {analysis.get('quality_score', 'N/A')}/100")
+                        print(f"      Priority: {analysis.get('priority', 'unknown')}")
+                        print(f"      Main Issue: {analysis.get('main_issue', 'N/A')}")
+                    else:
+                        print(f"    ❌ AI analysis failed for {file_path.relative_to(ROOT)}: {analysis.get('error', 'Unknown error')}")
+                except Exception as e:
+                    print(f"    ❌ Could not analyze {file_path.relative_to(ROOT)}: {e}")
+        
         ERRORS.append(f"Found {len(missing_sections)} files missing standard documentation sections")
         return False
     
@@ -370,6 +571,28 @@ def suggest_documentation_consolidation():
             print(f"      {file2.relative_to(ROOT)}")
             print(f"      Similarity: {similarity:.2f}")
             print()
+        
+        # AI-powered consolidation strategy
+        if ai_analyzer and top_suggestions:
+            print("  🤖 AI-Powered Consolidation Strategy:")
+            files_to_analyze = []
+            similarity_scores = []
+            
+            for file1, file2, similarity in top_suggestions[:3]:  # Limit to top 3
+                files_to_analyze.append((str(file1.relative_to(ROOT)), str(file2.relative_to(ROOT))))
+                similarity_scores.append(similarity)
+            
+            strategy = ai_analyzer.quick_analyze_documentation(f"Analyze these similar documentation files and suggest an intelligent consolidation strategy. Files to consolidate: {files_to_analyze}. Provide JSON: {{'primary_file': 'path to keep as main file', 'files_to_merge': ['list of files to merge into primary'], 'files_to_archive': ['list of files to move to archive'], 'consolidation_approach': 'description of how to merge content', 'new_structure': 'suggested new file structure', 'priority': 'high|medium|low', 'estimated_effort': 'low|medium|high', 'benefits': ['list of benefits from consolidation']}}", "Consolidation Strategy")
+            if "error" not in strategy:
+                print(f"    🎯 Primary File: {strategy.get('primary_file', 'N/A')}")
+                print(f"    📁 Files to Merge: {', '.join(strategy.get('files_to_merge', [])[:3])}")
+                print(f"    📦 Files to Archive: {', '.join(strategy.get('files_to_archive', [])[:3])}")
+                print(f"    🔄 Approach: {strategy.get('consolidation_approach', 'N/A')}")
+                print(f"    ⚡ Priority: {strategy.get('priority', 'unknown')}")
+                print(f"    💪 Estimated Effort: {strategy.get('estimated_effort', 'unknown')}")
+                print(f"    ✅ Benefits: {', '.join(strategy.get('benefits', [])[:3])}")
+            else:
+                print(f"    ❌ AI strategy analysis failed: {strategy.get('error', 'Unknown error')}")
     
     return True
 
@@ -385,14 +608,22 @@ def check_for_todo_comments():
     ]
     
     todo_files = []
+    todo_content = []
+    
     for pattern in todo_patterns:
         for file_path in ROOT.rglob("*.py"):
             if "venv" in str(file_path) or "__pycache__" in str(file_path):
                 continue
             try:
                 content = file_path.read_text(encoding='utf-8', errors='ignore')
-                if re.search(pattern, content, re.IGNORECASE):
+                matches = re.finditer(pattern, content, re.IGNORECASE)
+                for match in matches:
+                    # Extract the TODO comment and surrounding context
+                    start = max(0, match.start() - 50)
+                    end = min(len(content), match.end() + 200)
+                    context = content[start:end]
                     todo_files.append((file_path, pattern))
+                    todo_content.append((str(file_path.relative_to(ROOT)), context))
             except Exception:
                 continue
     
@@ -400,6 +631,25 @@ def check_for_todo_comments():
         print("  ❌ TODO comments found in code files:")
         for file_path, pattern in todo_files:
             print(f"    - {file_path.relative_to(ROOT)} ({pattern})")
+        
+        # AI analysis of TODO comments
+        if ai_analyzer and todo_content:
+            print("  🤖 AI Analysis of TODO comments:")
+            for i, (file_path, content) in enumerate(todo_content[:2]):  # Limit to first 2 for analysis
+                print(f"    🔍 Analyzing {file_path}...")
+                try:
+                    analysis = ai_analyzer.quick_analyze_todo(content, file_path)
+                    if "error" not in analysis:
+                        print(f"    📋 {file_path}:")
+                        print(f"      Task Type: {analysis.get('task_type', 'unknown')}")
+                        print(f"      Priority: {analysis.get('priority', 'unknown')}")
+                        print(f"      Estimated Effort: {analysis.get('effort', 'unknown')}")
+                    else:
+                        print(f"    ❌ AI analysis failed for {file_path}: {analysis.get('error', 'Unknown error')}")
+                except Exception as e:
+                    print(f"    ❌ AI analysis error for {file_path}: {e}")
+                    break  # Stop on first error to avoid hanging
+        
         ERRORS.append(f"Found {len(todo_files)} files with TODO comments - convert to proper tasks")
         return False
     
@@ -419,14 +669,22 @@ def check_for_silent_fallbacks():
     ]
     
     silent_files = []
+    silent_code_snippets = []
+    
     for pattern in silent_patterns:
         for file_path in ROOT.rglob("*.py"):
             if "venv" in str(file_path) or "__pycache__" in str(file_path):
                 continue
             try:
                 content = file_path.read_text(encoding='utf-8', errors='ignore')
-                if re.search(pattern, content, re.IGNORECASE):
+                matches = re.finditer(pattern, content, re.IGNORECASE)
+                for match in matches:
+                    # Extract the code snippet with context
+                    start = max(0, match.start() - 100)
+                    end = min(len(content), match.end() + 200)
+                    context = content[start:end]
                     silent_files.append((file_path, pattern))
+                    silent_code_snippets.append((str(file_path.relative_to(ROOT)), context))
             except Exception:
                 continue
     
@@ -434,6 +692,19 @@ def check_for_silent_fallbacks():
         print("  ❌ Silent fallbacks found:")
         for file_path, pattern in silent_files:
             print(f"    - {file_path.relative_to(ROOT)} ({pattern})")
+        
+        # AI analysis of silent fallbacks
+        if ai_analyzer and silent_code_snippets:
+            print("  🤖 AI Analysis of silent fallbacks:")
+            for file_path, code_snippet in silent_code_snippets[:3]:  # Limit to first 3 for analysis
+                analysis = ai_analyzer.quick_analyze_error_handling(code_snippet, file_path)
+                if "error" not in analysis:
+                    print(f"    🔧 {file_path}:")
+                    print(f"      Priority: {analysis.get('priority', 'unknown')}")
+                    print(f"      Issues: {', '.join(analysis.get('issues', [])[:2])}")
+                else:
+                    print(f"    ❌ AI analysis failed for {file_path}: {analysis.get('error', 'Unknown error')}")
+        
         ERRORS.append(f"Found {len(silent_files)} files with silent fallbacks - use explicit error handling")
         return False
     
