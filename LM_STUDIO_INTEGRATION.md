@@ -13,12 +13,28 @@
 - Terminal B: Optional `make lm-mcp` (runs our MCP server over stdio)
 
 ## MCP Setup for LM Studio
+
+### Option 1: Direct MCP Connection
 1. In LM Studio UI: **Settings → MCP**
 2. Add server with command: `python src/mcp_servers/phase9_mcp_server.py`
 3. Ask questions like:
    - "Can you validate the cursor rules?"
    - "Can you run health checks?"
    - "Can you validate the SSOT bundle?"
+
+### Option 2: LM Studio Plugin (Recommended)
+1. Build the plugin:
+   ```bash
+   cd lmstudio-mcp-tools
+   npm install
+   npm run build
+   ```
+2. Copy to LM Studio plugins directory:
+   ```bash
+   cp -r lmstudio-mcp-tools /path/to/lmstudio/plugins/
+   ```
+3. Restart LM Studio
+4. Ask the same questions - you'll see inference in developer logs!
 
 ## Recommended LM Studio setup
 - Use your preferred model (e.g., `llama-3.2-3b-instruct`) with **function/tools** enabled.
