@@ -22,6 +22,7 @@ globs:
   - `pytest -q tests/api tests/models tests/prompts`
 - **MCP / Scripts** (REQUIRED for all changes):
   - `python scripts/mcp_sync.py && python scripts/logging_schema_check.py`
+  - `python scripts/verify_cursor_rules_frontmatter.py`
   - `python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; server = Phase9MCPServer(); result = server.validate_cursor_rules(); print('MCP Validation:', result)"`
   - `python -c "from src.mcp_servers.living_truth_fastmcp_server import validate_cursor_rules; result = validate_cursor_rules(); print('FastMCP Validation:', result)"`
 - **Repo Health (fast set)**:
@@ -110,6 +111,8 @@ globs:
 - Don't skip MCP validation - it's required for all changes.
 - Don't bury important docs in subdirectories - keep frequently accessed docs in root.
 - Don't make changes without referencing the SSOT bundle first.
+- **NEVER add `---` frontmatter sections to existing markdown files** - only one frontmatter at the top is allowed
+- **NEVER create duplicate frontmatter** - integrate new rules into existing markdown content
 
 ## When I ask you to "implement/fix X", you MUST:
 1) Update code **and** tests.

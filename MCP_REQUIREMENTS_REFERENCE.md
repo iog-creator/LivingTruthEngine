@@ -1,6 +1,6 @@
 # MCP Requirements Reference (auto)
 
-_updated: 2025-08-14T18:36:32.253326_
+_updated: 2025-08-15T01:01:09.572118_
 
 - **devdocs_mcp_server** — `specs/devdocs_mcp_server.json` (src: `src/mcp_servers/devdocs_mcp_server.py`)
 - **github_mcp_server** — `specs/github_mcp_server.json` (src: `src/mcp_servers/github_mcp_server.py`)

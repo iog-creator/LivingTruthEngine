@@ -166,6 +166,12 @@ Before closing any phase:
 - **Update policy documentation** if needed
 - **Prevent rule bloat** by enforcing agent selection
 
+### **Frontmatter Policy Violations**
+- **NEVER add `---` frontmatter sections to existing markdown files** - only one frontmatter at the top
+- **NEVER create duplicate frontmatter** - integrate new rules into existing markdown content
+- **Block completion** if duplicate frontmatter detected
+- **Fix immediately** if MCP validation reports "Duplicate frontmatter detected"
+
 ## 📚 **References**
 
 - [Cursor Rules Documentation](https://docs.cursor.com/en/context/rules#user-rules)
