@@ -6,12 +6,9 @@ globs:
 ---
 
 # SSOT Requirement (hard fail)
-- Commands to run **before** approving/merging:
+- Command to run **before** approving/merging:
 ```bash
-python scripts/verify_ssot_bundle.py
-python scripts/mcp_sync.py && python scripts/logging_schema_check.py
-python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; print(Phase9MCPServer().validate_cursor_rules())"
-python -c "from src.mcp_servers.living_truth_fastmcp_server import validate_cursor_rules; print(validate_cursor_rules())"
+python scripts/verify_complete_ssot_system.py --fix
 ```
 - On any failure: **stop** and remediate. Approvals are blocked until PASS.
 

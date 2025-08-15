@@ -22,14 +22,11 @@ python scripts/verify_ssot_bundle.py
 - **Commit message**: include `[SSOT Verified]` once checks pass.
 
 ## Tool Rituals (run & show output)
-- **Repo health**:
-  - `python scripts/verify_ssot_bundle.py`
+- **Complete SSOT System** (REQUIRED for all changes):
+  - `python scripts/verify_complete_ssot_system.py` (comprehensive validation + auto-fix)
+- **Repo health** (if needed):
   - `python scripts/verify_compose_healthchecks.py || true`
   - `python scripts/audit_models.py || true`
-- **MCP / Logging**:
-  - `python scripts/mcp_sync.py && python scripts/logging_schema_check.py`
-  - `python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; print(Phase9MCPServer().validate_cursor_rules())"`
-  - `python -c "from src.mcp_servers.living_truth_fastmcp_server import validate_cursor_rules; print(validate_cursor_rules())"`
 - **UI / Playwright** (any UI change):
   - `npx playwright test --reporter=list` (use `data-testid` selectors)
 

@@ -15,7 +15,7 @@ from typing import List, Tuple, Dict
 ROOT = Path(__file__).resolve().parent
 DOCS = ROOT / "docs"
 DOCS.mkdir(exist_ok=True)
-OUT = DOCS / "project_master_log.md"
+OUT = ROOT / "project_master_log.md"  # Write to root, not docs
 
 PHASE_FILE_RE = re.compile(
     r"^(PHASE(?:_|-)?(?P<major>\d+)(?:[._-](?P<minor>\d+))?(?:[._-](?P<patch>\d+))?)_?(?P<kind>PLAN|COMPLETION_SUMMARY)\.md$",
