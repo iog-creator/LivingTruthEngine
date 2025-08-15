@@ -1,0 +1,10 @@
+# Test File
+
+This is a test file.
+
+---
+rule: Duplicate Frontmatter
+status: invalid
+---
+
+This should be caught as an error.

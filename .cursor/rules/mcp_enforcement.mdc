@@ -1,197 +1,23 @@
 ---
-description: Mcp Enforcement rule for Living Truth Engine
-alwaysApply: false
+description: MCP enforcement rules for Living Truth Engine. Enforce SSOT verification and rule validity.
+alwaysApply: true
+globs:
+  - "**/*"
 ---
 
-# MCP + Rules Enforcement Master Reference
-
-## 🎯 **Primary Goals**
-- Ensure **every phase** has MCP tools, Cursor Rules, and MDC updates **as needed**
-- Ensure MCP server functions are validated and errors surfaced (never silently skipped)
-- Maintain **documentation discipline** — master log, completion summaries, and MCP tool specs must be updated per phase
-- **Enforce documentation organization** — important docs must be in root for easy access
-
-## 📋 **Cursor Rules Policy**
-
-### **AlwaysApply Policy**
-- **Only `00-global.mdc`** should have `alwaysApply: true`
-- **All other rules** must use `alwaysApply: false` (agent decides)
-- This prevents rule bloat and ensures the AI can choose relevant rules based on context
-- The global rule contains the essential, always-applicable guidelines
-
-### **Rule Organization**
-- **Global Rule**: `.cursor/rules/00-global.mdc` - Always applies, contains core workflow
-- **Specialized Rules**: All other `.mdc` files - Agent decides based on context
-- **Archive Rules**: `.cursor/rules/archive/` - Historical rules, never auto-applied
-
-### **User Rules Policy**
-- **User Rules** (Cursor Settings → Rules) should be **minimal and focused**
-- Use User Rules for **global preferences** like communication style or coding conventions
-- **Avoid duplicating** project-specific rules in User Rules
-- Keep User Rules **concise** and **cross-project applicable**
-- **Example User Rule**:
-  ```
-  Please reply in a concise style. Avoid unnecessary repetition or filler language.
-  ```
-
-### **Rule Type Guidelines**
-Based on [Cursor documentation](https://docs.cursor.com/en/context/rules#user-rules):
-
-| Rule Type | When to Use | Example |
-|-----------|-------------|---------|
-| **Always** | Only for essential global guidelines | `00-global.mdc` |
-| **Auto Attached** | File-specific patterns | Component rules for `ui/**` |
-| **Agent Requested** | Specialized knowledge | Domain-specific rules |
-| **Manual** | Rarely used utilities | `@ruleName` invocation |
-
-## 📋 **Documentation Organization Policy**
-
-### **Root Directory (Frequently Accessed)**
-**MUST be in root for easy access:**
-- `README.md` - Project overview and quick start
-- `project_master_log.md` - Complete project history (persistently updated)
-- `MCP_REQUIREMENTS_REFERENCE.md` - MCP tool requirements (persistently updated)
-- `PHASE_*_COMPLETION_SUMMARY.md` - Phase completion summaries (frequently referenced)
-- `SERVICES_MANIFEST.md` - Service configurations (frequently referenced)
-
-### **docs/ (Reference Documentation)**
-**Static reference documentation:**
-- `PROJECT_STRUCTURE.md` - File organization
-- `SYSTEM_ARCHITECTURE.md` - Technical architecture
-- `DEPLOYMENT_GUIDE.md` - Setup instructions
-- `TESTING_OVERVIEW.md` - Testing strategies
-- `MCP_SERVERS_OVERVIEW.md` - MCP tools documentation
-
-### **archive/docs/ (Historical Documentation)**
-**Legacy and historical documentation:**
-- Old status reports and legacy documentation
-- Completed phase plans and summaries
-- Migration guides and historical context
-- Outdated implementation guides
-
-### **Enforcement Rules**
-- **Phase completions MUST be in root** - `PHASE_*_COMPLETION_SUMMARY.md`
-- **Persistently updated docs MUST be in root** - `project_master_log.md`, `MCP_REQUIREMENTS_REFERENCE.md`
-- **Reference docs go in docs/** - Architecture, setup, guides
-- **Historical docs go in archive/docs/** - Old status, legacy docs
-
-## 📋 **Mandatory Tool Rituals**
-**These MCP checks are REQUIRED for ALL changes:**
-
-### **SSOT Bundle Verification (NON-NEGOTIABLE - FIRST PRIORITY)**
+# SSOT Requirement (hard fail)
+- Commands to run **before** approving/merging:
 ```bash
-# 1. SSOT Bundle Verification (MUST RUN FIRST)
 python scripts/verify_ssot_bundle.py
-
-# 2. Cursor Rules Frontmatter Validation
-python scripts/verify_cursor_rules_frontmatter.py
-```
-
-### **MCP Validation (Non-Negotiable)**
-```bash
-# 3. MCP Sync and Logging Check
 python scripts/mcp_sync.py && python scripts/logging_schema_check.py
-
-# 4. Phase9 MCP Server Validation
-python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; server = Phase9MCPServer(); result = server.validate_cursor_rules(); print('MCP Validation:', result)"
-
-# 5. FastMCP Server Validation
-python -c "from src.mcp_servers.living_truth_fastmcp_server import validate_cursor_rules; result = validate_cursor_rules(); print('FastMCP Validation:', result)"
+python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; print(Phase9MCPServer().validate_cursor_rules())"
+python -c "from src.mcp_servers.living_truth_fastmcp_server import validate_cursor_rules; print(validate_cursor_rules())"
 ```
+- On any failure: **stop** and remediate. Approvals are blocked until PASS.
 
-### **Documentation Organization Check**
-```bash
-# 6. Documentation Organization Check
-python scripts/verify_doc_organization.py
-```
+# Commit Discipline
+- Require `[SSOT Verified]` in commit message once SSOT checks pass.
 
-**SSOT Bundle Enforcement Rules:**
-- **Before any change**: Load all SSOT files into context
-- **Before any change**: Run `python scripts/verify_ssot_bundle.py`
-- **After any change**: Re-run SSOT verification and confirm PASS
-- **Commit messages**: Must include `[SSOT Verified]` prefix
-- **Block completion**: If SSOT verification fails, fix before proceeding
-
-**NEW CHAT ENFORCEMENT (CRITICAL):**
-- **In EVERY new chat session**: Run SSOT verification FIRST before any work
-- **Show SSOT output**: Always display the verification results
-- **Load SSOT context**: Always reference SSOT files when making decisions
-- **Prevent rule violations**: This stops "implement rules but don't follow them" mistakes
-
-## 🚨 **Validation Before Completion**
-
-### **MCP Tools Validation**
-- [ ] **Phase9 MCP Server**: All cursor rules valid
-- [ ] **FastMCP Server**: All cursor rules valid
-- [ ] **MCP Sync**: Tool registry current
-- [ ] **Logging Schema**: No raw print() in prod code
-
-### **Documentation Organization Validation**
-- [ ] **Phase completions in root**: `PHASE_*_COMPLETION_SUMMARY.md`
-- [ ] **Master log in root**: `project_master_log.md`
-- [ ] **MCP requirements in root**: `MCP_REQUIREMENTS_REFERENCE.md`
-- [ ] **Services manifest in root**: `SERVICES_MANIFEST.md`
-- [ ] **No important docs in docs/**: Check for misplaced files
-- [ ] **Historical docs in archive/**: Old status reports moved
-
-### **AlwaysApply Policy Validation**
-- [ ] **Only 00-global.mdc has alwaysApply: true**
-- [ ] **All other rules have alwaysApply: false**
-- [ ] **Archive rules have alwaysApply: false**
-
-### **User Rules Policy Validation**
-- [ ] **User Rules are minimal**: Not duplicating project rules
-- [ ] **User Rules are global**: Cross-project applicable
-- [ ] **User Rules are focused**: Communication style, coding conventions
-
-## 📋 **Phase Close Checklist**
-Before closing any phase:
-- [ ] MCP tools updated and validated (both servers)
-- [ ] Cursor rules updated and validated
-- [ ] **AlwaysApply policy verified** - only 00-global.mdc has `alwaysApply: true`
-- [ ] **User Rules reviewed** - ensure minimal and not duplicating project rules
-- [ ] **Documentation organization verified** - important docs in root
-- [ ] MDC addenda updated
-- [ ] CI green with all new gates/tests
-- [ ] Docs: plan + completion + master log updated
-- [ ] MCP specs updated
-- [ ] All errors handled and logged
-- [ ] **MCP_REQUIREMENTS_REFERENCE.md updated**
-
-## 🎯 **Error Handling**
-
-### **MCP Tool Failures**
-- **Block completion** if any MCP validation fails
-- **Surface errors explicitly** - never silently skip
-- **Log all validation results** for traceability
-- **Fix tool issues** before proceeding
-
-### **Documentation Organization Violations**
-- **Move important docs to root** if found in subdirectories
-- **Update tool rituals** to catch violations
-- **Add validation checks** to prevent future violations
-- **Document the policy** in all relevant rules
-
-### **AlwaysApply Policy Violations**
-- **Fix frontmatter** to set correct alwaysApply values
-- **Validate all rules** after changes
-- **Update policy documentation** if needed
-- **Prevent rule bloat** by enforcing agent selection
-
-### **Frontmatter Policy Violations**
-- **NEVER add `---` frontmatter sections to existing markdown files** - only one frontmatter at the top
-- **NEVER create duplicate frontmatter** - integrate new rules into existing markdown content
-- **Block completion** if duplicate frontmatter detected
-- **Fix immediately** if MCP validation reports "Duplicate frontmatter detected"
-
-## 📚 **References**
-
-- [Cursor Rules Documentation](https://docs.cursor.com/en/context/rules#user-rules)
-- [Global Rule](.cursor/rules/00-global.mdc)
-- [MCP Requirements Reference](MCP_REQUIREMENTS_REFERENCE.md)
-- [Project Master Log](project_master_log.md)
-- [Services Manifest](SERVICES_MANIFEST.md)
-
-**Status**: ✅ Active and Enforced  
-**Last Updated**: 2025-08-14  
-**Validation**: All policies enforced, documentation organized correctly
+# Prohibited
+- Duplicate SSOT files outside root.
+- Merging with failing SSOT Guard or Repo Health checks.
