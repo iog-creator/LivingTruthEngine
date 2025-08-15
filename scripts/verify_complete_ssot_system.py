@@ -9,6 +9,7 @@ This script combines all SSOT validation tools and automatically fixes common is
 4. Master log generation (with correct root location)
 5. Auto-fix common frontmatter issues
 6. Proactive detection of common project issues
+7. Semantic documentation analysis and consolidation
 
 Usage:
   python scripts/verify_complete_ssot_system.py
@@ -19,7 +20,9 @@ import subprocess
 import pathlib
 import re
 import yaml
-from typing import List, Dict, Tuple
+import difflib
+from typing import List, Dict, Tuple, Set
+from collections import defaultdict
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 ERRORS = []
@@ -36,6 +39,339 @@ def run_cmd(cmd: str, description: str) -> Tuple[bool, str]:
         return success, output
     except Exception as e:
         return False, f"Command failed: {e}"
+
+def extract_keywords_from_text(text: str) -> Set[str]:
+    """Extract meaningful keywords from text for semantic analysis"""
+    # Remove common words and punctuation
+    stop_words = {
+        'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by',
+        'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did',
+        'will', 'would', 'could', 'should', 'may', 'might', 'can', 'this', 'that', 'these', 'those',
+        'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them',
+        'my', 'your', 'his', 'her', 'its', 'our', 'their', 'mine', 'yours', 'hers', 'ours', 'theirs'
+    }
+    
+    # Extract words, convert to lowercase, filter out stop words and short words
+    words = re.findall(r'\b[a-zA-Z]{3,}\b', text.lower())
+    keywords = {word for word in words if word not in stop_words and len(word) > 2}
+    
+    return keywords
+
+def calculate_similarity(text1: str, text2: str) -> float:
+    """Calculate similarity between two texts using keyword overlap"""
+    keywords1 = extract_keywords_from_text(text1)
+    keywords2 = extract_keywords_from_text(text2)
+    
+    if not keywords1 or not keywords2:
+        return 0.0
+    
+    intersection = keywords1.intersection(keywords2)
+    union = keywords1.union(keywords2)
+    
+    return len(intersection) / len(union) if union else 0.0
+
+def check_for_semantic_documentation_duplicates():
+    """Check for semantically similar documentation that should be consolidated"""
+    print("🔍 Checking for semantic documentation duplicates...")
+    
+    # Collect all documentation files
+    doc_files = []
+    for pattern in ["*.md", "*.rst", "*.txt"]:
+        for file_path in ROOT.rglob(pattern):
+            if "venv" in str(file_path) or "__pycache__" in str(file_path):
+                continue
+            if file_path.is_file():
+                doc_files.append(file_path)
+    
+    # Read and analyze content
+    file_contents = {}
+    for file_path in doc_files:
+        try:
+            content = file_path.read_text(encoding='utf-8', errors='ignore')
+            # Skip very short files
+            if len(content.strip()) < 100:
+                continue
+            file_contents[file_path] = content
+        except Exception:
+            continue
+    
+    # Find similar documents
+    similar_groups = []
+    processed = set()
+    
+    for file1, content1 in file_contents.items():
+        if file1 in processed:
+            continue
+            
+        similar_files = [file1]
+        processed.add(file1)
+        
+        for file2, content2 in file_contents.items():
+            if file2 in processed:
+                continue
+                
+            similarity = calculate_similarity(content1, content2)
+            if similarity > 0.6:  # High similarity threshold
+                similar_files.append(file2)
+                processed.add(file2)
+        
+        if len(similar_files) > 1:
+            similar_groups.append(similar_files)
+    
+    if similar_groups:
+        print("  ❌ Semantically similar documentation found:")
+        for group in similar_groups:
+            print(f"    Similar group ({len(group)} files):")
+            for file_path in group:
+                print(f"      - {file_path.relative_to(ROOT)}")
+        ERRORS.append(f"Found {len(similar_groups)} groups of semantically similar documentation - consider consolidation")
+        return False
+    
+    print("  ✅ No semantic documentation duplicates detected")
+    return True
+
+def check_for_topic_scattered_documentation():
+    """Check if documentation about the same topic is scattered across multiple files"""
+    print("🔍 Checking for scattered topic documentation...")
+    
+    # Define common topics and their keywords
+    topics = {
+        "SSOT": ["ssot", "single source of truth", "documentation", "reference", "authoritative"],
+        "MCP": ["mcp", "master control program", "server", "validation", "tools"],
+        "Phase Management": ["phase", "completion", "summary", "status", "depends"],
+        "Testing": ["test", "pytest", "validation", "verify", "check"],
+        "Docker": ["docker", "container", "compose", "deployment", "build"],
+        "API": ["api", "endpoint", "rest", "json", "response"],
+        "UI": ["ui", "dashboard", "frontend", "react", "component"],
+        "Analysis": ["analysis", "corpus", "processing", "pipeline", "workflow"],
+        "Configuration": ["config", "settings", "environment", "parameters"],
+        "Documentation": ["docs", "readme", "guide", "manual", "tutorial"]
+    }
+    
+    topic_files = defaultdict(list)
+    
+    for topic, keywords in topics.items():
+        for file_path in ROOT.rglob("*.md"):
+            if "venv" in str(file_path) or "__pycache__" in str(file_path):
+                continue
+            try:
+                content = file_path.read_text(encoding='utf-8', errors='ignore').lower()
+                # Count keyword matches
+                matches = sum(1 for keyword in keywords if keyword in content)
+                if matches >= 2:  # At least 2 keywords match
+                    topic_files[topic].append((file_path, matches))
+            except Exception:
+                continue
+    
+    scattered_topics = []
+    for topic, files in topic_files.items():
+        if len(files) > 3:  # More than 3 files covering the same topic
+            scattered_topics.append((topic, files))
+    
+    if scattered_topics:
+        print("  ❌ Topic documentation is scattered across multiple files:")
+        for topic, files in scattered_topics:
+            print(f"    {topic} ({len(files)} files):")
+            for file_path, matches in sorted(files, key=lambda x: x[1], reverse=True)[:5]:
+                print(f"      - {file_path.relative_to(ROOT)} ({matches} keyword matches)")
+        ERRORS.append(f"Found {len(scattered_topics)} topics with scattered documentation - consider consolidation")
+        return False
+    
+    print("  ✅ No scattered topic documentation detected")
+    return True
+
+def check_for_outdated_documentation_references():
+    """Check for documentation that references outdated or moved files"""
+    print("🔍 Checking for outdated documentation references...")
+    
+    # Collect all markdown files
+    md_files = list(ROOT.rglob("*.md"))
+    
+    outdated_refs = []
+    for md_file in md_files:
+        try:
+            content = md_file.read_text(encoding='utf-8', errors='ignore')
+            
+            # Look for file references
+            file_refs = re.findall(r'\[([^\]]+)\]\(([^)]+)\)', content)  # Markdown links
+            file_refs.extend(re.findall(r'`([^`]+\.(?:md|py|json|yml|yaml))`', content))  # Code blocks
+            
+            for ref_text, ref_path in file_refs:
+                if ref_path.startswith('http'):
+                    continue  # Skip external links
+                    
+                # Resolve relative paths
+                if ref_path.startswith('./'):
+                    ref_path = ref_path[2:]
+                elif ref_path.startswith('../'):
+                    ref_path = ref_path[3:]
+                
+                # Check if file exists
+                ref_file = md_file.parent / ref_path
+                if not ref_file.exists():
+                    outdated_refs.append((md_file, ref_path, ref_text))
+            
+            # Also check for code block references
+            for ref_path in file_refs:
+                if isinstance(ref_path, str) and '.' in ref_path:
+                    ref_file = md_file.parent / ref_path
+                    if not ref_file.exists():
+                        outdated_refs.append((md_file, ref_path, "code reference"))
+                        
+        except Exception:
+            continue
+    
+    if outdated_refs:
+        print("  ❌ Outdated documentation references found:")
+        for md_file, ref_path, ref_text in outdated_refs[:10]:  # Limit output
+            print(f"    - {md_file.relative_to(ROOT)} references missing file: {ref_path}")
+        if len(outdated_refs) > 10:
+            print(f"    ... and {len(outdated_refs) - 10} more")
+        ERRORS.append(f"Found {len(outdated_refs)} outdated documentation references")
+        return False
+    
+    print("  ✅ No outdated documentation references found")
+    return True
+
+def check_for_inconsistent_documentation_structure():
+    """Check for inconsistent documentation structure and formatting"""
+    print("🔍 Checking for inconsistent documentation structure...")
+    
+    md_files = list(ROOT.rglob("*.md"))
+    structure_issues = []
+    
+    for md_file in md_files:
+        try:
+            content = md_file.read_text(encoding='utf-8', errors='ignore')
+            lines = content.split('\n')
+            
+            # Check for common structure issues
+            issues = []
+            
+            # Check for missing headers
+            if not any(line.startswith('#') for line in lines[:10]):
+                issues.append("missing main header")
+            
+            # Check for inconsistent header levels
+            header_levels = []
+            for line in lines:
+                if line.startswith('#'):
+                    level = len(line) - len(line.lstrip('#'))
+                    header_levels.append(level)
+            
+            # Check for skipped header levels (e.g., # to ###)
+            for i in range(1, len(header_levels)):
+                if header_levels[i] > header_levels[i-1] + 1:
+                    issues.append("skipped header level")
+                    break
+            
+            # Check for very long lines
+            long_lines = [i+1 for i, line in enumerate(lines) if len(line) > 120]
+            if long_lines:
+                issues.append(f"long lines at {long_lines[:3]}")
+            
+            # Check for trailing whitespace
+            trailing_ws = [i+1 for i, line in enumerate(lines) if line.rstrip() != line and line.strip()]
+            if trailing_ws:
+                issues.append(f"trailing whitespace at {trailing_ws[:3]}")
+            
+            if issues:
+                structure_issues.append((md_file, issues))
+                
+        except Exception:
+            continue
+    
+    if structure_issues:
+        print("  ❌ Documentation structure issues found:")
+        for md_file, issues in structure_issues[:10]:  # Limit output
+            print(f"    - {md_file.relative_to(ROOT)}: {', '.join(issues)}")
+        if len(structure_issues) > 10:
+            print(f"    ... and {len(structure_issues) - 10} more")
+        ERRORS.append(f"Found {len(structure_issues)} files with documentation structure issues")
+        return False
+    
+    print("  ✅ No documentation structure issues found")
+    return True
+
+def check_for_missing_documentation_sections():
+    """Check for missing standard documentation sections"""
+    print("🔍 Checking for missing documentation sections...")
+    
+    # Define standard sections that should be present in certain file types
+    required_sections = {
+        "README.md": ["overview", "installation", "usage", "contributing"],
+        "PHASE_*_COMPLETION_SUMMARY.md": ["status", "completion_date", "summary", "objectives"],
+        "SERVICES_MANIFEST.md": ["services", "endpoints", "configuration"],
+        "project_master_log.md": ["project", "history", "phases", "status"]
+    }
+    
+    missing_sections = []
+    
+    for pattern, required in required_sections.items():
+        for file_path in ROOT.glob(pattern):
+            try:
+                content = file_path.read_text(encoding='utf-8', errors='ignore').lower()
+                missing = []
+                for section in required:
+                    if section not in content:
+                        missing.append(section)
+                
+                if missing:
+                    missing_sections.append((file_path, missing))
+                    
+            except Exception:
+                continue
+    
+    if missing_sections:
+        print("  ❌ Missing standard documentation sections:")
+        for file_path, missing in missing_sections:
+            print(f"    - {file_path.relative_to(ROOT)}: missing {', '.join(missing)}")
+        ERRORS.append(f"Found {len(missing_sections)} files missing standard documentation sections")
+        return False
+    
+    print("  ✅ All standard documentation sections present")
+    return True
+
+def suggest_documentation_consolidation():
+    """Suggest documentation consolidation opportunities"""
+    print("🔍 Analyzing documentation consolidation opportunities...")
+    
+    # Group files by directory and analyze content similarity
+    dir_groups = defaultdict(list)
+    
+    for file_path in ROOT.rglob("*.md"):
+        if "venv" in str(file_path) or "__pycache__" in str(file_path):
+            continue
+        try:
+            content = file_path.read_text(encoding='utf-8', errors='ignore')
+            if len(content.strip()) > 200:  # Only consider substantial files
+                dir_groups[file_path.parent].append((file_path, content))
+        except Exception:
+            continue
+    
+    consolidation_suggestions = []
+    
+    for directory, files in dir_groups.items():
+        if len(files) > 3:  # Only suggest for directories with multiple files
+            # Analyze similarity within directory
+            for i, (file1, content1) in enumerate(files):
+                for j, (file2, content2) in enumerate(files[i+1:], i+1):
+                    similarity = calculate_similarity(content1, content2)
+                    if similarity > 0.4:  # Moderate similarity threshold
+                        consolidation_suggestions.append((file1, file2, similarity))
+    
+    if consolidation_suggestions:
+        print("  💡 Documentation consolidation suggestions:")
+        # Sort by similarity and show top suggestions
+        top_suggestions = sorted(consolidation_suggestions, key=lambda x: x[2], reverse=True)[:5]
+        for file1, file2, similarity in top_suggestions:
+            print(f"    - Consider consolidating:")
+            print(f"      {file1.relative_to(ROOT)}")
+            print(f"      {file2.relative_to(ROOT)}")
+            print(f"      Similarity: {similarity:.2f}")
+            print()
+    
+    return True
 
 def check_for_todo_comments():
     """Check for TODO comments that should be converted to proper tasks"""
@@ -466,6 +802,14 @@ def main():
     terminology_check = check_for_inconsistent_terminology()
     dependency_check = check_for_circular_dependencies()
     ssot_ref_check = check_for_missing_ssot_references()
+    semantic_doc_check = check_for_semantic_documentation_duplicates()
+    topic_scattered_check = check_for_topic_scattered_documentation()
+    outdated_refs_check = check_for_outdated_documentation_references()
+    structure_check = check_for_inconsistent_documentation_structure()
+    missing_sections_check = check_for_missing_documentation_sections()
+    
+    # Run consolidation suggestions (informational only)
+    consolidation_suggestions = suggest_documentation_consolidation()
     
     # Auto-fix if requested and there are issues
     if auto_fix and not all([ssot_ok, cursor_ok, mcp_ok, master_ok, duplicate_check]):
@@ -489,7 +833,9 @@ def main():
     all_passed = all([
         ssot_ok, cursor_ok, mcp_ok, master_ok, duplicate_check,
         todo_check, fallback_check, test_check, path_check,
-        terminology_check, dependency_check, ssot_ref_check
+        terminology_check, dependency_check, ssot_ref_check,
+        semantic_doc_check, topic_scattered_check, outdated_refs_check,
+        structure_check, missing_sections_check
     ])
     
     print(f"SSOT Bundle:        {'✅ PASS' if ssot_ok else '❌ FAIL'}")
@@ -504,6 +850,11 @@ def main():
     print(f"Terminology:        {'✅ PASS' if terminology_check else '❌ FAIL'}")
     print(f"Dependencies:       {'✅ PASS' if dependency_check else '❌ FAIL'}")
     print(f"SSOT References:    {'✅ PASS' if ssot_ref_check else '❌ FAIL'}")
+    print(f"Semantic Docs:      {'✅ PASS' if semantic_doc_check else '❌ FAIL'}")
+    print(f"Topic Scattered:    {'✅ PASS' if topic_scattered_check else '❌ FAIL'}")
+    print(f"Outdated Refs:      {'✅ PASS' if outdated_refs_check else '❌ FAIL'}")
+    print(f"Structure Issues:   {'✅ PASS' if structure_check else '❌ FAIL'}")
+    print(f"Missing Sections:   {'✅ PASS' if missing_sections_check else '❌ FAIL'}")
     
     if FIXES_APPLIED:
         print(f"\n🔧 Fixes Applied:")
