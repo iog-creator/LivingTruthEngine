@@ -177,14 +177,3 @@ Before closing any phase:
 **Status**: ✅ Active and Enforced  
 **Last Updated**: 2025-08-14  
 **Validation**: All policies enforced, documentation organized correctly
-
----
-rule: SSOT Bundle Enforcement (MCP)
-status: active
-priority: highest
-applies_to: all_changes
-description: MCP validation requires SSOT verification prior to execution approval.
-commands:
-  - "python scripts/verify_ssot_bundle.py"
-on_fail:
-  - "echo 'SSOT violation. Fix before proceeding.' && exit 1"

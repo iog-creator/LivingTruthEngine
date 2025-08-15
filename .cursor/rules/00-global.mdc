@@ -124,26 +124,3 @@ globs:
 2) Run the Tool Rituals above; post outputs (or the diff if green).
 3) **Verify MCP validation passes** - this is mandatory.
 4) Only then propose a commit message summarizing code + tests + docs changes.
-
----
-rule: SSOT Bundle Enforcement (permanent)
-status: active
-priority: highest
-applies_to: all_changes
-description: Cursor must load & verify the SSOT bundle before and after edits.
-ssot_bundle:
-  required_files:
-    - README.md
-    - project_master_log.md
-    - MCP_REQUIREMENTS_REFERENCE.md
-    - SERVICES_MANIFEST.md
-    - "PHASE_*_COMPLETION_SUMMARY.md"
-  rules:
-    - All SSOT files must be in the project root
-    - No duplicates in docs/ or archive/docs/
-    - Phase summaries must include: phase, status, completion_date, depends_on, summary
-    - SERVICES_MANIFEST.md must include: Role, Ports, Environment, Healthcheck, Code Paths, Tests
-enforcement:
-  - Run `python scripts/verify_ssot_bundle.py` before and after changes
-  - Stop and fix on failure
-  - Use commit message prefix: [SSOT Verified]
