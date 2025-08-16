@@ -1,0 +1,602 @@
+[
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 12,
+      "row": 71
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/main.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 71
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 71,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 53,
+      "row": 73
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/main.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 73
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 73,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 5,
+      "row": 92
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/setup/use_langflow_mcp.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 5,
+            "row": 92
+          },
+          "location": {
+            "column": 1,
+            "row": 92
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 92
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 129,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 5,
+      "row": 95
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/setup/use_langflow_mcp.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 5,
+            "row": 95
+          },
+          "location": {
+            "column": 1,
+            "row": 95
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 95
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 129,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 5,
+      "row": 105
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/setup/use_langflow_mcp.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 5,
+            "row": 105
+          },
+          "location": {
+            "column": 1,
+            "row": 105
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 105
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 129,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 5,
+      "row": 113
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/setup/use_langflow_mcp.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 5,
+            "row": 113
+          },
+          "location": {
+            "column": 1,
+            "row": 113
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 113
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 129,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 9,
+      "row": 119
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/setup/use_langflow_mcp.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 9,
+            "row": 119
+          },
+          "location": {
+            "column": 1,
+            "row": 119
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 119
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 129,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W293",
+    "end_location": {
+      "column": 5,
+      "row": 124
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/setup/use_langflow_mcp.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 5,
+            "row": 124
+          },
+          "location": {
+            "column": 1,
+            "row": 124
+          }
+        }
+      ],
+      "message": "Remove whitespace from blank line"
+    },
+    "location": {
+      "column": 1,
+      "row": 124
+    },
+    "message": "Blank line contains whitespace",
+    "noqa_row": 129,
+    "url": "https://docs.astral.sh/ruff/rules/blank-line-with-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 28,
+      "row": 286
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/analysis/dash_app.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 286
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 286,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 51,
+      "row": 287
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/analysis/dash_app.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 287
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 287,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 47,
+      "row": 288
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/analysis/dash_app.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 288
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 288,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 25,
+      "row": 43
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 43
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 43,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 2,
+      "row": 50
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 46
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 46,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 2,
+      "row": 58
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 53
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 53,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 53,
+      "row": 59
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 59
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 59,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 2,
+      "row": 65
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 60
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 60,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 58,
+      "row": 66
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 66
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 66,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 39,
+      "row": 33
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/mcp_hub_server.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 33
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 33,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "W291",
+    "end_location": {
+      "column": 47,
+      "row": 68
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/postgresql_mcp_server.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 47,
+            "row": 68
+          },
+          "location": {
+            "column": 46,
+            "row": 68
+          }
+        }
+      ],
+      "message": "Remove trailing whitespace"
+    },
+    "location": {
+      "column": 46,
+      "row": 68
+    },
+    "message": "Trailing whitespace",
+    "noqa_row": 72,
+    "url": "https://docs.astral.sh/ruff/rules/trailing-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W291",
+    "end_location": {
+      "column": 48,
+      "row": 69
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/postgresql_mcp_server.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 48,
+            "row": 69
+          },
+          "location": {
+            "column": 47,
+            "row": 69
+          }
+        }
+      ],
+      "message": "Remove trailing whitespace"
+    },
+    "location": {
+      "column": 47,
+      "row": 69
+    },
+    "message": "Trailing whitespace",
+    "noqa_row": 72,
+    "url": "https://docs.astral.sh/ruff/rules/trailing-whitespace"
+  },
+  {
+    "cell": null,
+    "code": "W605",
+    "end_location": {
+      "column": 67,
+      "row": 127
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/tests/test_langflow_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "r",
+          "end_location": {
+            "column": 31,
+            "row": 127
+          },
+          "location": {
+            "column": 31,
+            "row": 127
+          }
+        }
+      ],
+      "message": "Use a raw string literal"
+    },
+    "location": {
+      "column": 65,
+      "row": 127
+    },
+    "message": "Invalid escape sequence: `\\[`",
+    "noqa_row": 127,
+    "url": "https://docs.astral.sh/ruff/rules/invalid-escape-sequence"
+  },
+  {
+    "cell": null,
+    "code": "W605",
+    "end_location": {
+      "column": 83,
+      "row": 127
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/tests/test_langflow_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "r",
+          "end_location": {
+            "column": 31,
+            "row": 127
+          },
+          "location": {
+            "column": 31,
+            "row": 127
+          }
+        }
+      ],
+      "message": "Use a raw string literal"
+    },
+    "location": {
+      "column": 81,
+      "row": 127
+    },
+    "message": "Invalid escape sequence: `\\]`",
+    "noqa_row": 127,
+    "url": "https://docs.astral.sh/ruff/rules/invalid-escape-sequence"
+  },
+  {
+    "cell": null,
+    "code": "W605",
+    "end_location": {
+      "column": 67,
+      "row": 136
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/tests/test_langflow_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "r",
+          "end_location": {
+            "column": 31,
+            "row": 136
+          },
+          "location": {
+            "column": 31,
+            "row": 136
+          }
+        }
+      ],
+      "message": "Use a raw string literal"
+    },
+    "location": {
+      "column": 65,
+      "row": 136
+    },
+    "message": "Invalid escape sequence: `\\[`",
+    "noqa_row": 136,
+    "url": "https://docs.astral.sh/ruff/rules/invalid-escape-sequence"
+  },
+  {
+    "cell": null,
+    "code": "W605",
+    "end_location": {
+      "column": 83,
+      "row": 136
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/tests/test_langflow_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "r",
+          "end_location": {
+            "column": 31,
+            "row": 136
+          },
+          "location": {
+            "column": 31,
+            "row": 136
+          }
+        }
+      ],
+      "message": "Use a raw string literal"
+    },
+    "location": {
+      "column": 81,
+      "row": 136
+    },
+    "message": "Invalid escape sequence: `\\]`",
+    "noqa_row": 136,
+    "url": "https://docs.astral.sh/ruff/rules/invalid-escape-sequence"
+  }
+]

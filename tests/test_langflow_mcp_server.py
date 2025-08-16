@@ -124,7 +124,7 @@ class TestLangflowMCP:
         invalid_config = {"data": {"nodes": [], "edges": []}}
 
         with pytest.raises(
-            ValueError, match="Flow configuration must include: \['name', 'data'\]"
+            ValueError, match=r"Flow configuration must include: \['name', 'data'\]"
         ):
             self.langflow.create_langflow(invalid_config)
 
@@ -133,7 +133,7 @@ class TestLangflowMCP:
         invalid_config = {"name": "Test Workflow"}
 
         with pytest.raises(
-            ValueError, match="Flow configuration must include: \['name', 'data'\]"
+            ValueError, match=r"Flow configuration must include: \['name', 'data'\]"
         ):
             self.langflow.create_langflow(invalid_config)
 
