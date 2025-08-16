@@ -14,31 +14,11 @@ create_database() {
 EOSQL
 }
 
-# Create langflow user if it doesn't exist
-echo "Creating langflow user..."
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-    DO \$\$
-    BEGIN
-        IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'langflow') THEN
-            CREATE USER langflow WITH PASSWORD 'langflow';
-        END IF;
-    END
-    \$\$;
-EOSQL
-
 # Create langflow database
 if [ -n "$POSTGRES_MULTIPLE_DATABASES" ]; then
     echo "Creating multiple databases: $POSTGRES_MULTIPLE_DATABASES"
     for db in $(echo $POSTGRES_MULTIPLE_DATABASES | tr ',' ' '); do
         create_database $db
-        # Grant privileges to langflow user for langflow database
-        if [ "$db" = "langflow" ]; then
-            echo "Granting privileges to langflow user on langflow database"
-            psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-                GRANT ALL PRIVILEGES ON DATABASE langflow TO langflow;
-                GRANT ALL ON SCHEMA public TO langflow;
-EOSQL
-        fi
     done
 fi
 

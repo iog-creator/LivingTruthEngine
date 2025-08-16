@@ -1,9 +1,9 @@
 FROM postgres:17-alpine
 
-# Install pgvector from Alpine packages
+# Install pgvector from Alpine packages (provides the vector extension library)
 RUN apk add --no-cache postgresql-pgvector
 
-# Configure PostgreSQL to load pgvector
-RUN echo "shared_preload_libraries = 'vector'" >> /usr/local/share/postgresql/postgresql.conf.sample
+# Do NOT preload vector. It is not required and can break initdb if the library path differs.
+# Preloading is disabled here; extensions will be created via init scripts.
 
 # The rest of the configuration will be handled by docker-compose

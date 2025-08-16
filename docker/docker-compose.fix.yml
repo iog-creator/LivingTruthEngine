@@ -1,0 +1,47 @@
+services:
+  devdocs:
+    build:
+      context: .
+      dockerfile: devdocs.Dockerfile
+    environment:
+      # Keep clone OUT of any bind-mount path to avoid collisions
+      REPO_DIR: /opt/devdocs
+      REPO_URL: https://github.com/flowiseai/devdocs.git
+    working_dir: /opt/devdocs
+    command: >
+      sh -c "
+        cd /opt/devdocs &&
+        npm install &&
+        npm run build &&
+        npm start
+      "
+
+  mcp-solver:
+    build:
+      context: .
+      dockerfile: mcp-solver.Dockerfile
+    environment:
+      REPO_DIR: /opt/mcp-solver
+      REPO_URL: https://github.com/szeider/mcp-solver.git
+    working_dir: /opt/mcp-solver
+    command: >
+      sh -c "
+        cd /opt/mcp-solver &&
+        pip install -r requirements.txt &&
+        python -m mcp_solver.server
+      "
+
+  rulego:
+    build:
+      context: .
+      dockerfile: rulego.Dockerfile
+    environment:
+      REPO_DIR: /opt/rulego
+      REPO_URL: https://github.com/rulego/rulego.git
+    working_dir: /opt/rulego
+    command: >
+      sh -c "
+        cd /opt/rulego &&
+        go build -tags with_extend cmd/server &&
+        ./server -c=/app/config/rulego.conf
+      "

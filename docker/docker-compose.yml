@@ -114,7 +114,8 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ../scripts/setup/init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh:ro
-      - ./postgresql.conf:/var/lib/postgresql/data/postgresql.conf:ro
+      - ./postgresql.conf:/etc/postgresql/postgresql.conf:ro
+    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
     healthcheck:
       test: ["CMD", "pg_isready"]
       interval: 10s
