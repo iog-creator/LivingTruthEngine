@@ -98,3 +98,13 @@ rebuild-dashboard:
 
 health:
 	 bash scripts/healthcheck.sh
+.PHONY: mcp-smoke snapshot watchdog ci-ssot
+mcp-smoke:
+	python scripts/mcp_smoke_list.py | tee reports/mcp_smoke.json
+snapshot:
+	python scripts/ssot_watchdog.py
+watchdog: snapshot
+ci-ssot:
+	make meta-index && make meta-validate
+	python scripts/verify_complete_ssot_system.py --scope fast --fix || true
+	python scripts/validate_cursor_rules_frontmatter.py

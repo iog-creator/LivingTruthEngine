@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
+set -euo pipefail
 MSG_FILE="$1"
-if grep -qi '\[SSOT Verified\]' "$MSG_FILE"; then
-  exit 0
+if ! grep -q "^\[SSOT Verified\]" "$MSG_FILE"; then
+  echo "✗ Commit message must start with [SSOT Verified]" >&2
+  echo "  Hint: run SSOT checks, then prefix your message." >&2
+  exit 1
 fi
-echo "ERROR: Commit message must include [SSOT Verified] once SSOT checks pass." >&2
-exit 1
