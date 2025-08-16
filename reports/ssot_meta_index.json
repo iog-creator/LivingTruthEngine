@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2025-08-16T01:20:48Z",
+  "generated_at_utc": "2025-08-16T01:28:02Z",
   "rules": [
     {
       "file": ".cursor/rules/00-global.mdc",
@@ -206,7 +206,7 @@
     },
     {
       "file": ".cursor/rules/ssot_meta_index.mdc",
-      "description": "Ensure SSOT metadata index freshness and availability",
+      "description": "Ensure SSOT metadata index exists, validates, and stays fresh",
       "globs": null,
       "alwaysApply": true,
       "type": "Always",
@@ -217,16 +217,14 @@
           "tags": [
             "ssot",
             "metadata",
-            "dashboard",
-            "mcp"
+            "validation"
           ],
-          "phase": "9.5.7.4.11",
+          "phase": "9.5.7.4.12",
           "dependsOn": [
-            "verify-complete-ssot",
-            "mcp-router-check"
+            "meta-index",
+            "meta-validate"
           ],
-          "autofixAllowed": false,
-          "notes": "Enforce SSOT metadata index freshness and API availability"
+          "autofixAllowed": true
         }
       ]
     },

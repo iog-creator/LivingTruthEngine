@@ -239,6 +239,70 @@
                     </div>
                 </div>
             </div>
+
+            <!-- SSOT Meta Rollups -->
+            <div class="card">
+                <h2 class="text-xl font-semibold text-gray-900 mb-6">
+                    <i class="fas fa-chart-bar text-blue-600 mr-2"></i>
+                    SSOT Metadata Rollups
+                </h2>
+
+                <div class="space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <button id="refresh-meta-rollups" class="btn-secondary">
+                            <i class="fas fa-sync-alt mr-2"></i>
+                            Refresh
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-3">Owners</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="border-b border-gray-200">
+                                            <th class="text-left py-2 font-medium text-gray-700">Owner</th>
+                                            <th class="text-right py-2 font-medium text-gray-700">Rules</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="owners-table"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-3">Severity</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="border-b border-gray-200">
+                                            <th class="text-left py-2 font-medium text-gray-700">Level</th>
+                                            <th class="text-right py-2 font-medium text-gray-700">Rules</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="severity-table"></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-lg font-medium text-gray-900 mb-3">Tags</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm">
+                                    <thead>
+                                        <tr class="border-b border-gray-200">
+                                            <th class="text-left py-2 font-medium text-gray-700">Tag</th>
+                                            <th class="text-right py-2 font-medium text-gray-700">Rules</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tags-table"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -465,6 +529,42 @@
     // Load meta index on page load
     document.addEventListener('DOMContentLoaded', function() {
         loadMeta();
+        loadMetaRollups();
     });
+
+    // SSOT Meta Rollups functionality
+    async function loadMetaRollups() {
+        try {
+            const r = await fetch('/api/meta/summary');
+            const j = await r.json();
+            if (j.status !== 'ok') return;
+            
+            const owners = j.data.owners || {};
+            const sev = j.data.severity || {};
+            const tags = j.data.tags || {};
+            
+            const fill = (id, obj) => {
+                const tbody = document.querySelector(id + ' tbody');
+                tbody.innerHTML = '';
+                Object.entries(obj)
+                    .sort((a, b) => b[1] - a[1])
+                    .forEach(([k, v]) => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `<td class="py-2">${k}</td><td class="py-2 text-right">${v}</td>`;
+                        tbody.appendChild(tr);
+                    });
+            };
+            
+            fill('#owners-table', owners);
+            fill('#severity-table', sev);
+            fill('#tags-table', tags);
+        } catch (e) {
+            // surface nothing on error; page remains usable
+            console.error('Failed to load meta rollups:', e);
+        }
+    }
+
+    // SSOT Meta Rollups event listeners
+    document.getElementById('refresh-meta-rollups').addEventListener('click', loadMetaRollups);
 </script>
 {% endblock %}

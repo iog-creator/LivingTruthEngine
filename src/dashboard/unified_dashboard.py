@@ -2050,6 +2050,28 @@ class UnifiedDashboard:
             except Exception as e:
                 return envelope_err(f"Meta health error: {e}", 500)
 
+        @self.app.get("/api/meta/summary")
+        async def api_meta_summary():
+            """Return lightweight rollups for owners, severity, tags."""
+            p = Path("reports/ssot_meta_index.json")
+            if not p.exists():
+                raise HTTPException(status_code=404, detail="Meta index not found. Run `make meta-index`.")
+            meta = json.loads(p.read_text(encoding="utf-8"))
+            rules = meta.get("rules", [])
+            def merge_counts():
+                owners, severity, tags = {}, {}, {}
+                for r in rules:
+                    for b in (r.get("ssot_meta") or []):
+                        o = b.get("owner")
+                        if isinstance(o,str) and o: owners[o] = owners.get(o,0)+1
+                        s = str(b.get("severity","")).lower()
+                        if s: severity[s] = severity.get(s,0)+1
+                        for t in (b.get("tags") or []):
+                            if isinstance(t,str) and t: tags[t] = tags.get(t,0)+1
+                return owners, severity, tags
+            owners, sev, tags = merge_counts()
+            return {"status":"ok","data":{"owners":owners,"severity":sev,"tags":tags,"rules_total":len(rules)}}
+
         @self.app.websocket("/ws/ai-activity")
         async def websocket_endpoint(websocket: WebSocket):
             """WebSocket endpoint for AI activity updates"""

@@ -61,13 +61,17 @@ enable-githooks:
 	@git config core.hooksPath .githooks
 	@echo "✓ Git hooks enabled (rules-validate on pre-commit)"
 
-reports: meta-index
+reports: meta-index meta-validate
 	@echo "✓ Reports ready in ./reports"
 
 .PHONY: meta-index
 meta-index:
 	@python scripts/collect_yaml_meta.py --out reports/ssot_meta_index.json
 	@echo "✓ SSOT metadata index: reports/ssot_meta_index.json"
+
+meta-validate:
+	@python scripts/validate_ssot_meta_index.py
+	@echo "✓ SSOT metadata index validated"
 
 
 

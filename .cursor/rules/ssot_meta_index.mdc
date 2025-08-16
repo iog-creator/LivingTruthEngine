@@ -1,26 +1,26 @@
 ---
-description: Ensure SSOT metadata index freshness and availability
+description: Ensure SSOT metadata index exists, validates, and stays fresh
 alwaysApply: true
 ---
 
 # Policy
-- The file `reports/ssot_meta_index.json` must exist and be valid JSON.
-- `make reports` MUST run `meta-index`.
-- Dashboard `/api/meta/*` must serve the index without silent fallbacks.
+- The file `reports/ssot_meta_index.json` must exist and parse as JSON.
+- It must validate (schema + suggested types) and be **fresh** relative to rules/docs.
+- `make reports` runs `meta-index` and `meta-validate`.
 
 # How to comply
-- Run `make meta-index` locally (or `make reports`).
-- Fix JSON serialization issues in collectors; no bare excepts.
-- Ensure dashboard API endpoints return proper envelope format.
+```bash
+make meta-index
+make meta-validate
+```
 
 ### SSOT Meta
 
 ```yaml
 owner: researcher-ssot
 severity: high
-tags: [ssot, metadata, dashboard, mcp]
-phase: 9.5.7.4.11
-dependsOn: [verify-complete-ssot, mcp-router-check]
-autofixAllowed: false
-notes: "Enforce SSOT metadata index freshness and API availability"
+tags: [ssot, metadata, validation]
+phase: 9.5.7.4.12
+dependsOn: [meta-index, meta-validate]
+autofixAllowed: true
 ```
