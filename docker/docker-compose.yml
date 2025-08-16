@@ -318,8 +318,9 @@ services:
     ports:
     - 8050:8050
     volumes:
-    - ../data/outputs/visualizations:/app/visualizations
-    - ../data:/app/data
+      - ../reports:/app/reports
+      - ../data/outputs/visualizations:/app/visualizations
+      - ../data:/app/data
     environment:
     - PYTHONPATH=/app:/app/src
     - LM_STUDIO_ENDPOINT=http://host.docker.internal:1234/v1
@@ -363,7 +364,7 @@ services:
     - REDIS_URL=redis://living-truth-redis:6379/0
     volumes:
     - ../apps/veritas_api:/app
-    - ../data:/app/data
+      - ../data:/app/data
     ports:
     - 8080:8080
     depends_on:
@@ -380,7 +381,7 @@ services:
     - REDIS_URL=redis://living-truth-redis:6379/0
     volumes:
     - ../apps/veritas_worker:/app
-    - ../data:/app/data
+      - ../data:/app/data
     depends_on:
       veritas_api:
         condition: service_started
@@ -397,7 +398,7 @@ services:
     - API_BASE=http://veritas_api:8080
     volumes:
     - ../apps/veritas_console:/app
-    - ../data:/app/data
+      - ../data:/app/data
     ports:
     - 8501:8501
     depends_on:
