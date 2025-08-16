@@ -1,7 +1,3 @@
-# Living Truth Engine - Docker Compose Configuration
-# Modern Docker Compose v2 configuration following Docker best practices
-# Focused on essential services only (no Flowise)
-
 services:
   langflow:
     build:
@@ -9,33 +5,37 @@ services:
       dockerfile: Dockerfile.langflow
     container_name: living-truth-langflow
     ports:
-      - "7860:7860"
+    - 7860:7860
     volumes:
-      - langflow-data:/app/langflow
+    - langflow-data:/app/langflow
     environment:
-      - LANGFLOW_DATABASE_URL=postgresql://langflow:langflow@postgres:5432/langflow
-      - LANGFLOW_CONFIG_DIR=/app/langflow
-      - PYTHONPATH=/app/langflow_source:/app/langchain_source
+    - LANGFLOW_DATABASE_URL=postgresql://langflow:langflow@postgres:5432/langflow
+    - LANGFLOW_CONFIG_DIR=/app/langflow
+    - PYTHONPATH=/app/langflow_source:/app/langchain_source
+    - DATABASE_URL=postgresql+psycopg2://langflow:langflow@postgres:5432/langflow
     depends_on:
-      - postgres
+    - postgres
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:7860/health
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 60s
     networks:
-      - living-truth-network
-
+    - living-truth-network
   lm-studio:
     image: lmstudioai/llmster-preview:latest
     container_name: living-truth-lm-studio
     ports:
-      - "1235:1234"
+    - 1235:1234
     volumes:
-      - ../data/models:/app/models
-      - ../data/.lmstudio:/app/.lmstudio
+    - ../data/models:/app/models
+    - ../data/.lmstudio:/app/.lmstudio
     environment:
       HOST: 0.0.0.0
       PORT: 1234
@@ -52,12 +52,12 @@ services:
       QUIET: false
       HELP: false
       VERSION: false
-      MODEL: ""
-      CONFIG: ""
-      PROMPT: ""
-      SYSTEM: ""
-      TEMPLATE: ""
-      STOP: ""
+      MODEL: ''
+      CONFIG: ''
+      PROMPT: ''
+      SYSTEM: ''
+      TEMPLATE: ''
+      STOP: ''
       REPEAT_PENALTY: 1.1
       REPEAT_PENALTY_TOKENS: 64
       TEMPERATURE: 0.7
@@ -76,27 +76,28 @@ services:
       NUM_PREDICT: 128
       N_KEEP: 0
       N_PROBS: 0
-      LOGIT_BIAS: ""
+      LOGIT_BIAS: ''
       IGNORE_EOS: false
       INTERACTIVE: false
       INTERACTIVE_FIRST: false
-      INTERACTIVE_SPEC: ""
+      INTERACTIVE_SPEC: ''
       INVERSE_PROP: false
       LOGDISABLE: false
-      LOGDIR: ""
-      LOGFILE: ""
+      LOGDIR: ''
+      LOGFILE: ''
       LOG_NEWLINE: false
       LOG_TIMESTAMP: false
     healthcheck:
-      test: ["CMD-SHELL", "timeout 10 bash -c '</dev/tcp/localhost/1234' || exit 1"]
+      test:
+      - CMD-SHELL
+      - timeout 10 bash -c '</dev/tcp/localhost/1234' || exit 1
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 60s
     restart: unless-stopped
     networks:
-      - living-truth-network
-
+    - living-truth-network
   postgres:
     build:
       context: .
@@ -105,27 +106,30 @@ services:
     restart: always
     user: postgres
     ports:
-      - "5434:5432"
+    - 5434:5432
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-living_truth_engine}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pass}
       POSTGRES_MULTIPLE_DATABASES: langflow
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ../scripts/setup/init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh:ro
-      - ./postgresql.conf:/etc/postgresql/postgresql.conf:ro
-    command: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf"]
+    - postgres_data:/var/lib/postgresql/data
+    - ./postgresql.conf:/etc/postgresql/postgresql.conf:ro
+    - ./docker/initdb:/docker-entrypoint-initdb.d:ro
+    command:
+    - postgres
+    - -c
+    - config_file=/etc/postgresql/postgresql.conf
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test:
+      - CMD
+      - pg_isready
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
     networks:
-      - living-truth-network
-
-  # Neo4j Graph Database
+    - living-truth-network
   neo4j:
     image: neo4j:5.15.0
     container_name: living-truth-neo4j
@@ -134,88 +138,78 @@ services:
       NEO4J_PLUGINS: '["apoc"]'
       NEO4J_dbms_security_procedures_unrestricted: apoc.*
     ports:
-      - "7474:7474"  # HTTP
-      - "7687:7687"  # Bolt
+    - 7474:7474
+    - 7687:7687
     volumes:
-      - neo4j_data:/data
-      - neo4j_logs:/logs
-      - neo4j_import:/var/lib/neo4j/import
-      - neo4j_plugins:/plugins
+    - neo4j_data:/data
+    - neo4j_logs:/logs
+    - neo4j_import:/var/lib/neo4j/import
+    - neo4j_plugins:/plugins
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "cypher-shell -u neo4j -p livingtruth123 'RETURN 1'"]
+      test:
+      - CMD-SHELL
+      - cypher-shell -u neo4j -p livingtruth123 'RETURN 1'
       interval: 30s
       timeout: 10s
       retries: 3
     networks:
-      - living-truth-network
-
-  # Redis for caching
+    - living-truth-network
   redis:
     image: redis:7.2-alpine
     container_name: living-truth-redis
     ports:
-      - "6380:6379"
+    - 6380:6379
     volumes:
-      - redis_data:/data
+    - redis_data:/data
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test:
+      - CMD
+      - redis-cli
+      - ping
       interval: 30s
       timeout: 10s
       retries: 3
     networks:
-      - living-truth-network
-
-  # Living Truth Engine Application
+    - living-truth-network
   living-truth-engine:
     build:
       context: ..
       dockerfile: docker/Dockerfile
     container_name: living-truth-engine
     environment:
-      # Database connections - Using container PostgreSQL
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
       POSTGRES_DB: living_truth_engine
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: pass
-      
-      # Neo4j connection
       NEO4J_URI: bolt://neo4j:7687
       NEO4J_USER: neo4j
       NEO4J_PASSWORD: livingtruth123
-      
-      # Redis connection
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_DB: 0
-      
-      # Application settings
       LOG_LEVEL: INFO
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-default-key-change-in-production}
-      
-      # Model Configuration
       VISION_MODEL: google/gemma-3-4b
       LLM_MODEL: qwen/qwen3-8b
       LMSTUDIO_EMBEDDING_MODEL_QWEN3: text-embedding-qwen3-embedding-0.6b
       LMSTUDIO_RERANKER_MODEL: qwen.qwen3-reranker-0.6b
       LMSTUDIO_EMBEDDING_URL: http://host.docker.internal:1234/v1/embeddings
       LMSTUDIO_CHAT_URL: http://host.docker.internal:1234/v1/chat/completions
-      
-      # Python settings
       PYTHONPATH: /app
       PYTHONUNBUFFERED: 1
     ports:
-      - "9123:8000"  # FastAPI
-      - "9124:8001"  # Dashboard
+    - 9123:8000
+    - 9124:8001
     volumes:
-      - ../data/sources:/app/sources
-      - ../data/outputs/logs:/app/logs
-      - ../data/outputs/visualizations:/app/data/outputs/visualizations
-      - ../.env:/app/.env:ro
+    - ../data/sources:/app/sources
+    - ../data/outputs/logs:/app/logs
+    - ../data/outputs/visualizations:/app/data/outputs/visualizations
+    - ../.env:/app/.env:ro
     extra_hosts:
-      - "host.docker.internal:host-gateway"
+    - host.docker.internal:host-gateway
     depends_on:
       postgres:
         condition: service_healthy
@@ -225,89 +219,125 @@ services:
         condition: service_healthy
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      test:
+      - CMD
+      - python
+      - -c
+      - import requests; requests.get('http://localhost:8000/health')
       interval: 30s
       timeout: 10s
       retries: 3
     networks:
-      - living-truth-network
-
-  # DevDocs - Lightweight internal service satisfying MCP adapter health
+    - living-truth-network
   devdocs:
     build:
       context: ..
       dockerfile: docker/Dockerfile
     container_name: living-truth-devdocs
-    command: ["uvicorn", "src.aux_services.devdocs_server:app", "--host", "0.0.0.0", "--port", "24125"]
+    command:
+    - uvicorn
+    - src.aux_services.devdocs_server:app
+    - --host
+    - 0.0.0.0
+    - --port
+    - '24125'
     ports:
-      - "9126:24125"
+    - 9126:24125
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:24125/health"]
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:24125/health
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
     restart: unless-stopped
     networks:
-      - living-truth-network
-
-  # Rulego - Lightweight internal service satisfying MCP adapter health
+    - living-truth-network
   rulego:
     build:
       context: ..
       dockerfile: docker/Dockerfile
     container_name: living-truth-rulego
-    command: ["uvicorn", "src.aux_services.rulego_server:app", "--host", "0.0.0.0", "--port", "8080"]
+    command:
+    - uvicorn
+    - src.aux_services.rulego_server:app
+    - --host
+    - 0.0.0.0
+    - --port
+    - '8080'
     ports:
-      - "9127:8080"
+    - 9127:8080
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8080/health
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
     restart: unless-stopped
     networks:
-      - living-truth-network
-
-  # MCP Solver - Lightweight internal service satisfying MCP adapter health
+    - living-truth-network
   mcp-solver:
     build:
       context: ..
       dockerfile: docker/Dockerfile
     container_name: living-truth-mcp-solver
-    command: ["uvicorn", "src.aux_services.solver_server:app", "--host", "0.0.0.0", "--port", "3000"]
+    command:
+    - uvicorn
+    - src.aux_services.solver_server:app
+    - --host
+    - 0.0.0.0
+    - --port
+    - '3000'
     ports:
-      - "9128:3000"
+    - 9128:3000
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:3000/health
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 10s
     restart: unless-stopped
     networks:
-      - living-truth-network
-
-  # Dash Dashboard Service for Visualizations
+    - living-truth-network
   dashboard:
     build:
       context: ..
       dockerfile: docker/Dockerfile.dash
     container_name: living-truth-dashboard
     ports:
-      - "8050:8050"
+    - 8050:8050
     volumes:
-      - ../data/outputs/visualizations:/app/visualizations
-      - ../data:/app/data
+    - ../data/outputs/visualizations:/app/visualizations
+    - ../data:/app/data
     environment:
-      - PYTHONPATH=/app:/app/src
-      - LM_STUDIO_ENDPOINT=http://host.docker.internal:1234/v1
+    - PYTHONPATH=/app:/app/src
+    - LM_STUDIO_ENDPOINT=http://host.docker.internal:1234/v1
     extra_hosts:
-      - "host.docker.internal:host-gateway"
-    command: ["uvicorn","dashboard.unified_dashboard:main","--host","0.0.0.0","--port","8050"]
+    - host.docker.internal:host-gateway
+    command:
+    - uvicorn
+    - dashboard.unified_dashboard:main
+    - --host
+    - 0.0.0.0
+    - --port
+    - '8050'
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8050/api/health"]
+      test:
+      - CMD
+      - curl
+      - -f
+      - http://localhost:8050/api/health
       interval: 30s
       timeout: 10s
       retries: 3
@@ -323,70 +353,62 @@ services:
         condition: service_healthy
     restart: unless-stopped
     networks:
-      - living-truth-network
-
-  # Veritas API service
+    - living-truth-network
   veritas_api:
     build:
       context: ..
       dockerfile: apps/veritas_api/Dockerfile
     container_name: living-truth-veritas-api
     environment:
-      - REDIS_URL=redis://living-truth-redis:6379/0
+    - REDIS_URL=redis://living-truth-redis:6379/0
     volumes:
-      - ../apps/veritas_api:/app
-      - ../data:/app/data
-    ports: ["8080:8080"]
+    - ../apps/veritas_api:/app
+    - ../data:/app/data
+    ports:
+    - 8080:8080
     depends_on:
       redis:
         condition: service_started
     networks:
-      - living-truth-network
-
-  # Veritas worker service
+    - living-truth-network
   veritas_worker:
     build:
       context: ..
       dockerfile: apps/veritas_worker/Dockerfile
     container_name: living-truth-veritas-worker
     environment:
-      - REDIS_URL=redis://living-truth-redis:6379/0
+    - REDIS_URL=redis://living-truth-redis:6379/0
     volumes:
-      - ../apps/veritas_worker:/app
-      - ../data:/app/data
+    - ../apps/veritas_worker:/app
+    - ../data:/app/data
     depends_on:
       veritas_api:
         condition: service_started
       redis:
         condition: service_started
     networks:
-      - living-truth-network
-
-  # Veritas console (UI)
+    - living-truth-network
   veritas_console:
     build:
       context: ..
       dockerfile: apps/veritas_console/Dockerfile
     container_name: living-truth-veritas-console
     environment:
-      - API_BASE=http://veritas_api:8080
+    - API_BASE=http://veritas_api:8080
     volumes:
-      - ../apps/veritas_console:/app
-      - ../data:/app/data
-    ports: ["8501:8501"]
+    - ../apps/veritas_console:/app
+    - ../data:/app/data
+    ports:
+    - 8501:8501
     depends_on:
       veritas_api:
         condition: service_started
     networks:
-      - living-truth-network
-
-
-
+    - living-truth-network
 networks:
   living-truth-network:
     driver: bridge
     name: living-truth-network
-
 volumes:
   postgres_data:
     driver: local
@@ -408,4 +430,4 @@ volumes:
     name: living-truth-redis-data
   langflow-data:
     driver: local
-    name: living-truth-langflow-data 
+    name: living-truth-langflow-data

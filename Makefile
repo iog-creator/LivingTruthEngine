@@ -85,3 +85,16 @@ test-meta:
 
 
 
+.PHONY: up down rebuild-dashboard health
+up:
+	 docker compose -f docker/docker-compose.yml up -d
+
+down:
+	 docker compose -f docker/docker-compose.yml down --remove-orphans
+
+rebuild-dashboard:
+	 COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker compose -f docker/docker-compose.yml build dashboard
+	 docker compose -f docker/docker-compose.yml up -d dashboard
+
+health:
+	 bash scripts/healthcheck.sh
