@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2025-08-16T01:10:34Z",
+  "generated_at_utc": "2025-08-16T01:20:48Z",
   "rules": [
     {
       "file": ".cursor/rules/00-global.mdc",
@@ -205,6 +205,32 @@
       "type": "Agent-Requested"
     },
     {
+      "file": ".cursor/rules/ssot_meta_index.mdc",
+      "description": "Ensure SSOT metadata index freshness and availability",
+      "globs": null,
+      "alwaysApply": true,
+      "type": "Always",
+      "ssot_meta": [
+        {
+          "owner": "researcher-ssot",
+          "severity": "high",
+          "tags": [
+            "ssot",
+            "metadata",
+            "dashboard",
+            "mcp"
+          ],
+          "phase": "9.5.7.4.11",
+          "dependsOn": [
+            "verify-complete-ssot",
+            "mcp-router-check"
+          ],
+          "autofixAllowed": false,
+          "notes": "Enforce SSOT metadata index freshness and API availability"
+        }
+      ]
+    },
+    {
       "file": ".cursor/rules/system_integration_status.mdc",
       "description": "System Integration Status rule for Living Truth Engine",
       "globs": null,
@@ -264,7 +290,7 @@
         "depends_on": [
           1
         ],
-        "summary": "Living Truth Agent \u2192 LivingTruthEngine Integration (Complete)"
+        "summary": "Living Truth Agent → LivingTruthEngine Integration (Complete)"
       }
     },
     {
@@ -298,7 +324,7 @@
         "status": "completed",
         "completion_date": "2025-08-03",
         "depends_on": [],
-        "summary": "Living Truth Agent \u2192 LivingTruthEngine Integration"
+        "summary": "Living Truth Agent → LivingTruthEngine Integration"
       }
     },
     {

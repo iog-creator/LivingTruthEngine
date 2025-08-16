@@ -1984,6 +1984,72 @@ class UnifiedDashboard:
             except Exception as e:
                 return envelope_err(f"Enhanced extraction test failed: {e}", 500)
 
+        # SSOT Metadata API Endpoints
+        @self.app.get("/api/meta/index")
+        async def api_meta_index():
+            """Get the full SSOT metadata index."""
+            try:
+                p = Path("reports/ssot_meta_index.json")
+                if not p.exists():
+                    return envelope_err("Meta index not found. Run `make meta-index`.", 404)
+                try:
+                    return envelope_ok(json.loads(p.read_text(encoding="utf-8")))
+                except json.JSONDecodeError as e:
+                    return envelope_err(f"Invalid meta index JSON: {e}", 500)
+            except Exception as e:
+                return envelope_err(f"Meta index error: {e}", 500)
+
+        @self.app.get("/api/meta/search")
+        async def api_meta_search(
+            owner: str | None = None,
+            tag: str | None = None,
+            severity: str | None = None,
+            text: str | None = None
+        ):
+            """Search the SSOT metadata index by owner/tag/severity/text."""
+            try:
+                p = Path("reports/ssot_meta_index.json")
+                if not p.exists():
+                    return envelope_err("Meta index not found. Run `make meta-index`.", 404)
+                meta = json.loads(p.read_text(encoding="utf-8"))
+                
+                # Reuse the same filter logic as MCP (simple inline for brevity)
+                def match(item: dict) -> bool:
+                    smetas = item.get("ssot_meta", []) or []
+                    hay = (json.dumps(item, ensure_ascii=False) if text else "")
+                    def blk_ok(b: dict) -> bool:
+                        if owner and (b.get("owner") != owner): 
+                            return False
+                        if severity and (str(b.get("severity")).lower() != str(severity).lower()): 
+                            return False
+                        if tag and (tag not in (b.get("tags") or [])): 
+                            return False
+                        if text and (text.lower() not in hay.lower()): 
+                            return False
+                        return True
+                    return True if not smetas and not any([owner, tag, severity, text]) else any(blk_ok(b) for b in smetas)
+                
+                rules = [r for r in meta.get("rules", []) if match(r)]
+                docs = [d for d in meta.get("docs", []) if match(d)]
+                return envelope_ok({"rules": rules, "docs": docs})
+            except Exception as e:
+                return envelope_err(f"Meta search error: {e}", 500)
+
+        @self.app.get("/api/meta/health")
+        async def api_meta_health():
+            """Get metadata index health status."""
+            try:
+                p = Path("reports/ssot_meta_index.json")
+                if not p.exists():
+                    return envelope_err("missing index", 404)
+                try:
+                    meta = json.loads(p.read_text(encoding="utf-8"))
+                    return envelope_ok({"generated_at_utc": meta.get("generated_at_utc")})
+                except json.JSONDecodeError:
+                    return envelope_err("invalid json", 500)
+            except Exception as e:
+                return envelope_err(f"Meta health error: {e}", 500)
+
         @self.app.websocket("/ws/ai-activity")
         async def websocket_endpoint(websocket: WebSocket):
             """WebSocket endpoint for AI activity updates"""

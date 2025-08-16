@@ -10,7 +10,7 @@ Output: reports/ssot_meta_index.json
 Usage: make meta-index  (also runs as part of `make reports`)
 """
 from __future__ import annotations
-import json, os, re, time
+import argparse, json, os, re, sys, time
 from pathlib import Path
 
 try:
@@ -139,12 +139,27 @@ def collect_doc_frontmatter():
     return docs
 
 def main():
+    parser = argparse.ArgumentParser(description="Generate SSOT metadata index")
+    parser.add_argument("--out", type=str, default="reports/ssot_meta_index.json", 
+                       help="Output file path (default: reports/ssot_meta_index.json)")
+    args = parser.parse_args()
+    
+    # Ensure output directory exists
+    out_path = Path(args.out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    
     idx = {
         "generated_at_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "rules": collect_rules(),
         "docs": collect_doc_frontmatter(),
     }
-    print(json.dumps(idx, indent=2))
+    
+    # Write to file if --out specified, otherwise print to stdout
+    if args.out:
+        with open(out_path, 'w', encoding='utf-8') as f:
+            json.dump(idx, f, indent=2, ensure_ascii=False)
+    else:
+        print(json.dumps(idx, indent=2))
 
 if __name__ == "__main__":
     main()

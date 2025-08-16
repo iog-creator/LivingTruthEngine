@@ -66,8 +66,7 @@ reports: meta-index
 
 .PHONY: meta-index
 meta-index:
-	@mkdir -p reports
-	@python scripts/collect_yaml_meta.py > reports/ssot_meta_index.json
+	@python scripts/collect_yaml_meta.py --out reports/ssot_meta_index.json
 	@echo "✓ SSOT metadata index: reports/ssot_meta_index.json"
 
 
