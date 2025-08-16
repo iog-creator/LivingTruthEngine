@@ -1,3 +1,4 @@
+from fastapi.staticfiles import StaticFiles
 import os
 
 import redis
@@ -15,6 +16,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount static files for React UI
+try:
+    app.mount("/react", StaticFiles(directory="static", html=True), name="react")
+except Exception as e:
+    log.warning(f"Could not mount React UI: {e}")
 r = redis.from_url(os.getenv("REDIS_URL", "redis://living-truth-redis:6379/0"))
 
 
