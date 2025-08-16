@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2025-08-16T17:42:22Z",
+  "generated_at_utc": "2025-08-16T17:44:52Z",
   "rules": [
     {
       "file": ".cursor/rules/00-global.mdc",
@@ -315,6 +315,15 @@
           8
         ],
         "summary": "Multi-Source Expansion & Advanced Evidence Linking with SSOT Enforcement (Complete)"
+      }
+    },
+    {
+      "file": "PHASE_9_5_7_4_15_COMPLETION_SUMMARY.md",
+      "frontmatter": {
+        "title": "Phase 9.5.7.4.15 \u2014 MCP-first loop hardened",
+        "date_utc": "20250816T174417Z",
+        "owner": "researcher-ssot",
+        "status": "complete"
       }
     },
     {
