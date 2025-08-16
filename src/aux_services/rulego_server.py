@@ -20,6 +20,3 @@ def health() -> Dict[str, str]:
 @app.get("/")
 def root() -> Dict[str, str]:
     return {"message": "Rulego stub running"}
-
-
-

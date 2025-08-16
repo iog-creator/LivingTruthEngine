@@ -35,8 +35,8 @@ def compute_sha256_file(path: Path) -> str:
         Hex string of the SHA-256 digest.
     """
     h = hashlib.sha256()
-    with path.open('rb') as f:
-        for chunk in iter(lambda: f.read(8192), b''):
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
             h.update(chunk)
     return h.hexdigest()
 
@@ -120,35 +120,32 @@ def write_bundle_proofs(bundle_dir: Path, source_files: List[Path]) -> Dict[str,
 
 def __to_json(obj: Any) -> str:
     import json
+
     return json.dumps(obj, indent=2, sort_keys=True)
+
 
 def sha256_text(text: str) -> str:
     """
     Compute SHA-256 hash of text content.
-    
+
     Args:
         text: Text content to hash
-        
+
     Returns:
         SHA-256 hex digest
     """
-    return hashlib.sha256(text.encode('utf-8')).hexdigest()
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
 
 def build_merkle(leaves: List[str]) -> Dict[str, Any]:
     """
     Build Merkle tree from list of leaf hashes.
-    
+
     Args:
         leaves: List of SHA-256 hex digests
-        
+
     Returns:
         Dictionary with root hash and leaf count
     """
     root = build_merkle_root(leaves)
-    return {
-        "root": root,
-        "leaves": leaves,
-        "count": len(leaves)
-    }
-
-
+    return {"root": root, "leaves": leaves, "count": len(leaves)}

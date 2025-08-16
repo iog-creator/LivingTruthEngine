@@ -15,12 +15,12 @@ from .living_truth_config import (
     HotswapConfig,
     get_config,
     reload_config,
-    config
+    config,
 )
 
 __all__ = [
     "LivingTruthConfig",
-    "BiblicalForensicConfig", 
+    "BiblicalForensicConfig",
     "DatabaseConfig",
     "ModelConfig",
     "ProcessingConfig",
@@ -30,5 +30,5 @@ __all__ = [
     "HotswapConfig",
     "get_config",
     "reload_config",
-    "config"
-] 
+    "config",
+]

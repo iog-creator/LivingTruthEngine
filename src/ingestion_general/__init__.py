@@ -15,13 +15,10 @@ from .pipeline.canonicalize import CanonicalizePipeline
 from .pipeline.provenance import ProvenancePipeline
 
 __all__ = [
-    'VeritasRunner',
-    'YouTubeAdapter',
-    'WebFetcher',
-    'PDFExtractor',
-    'CanonicalizePipeline',
-    'ProvenancePipeline'
+    "VeritasRunner",
+    "YouTubeAdapter",
+    "WebFetcher",
+    "PDFExtractor",
+    "CanonicalizePipeline",
+    "ProvenancePipeline",
 ]
-
-
-

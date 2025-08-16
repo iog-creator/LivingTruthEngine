@@ -61,7 +61,9 @@ class AIActivityBus:
                 if queue in self._subscribers:
                     self._subscribers.remove(queue)
 
-    async def emit(self, ai_type: str, status: str, meta: Optional[Dict[str, Any]] = None) -> None:
+    async def emit(
+        self, ai_type: str, status: str, meta: Optional[Dict[str, Any]] = None
+    ) -> None:
         """Broadcast an event to all subscribers and update snapshot."""
         event = AIActivityEvent(ai_type=ai_type, status=status, meta=meta or {})
         # Update snapshot immediately for clients polling the snapshot REST
@@ -81,7 +83,7 @@ bus = AIActivityBus()
 
 
 try:
-    # Optional FastAPI router for snapshot and test emit; unified_dashboard will include it if available
+    # Optional FastAPI router for snapshot and test emit; unified_dashboard will include it if available  # noqa: E501
     from fastapi import APIRouter, Body
 
     router = APIRouter()
@@ -98,15 +100,22 @@ try:
         Guarded by TEST_MODE=1.
         """
         if os.getenv("TEST_MODE", "0") != "1":
-            return {"status": "forbidden", "data": None, "error": "TEST_MODE not enabled"}
+            return {
+                "status": "forbidden",
+                "data": None,
+                "error": "TEST_MODE not enabled",
+            }
         try:
             kind = str(payload.get("kind", "llm"))
             status = str(payload.get("status", "working"))
             meta = {k: v for k, v in payload.items() if k not in ("kind", "status")}
             await bus.emit(kind, status, meta)
-            return {"status": "ok", "data": {"kind": kind, "status": status, **meta}, "error": None}
+            return {
+                "status": "ok",
+                "data": {"kind": kind, "status": status, **meta},
+                "error": None,
+            }
         except Exception as e:
             return {"status": "error", "data": None, "error": str(e)}
 except (ImportError, ModuleNotFoundError):
     router = None
-

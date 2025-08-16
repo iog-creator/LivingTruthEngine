@@ -6,12 +6,14 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class ModelSpec:
     provider: str
     name: str
     extra: dict
     device: str = None
+
 
 class ModelRegistry:
     def __init__(self, path: str = "config/models.toml"):
@@ -36,7 +38,9 @@ class ModelRegistry:
                 if gpu_load < self._gpu_memory_threshold:
                     return "cuda"
                 else:
-                    logger.info(f"GPU memory load {gpu_load:.2%} exceeds threshold {self._gpu_memory_threshold:.2%}, using CPU")
+                    logger.info(
+                        f"GPU memory load {gpu_load:.2%} exceeds threshold {self._gpu_memory_threshold:.2%}, using CPU"  # noqa: E501
+                    )
                     return "cpu"
             except Exception as e:
                 logger.warning(f"Could not check GPU memory load: {e}, using CPU")
@@ -49,10 +53,10 @@ class ModelRegistry:
         c = self.cfg[model_type][key]
         device_pref = c.get("device")
         resolved_device = self._resolve_device(device_pref)
-        
+
         # Log device decision
         logger.info(f"{model_type}.{key}: {device_pref} -> {resolved_device}")
-        
+
         return c, resolved_device
 
     def llm(self, key="default") -> ModelSpec:
@@ -102,34 +106,46 @@ class ModelRegistry:
         extra = {}
         if device:
             extra["device"] = device
-        return ModelSpec(c["provider"], c.get("pipeline", "pyannote/speaker-diarization"), extra, device)
+        return ModelSpec(
+            c["provider"],
+            c.get("pipeline", "pyannote/speaker-diarization"),
+            extra,
+            device,
+        )
 
     def topics(self, key="default") -> ModelSpec:
         c, device = self._get_model_config("topics", key)
         extra = {}
         if device:
             extra["device"] = device
-        return ModelSpec(c["provider"], c.get("backend", "sentence-transformers/all-MiniLM-L6-v2"), extra, device)
+        return ModelSpec(
+            c["provider"],
+            c.get("backend", "sentence-transformers/all-MiniLM-L6-v2"),
+            extra,
+            device,
+        )
 
     def get_gpu_status(self) -> dict:
         """Get current GPU status for monitoring."""
         status = {
             "available": self._gpu_available,
-            "memory_threshold": self._gpu_memory_threshold
+            "memory_threshold": self._gpu_memory_threshold,
         }
-        
+
         if self._gpu_available:
             try:
                 gpu_memory_used = torch.cuda.memory_allocated()
                 gpu_memory_total = torch.cuda.get_device_properties(0).total_memory
                 gpu_load = gpu_memory_used / gpu_memory_total
-                status.update({
-                    "memory_used_mb": gpu_memory_used / 1024 / 1024,
-                    "memory_total_mb": gpu_memory_total / 1024 / 1024,
-                    "memory_load_percent": gpu_load * 100,
-                    "below_threshold": gpu_load < self._gpu_memory_threshold
-                })
+                status.update(
+                    {
+                        "memory_used_mb": gpu_memory_used / 1024 / 1024,
+                        "memory_total_mb": gpu_memory_total / 1024 / 1024,
+                        "memory_load_percent": gpu_load * 100,
+                        "below_threshold": gpu_load < self._gpu_memory_threshold,
+                    }
+                )
             except Exception as e:
                 status["error"] = str(e)
-        
+
         return status

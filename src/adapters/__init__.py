@@ -10,9 +10,4 @@ from .youtube_adapter import YouTubeAdapter
 from .web_adapter import WebAdapter
 from .pdf_adapter import PDFAdapter
 
-__all__ = [
-    'BaseAdapter',
-    'YouTubeAdapter', 
-    'WebAdapter',
-    'PDFAdapter'
-]
+__all__ = ["BaseAdapter", "YouTubeAdapter", "WebAdapter", "PDFAdapter"]

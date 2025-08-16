@@ -17,7 +17,7 @@ from mcp.server.fastmcp import FastMCP
 
 # Load environment variables
 project_root = Path(__file__).parent.parent.parent
-load_dotenv(project_root / '.env')
+load_dotenv(project_root / ".env")
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -26,21 +26,22 @@ logger = logging.getLogger(__name__)
 # Create FastMCP instance
 mcp = FastMCP()
 
+
 class DevDocsEngine:
     def __init__(self):
-        self.devdocs_url = os.getenv('DEVDOCS_URL', 'http://localhost:9126')
-        self.crawl_results_dir = project_root / 'data' / 'sources' / 'devdocs'
+        self.devdocs_url = os.getenv("DEVDOCS_URL", "http://localhost:9126")
+        self.crawl_results_dir = project_root / "data" / "sources" / "devdocs"
         self.crawl_results_dir.mkdir(parents=True, exist_ok=True)
-        
+
         logger.info(f"DevDocs Engine initialized")
         logger.info(f"DevDocs URL: {self.devdocs_url}")
 
     def crawl_docs(self, depth: int = 3) -> str:
         """Crawl documentation from DevDocs.
-        
+
         Args:
             depth: Crawl depth (default: 3)
-        
+
         Returns:
             Status of crawl operation
         """
@@ -48,7 +49,7 @@ class DevDocsEngine:
             # Create crawl results file
             timestamp = time.strftime("%Y%m%d_%H%M%S")
             results_file = self.crawl_results_dir / f"crawl_results_{timestamp}.json"
-            
+
             # Placeholder for actual crawling logic
             # Task: DevDocs Integration - See TASKS.md for details
             crawl_data = {
@@ -56,25 +57,25 @@ class DevDocsEngine:
                 "depth": depth,
                 "status": "initiated",
                 "urls_crawled": [],
-                "documents_found": 0
+                "documents_found": 0,
             }
-            
-            with open(results_file, 'w') as f:
+
+            with open(results_file, "w") as f:
                 json.dump(crawl_data, f, indent=2)
-            
+
             logger.info(f"Document crawl initiated: {results_file}")
-            return f"✅ Document crawl initiated\n📁 Results: {results_file}\n⚠️ Note: This is a placeholder. Implement actual DevDocs crawling."
-            
+            return f"✅ Document crawl initiated\n📁 Results: {results_file}\n⚠️ Note: This is a placeholder. Implement actual DevDocs crawling."  # noqa: E501
+
         except Exception as e:
             logger.error(f"Document crawl failed: {e}")
             return f"❌ Document crawl failed: {e}"
 
     def retrieve_docs(self, query: str) -> str:
         """Retrieve documents from DevDocs.
-        
+
         Args:
             query: Search query
-        
+
         Returns:
             Retrieved documents
         """
@@ -84,12 +85,12 @@ class DevDocsEngine:
             results = {
                 "query": query,
                 "results": [],
-                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
             }
-            
+
             logger.info(f"Document retrieval for query: {query}")
-            return f"✅ Document retrieval completed\n🔍 Query: {query}\n📄 Results: {len(results['results'])} documents\n⚠️ Note: This is a placeholder. Implement actual DevDocs retrieval."
-            
+            return f"✅ Document retrieval completed\n🔍 Query: {query}\n📄 Results: {len(results['results'])} documents\n⚠️ Note: This is a placeholder. Implement actual DevDocs retrieval."  # noqa: E501
+
         except Exception as e:
             logger.error(f"Document retrieval failed: {e}")
             return f"❌ Document retrieval failed: {e}"
@@ -105,8 +106,10 @@ class DevDocsEngine:
         except Exception as e:
             return f"❌ DevDocs server connection failed: {e}"
 
+
 # Create engine instance
 engine = DevDocsEngine()
+
 
 # MCP Tools
 @mcp.tool()
@@ -114,15 +117,18 @@ def crawl_docs(depth: int = 3) -> str:
     """Crawl documentation from DevDocs."""
     return engine.crawl_docs(depth)
 
+
 @mcp.tool()
 def retrieve_docs(query: str) -> str:
     """Retrieve documents from DevDocs."""
     return engine.retrieve_docs(query)
 
+
 @mcp.tool()
 def get_devdocs_status() -> str:
     """Get DevDocs server status."""
     return engine.get_devdocs_status()
+
 
 @mcp.tool()
 def get_devdocs_info() -> str:
@@ -133,19 +139,20 @@ def get_devdocs_info() -> str:
         info.append(f"Project Root: {project_root}")
         info.append(f"DevDocs URL: {engine.devdocs_url}")
         info.append(f"Crawl Results Directory: {engine.crawl_results_dir}")
-        
+
         info.append("\n=== AVAILABLE TOOLS ===")
         tools = [
             "crawl_docs - Crawl documentation from DevDocs",
             "retrieve_docs - Retrieve documents from DevDocs",
             "get_devdocs_status - Get DevDocs server status",
-            "get_devdocs_info - Get DevDocs project information"
+            "get_devdocs_info - Get DevDocs project information",
         ]
         info.extend(tools)
-        
+
         return "\n".join(info)
     except Exception as e:
         return f"❌ Error getting DevDocs info: {e}"
+
 
 if __name__ == "__main__":
     logger.info("DevDocs MCP Server starting...")
@@ -156,4 +163,4 @@ if __name__ == "__main__":
         logger.info("DevDocs MCP Server stopped by user")
     except Exception as e:
         logger.error(f"DevDocs MCP Server error: {e}")
-        sys.exit(1) 
+        sys.exit(1)

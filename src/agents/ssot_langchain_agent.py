@@ -14,7 +14,7 @@ Purpose
 Contract
 - All CLI executions print a single JSON envelope to STDOUT:
   { "status": "ok" | "error", "data"?: {...}, "error"?: {"code": "...", "message": "...", "details"?: {...}} }
-"""
+"""  # noqa: E501
 
 from __future__ import annotations
 
@@ -34,11 +34,14 @@ import yaml
 # Envelope helpers (SSOT rule)
 # ---------------------------
 
+
 def ok(data: Dict[str, Any]) -> Dict[str, Any]:
     return {"status": "ok", "data": data}
 
 
-def err(code: str, message: str, details: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+def err(
+    code: str, message: str, details: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     e = {"status": "error", "error": {"code": code, "message": message}}
     if details:
         e["error"]["details"] = details
@@ -48,6 +51,7 @@ def err(code: str, message: str, details: Optional[Dict[str, Any]] = None) -> Di
 # ---------------------------
 # Config
 # ---------------------------
+
 
 @dataclass
 class AgentConfig:
@@ -69,12 +73,15 @@ class AgentConfig:
 # Bridge client (HTTP)
 # ---------------------------
 
+
 class SSOTBridgeClient:
     def __init__(self, base_url: str, timeout: float = 30.0):
         self.base_url = base_url.rstrip("/")
         self.timeout = timeout
 
-    def _post(self, path: str, payload: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def _post(
+        self, path: str, payload: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
         url = f"{self.base_url}{path}"
         try:
             r = requests.post(url, json=payload or {}, timeout=self.timeout)
@@ -102,6 +109,7 @@ class SSOTBridgeClient:
 # Deterministic, no‑LLM execution (default & CI-friendly)
 # ------------------------------------------------------
 
+
 class DeterministicSSOTAgent:
     def __init__(self, client: SSOTBridgeClient):
         self.client = client
@@ -123,7 +131,7 @@ class DeterministicSSOTAgent:
                 "verify": verify,
                 "report": report,
                 "patches": patches,
-                "note": "Agent is read-only. Apply patches in Cursor and gate with SSOT verification.",
+                "note": "Agent is read-only. Apply patches in Cursor and gate with SSOT verification.",  # noqa: E501
             }
         )
 
@@ -131,6 +139,7 @@ class DeterministicSSOTAgent:
 # ------------------------------------------------------
 # Optional: LangChain Agent (only if --langchain is set)
 # ------------------------------------------------------
+
 
 def build_langchain_agent(client: SSOTBridgeClient):
     """
@@ -185,7 +194,7 @@ def build_langchain_agent(client: SSOTBridgeClient):
                     "phase": "9.5.7.4.7",
                     "sequence": ["verify_ssot", "read_ssot_report", "draft_patches"],
                     **state,
-                    "note": "LangChain path; still read-only. Apply patches in Cursor and gate with SSOT verification.",
+                    "note": "LangChain path; still read-only. Apply patches in Cursor and gate with SSOT verification.",  # noqa: E501
                 }
             )
         )
@@ -196,6 +205,7 @@ def build_langchain_agent(client: SSOTBridgeClient):
 # ---------------------------
 # CLI
 # ---------------------------
+
 
 def _save_report(payload: Dict[str, Any], out_path: Optional[Path]) -> None:
     if out_path is None:
@@ -210,11 +220,25 @@ def _save_report(payload: Dict[str, Any], out_path: Optional[Path]) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="SSOT LangChain Agent (deterministic, read-only)")
-    parser.add_argument("--config", default="config/agents/ssot_agent.yaml", help="Path to agent config YAML")
-    parser.add_argument("--langchain", action="store_true", help="Use LangChain sequence instead of deterministic Python")
-    parser.add_argument("--timeout", type=float, default=30.0, help="HTTP timeout seconds")
-    parser.add_argument("--out", type=str, default="", help="Write JSON output to this path (optional)")
+    parser = argparse.ArgumentParser(
+        description="SSOT LangChain Agent (deterministic, read-only)"
+    )
+    parser.add_argument(
+        "--config",
+        default="config/agents/ssot_agent.yaml",
+        help="Path to agent config YAML",
+    )
+    parser.add_argument(
+        "--langchain",
+        action="store_true",
+        help="Use LangChain sequence instead of deterministic Python",
+    )
+    parser.add_argument(
+        "--timeout", type=float, default=30.0, help="HTTP timeout seconds"
+    )
+    parser.add_argument(
+        "--out", type=str, default="", help="Write JSON output to this path (optional)"
+    )
     args = parser.parse_args()
 
     cfg = AgentConfig.from_file(Path(args.config))

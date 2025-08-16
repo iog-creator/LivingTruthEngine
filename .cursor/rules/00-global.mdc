@@ -1,16 +1,8 @@
----
-description: >
-  Global operating rules for Living Truth Engine. Always apply. Enforce SSOT, tests, CI gates,
-  Playwright, envelope contract, and commit-complete discipline. No TODOs left behind.
-alwaysApply: true
-globs:
-  - "**/*"
----
 
 # Canon
 - **SSOT bundle (root only)**: `README.md`, `project_master_log.md`, `MCP_REQUIREMENTS_REFERENCE.md`,
   `SERVICES_MANIFEST.md`, and all `PHASE_*_COMPLETION_SUMMARY.md`.
-- **Envelope**: APIs/tools return `{status, data?, error?{code,message}}`.
+- **Envelope**: APIs/tools return `{status, data?, error?}`.
 - **Commit-complete**: code + tests + docs + rules updated together.
 
 ## SSOT Enforcement (permanent)
@@ -41,11 +33,35 @@ python scripts/verify_ssot_bundle.py
 - No phase closeouts without updated SSOT + `[SSOT Verified]` commit.
 
 ## LM Studio Helper (Local Only)
-- You may call the local LM Studio *tools bridge* for analysis/drafts:
-  - `POST http://127.0.0.1:8756/tools/verify_ssot`
-  - `POST http://127.0.0.1:8756/tools/read_ssot_report`
-  - `POST http://127.0.0.1:8756/tools/draft_patches`
-- Never apply writes from LM Studio. All edits must pass:
+- **Purpose**: LM Studio is a **helper agent** for analysis and patch drafting
+- **Safety**: LM Studio is **read-only** - it suggests changes but never applies them
+- **Integration Methods**:
+  1. **HTTP Bridge** (`make lm-tools`): For tool-based analysis
+  2. **MCP Server** (`make lm-mcp`): For conversational interaction  
+  3. **SSOT Agent** (`make ssot-agent`): For automated workflows
+- **Workflow**: LM Studio analyzes → Cursor applies → SSOT validates → Commit
+- **Never apply writes from LM Studio**. All edits must pass:
+```bash
+python scripts/verify_complete_ssot_system.py
+```
+and commit with `[SSOT Verified]`.
+
+## SSOT Scope Discipline
+- Pre-edit check: `python scripts/verify_complete_ssot_system.py --scope fast`
+- Post-fix gate: `python scripts/verify_complete_ssot_system.py --scope full` (local) or CI nightly full.
+- # SSOT Requirement (hard fail)
+- Command to run **before** approving/merging:
+```bash
+python scripts/verify_complete_ssot_system.py --fix
+```
+- On any failure: **stop** and remediate. Approvals are blocked until PASS.
+
+# Commit Discipline
+- Require `[SSOT Verified]` in commit message once SSOT checks pass.
+
+# Prohibited
+- Duplicate SSOT files outside root.
+- Merging with failing SSOT Guard or Repo Health checks.
 ```bash
 python scripts/verify_complete_ssot_system.py
 ```

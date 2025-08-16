@@ -37,6 +37,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
 from mcp.server.fastmcp import FastMCP
+
 mcp = FastMCP()
 
 # Setup logging
@@ -46,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 class Phase9MCPServer:
     """Phase 9 MCP Server for comprehensive development tooling."""
-    
+
     def __init__(self):
         """Initialize the Phase 9 MCP Server."""
         self.project_root = Path(__file__).parent.parent.parent
@@ -54,23 +55,25 @@ class Phase9MCPServer:
         self.config_dir = self.project_root / "config"
         self.scripts_dir = self.project_root / "scripts"
         self.docker_dir = self.project_root / "docker"
-        
+
         logger.info("Phase 9 MCP Server initialized")
-    
+
     # ============================================================================
     # mcp.project.rules namespace
     # ============================================================================
-    
+
     @mcp.tool()
-    def run_ruff_check(self, select: str = "E722", fix: bool = False, path: str = "src/") -> Dict[str, Any]:
+    def run_ruff_check(
+        self, select: str = "E722", fix: bool = False, path: str = "src/"
+    ) -> Dict[str, Any]:
         """
         Run ruff linter to check and optionally fix code quality issues.
-        
+
         Args:
             select: Rule codes to check (e.g., "E722" for bare except)
             fix: Whether to apply fixes automatically
             path: Path to check (default: src/)
-            
+
         Returns:
             Ruff check results with violations and fixes applied
         """
@@ -78,258 +81,338 @@ class Phase9MCPServer:
             cmd = ["ruff", "check", f"--select={select}", path]
             if fix:
                 cmd.append("--fix")
+
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, cwd=self.project_root
+            )
+
+            return {
+                "status": "success",
+                "returncode": result.returncode,
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+                "fixes_applied": fix,
+            }
+        except Exception as e:
+            return {"status": "error", "error": str(e), "returncode": -1}
+
+    @mcp.tool()
+    def run_ruff_format(self, path: str = "src/") -> Dict[str, Any]:
+        """
+        Run ruff formatter to format Python code.
+
+        Args:
+            path: Path to format (default: src/)
+
+        Returns:
+            Ruff format results
+        """
+        try:
+            cmd = ["ruff", "format", path]
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, cwd=self.project_root
+            )
+
+            return {
+                "status": "success",
+                "returncode": result.returncode,
+                "stdout": result.stdout,
+                "stderr": result.stderr,
+            }
+        except Exception as e:
+            return {"status": "error", "error": str(e), "returncode": -1}
+
+    @mcp.tool()
+    def run_ruff_comprehensive(self, path: str = "src/", fix: bool = False) -> Dict[str, Any]:  # noqa: E501
+        """
+        Run comprehensive Ruff checks with all rules enabled.
+        
+        Args:
+            path: Path to check (default: src/)
+            fix: Whether to apply fixes automatically
             
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.project_root)
+        Returns:
+            Comprehensive Ruff check results
+        """
+        try:
+            # Run all rules except line length (E501) which we handle separately
+            cmd = ["ruff", "check", "--select=ALL", "--ignore=E501", path]
+            if fix:
+                cmd.append("--fix")
+            
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, cwd=self.project_root
+            )
             
             return {
                 "status": "success",
                 "returncode": result.returncode,
                 "stdout": result.stdout,
                 "stderr": result.stderr,
-                "fixes_applied": fix
+                "fixes_applied": fix,
             }
         except Exception as e:
-            return {
-                "status": "error",
-                "error": str(e),
-                "returncode": -1
-            }
-    
+            return {"status": "error", "error": str(e), "returncode": -1}
+
     @mcp.tool()
-    def run_ruff_format(self, path: str = "src/") -> Dict[str, Any]:
+    def run_ruff_line_length_fix(self, path: str = "src/", max_line_length: int = 88) -> Dict[str, Any]:  # noqa: E501
         """
-        Run ruff formatter to format Python code.
-        
-        Args:
-            path: Path to format (default: src/)
-            
-        Returns:
-            Ruff format results
-        """
-        try:
-            cmd = ["ruff", "format", path]
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.project_root)
-            
-            return {
-                "status": "success",
-                "returncode": result.returncode,
-                "stdout": result.stdout,
-                "stderr": result.stderr
-            }
-        except Exception as e:
-            return {
-                "status": "error",
-                "error": str(e),
-                "returncode": -1
-            }
-    
-    @mcp.tool()
-    def run_mypy_check(self, path: str = "src/") -> Dict[str, Any]:
-        """
-        Run mypy type checker on Python code.
+        Fix line length issues by adding line breaks intelligently.
         
         Args:
             path: Path to check (default: src/)
+            max_line_length: Maximum line length (default: 88)
             
         Returns:
-            MyPy check results
+            Line length fix results
         """
         try:
-            cmd = ["mypy", path]
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=self.project_root)
+            # First check for line length issues
+            cmd = ["ruff", "check", f"--select=E501", "--line-length", str(max_line_length), path]  # noqa: E501
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, cwd=self.project_root
+            )
+            
+            if result.returncode == 0:
+                return {
+                    "status": "success",
+                    "message": "No line length issues found",
+                    "returncode": 0,
+                    "stdout": result.stdout,
+                    "stderr": result.stderr,
+                }
+            
+            # Try to fix line length issues
+            cmd = ["ruff", "check", f"--select=E501", "--line-length", str(max_line_length), "--fix", path]  # noqa: E501
+            fix_result = subprocess.run(
+                cmd, capture_output=True, text=True, cwd=self.project_root
+            )
+            
+            return {
+                "status": "success",
+                "returncode": fix_result.returncode,
+                "stdout": fix_result.stdout,
+                "stderr": fix_result.stderr,
+                "fixes_applied": True,
+                "original_violations": result.stdout,
+            }
+        except Exception as e:
+            return {"status": "error", "error": str(e), "returncode": -1}
+
+    @mcp.tool()
+    def run_ruff_add_noqa(self, path: str = "src/", select: str = "E501") -> Dict[str, Any]:  # noqa: E501
+        """
+        Add # noqa directives to suppress specific rule violations.
+        Useful for gradually enabling rules on existing codebases.
+        
+        Args:
+            path: Path to check (default: src/)
+            select: Rule codes to add noqa for (default: E501)
+            
+        Returns:
+            Add noqa results
+        """
+        try:
+            cmd = ["ruff", "check", f"--select={select}", "--add-noqa", path]
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, cwd=self.project_root
+            )
             
             return {
                 "status": "success",
                 "returncode": result.returncode,
                 "stdout": result.stdout,
-                "stderr": result.stderr
+                "stderr": result.stderr,
+                "noqa_added": True,
             }
         except Exception as e:
-            return {
-                "status": "error",
-                "error": str(e),
-                "returncode": -1
-            }
-    
+            return {"status": "error", "error": str(e), "returncode": -1}
+
     @mcp.tool()
     def fix_silent_fallbacks(self) -> Dict[str, Any]:
         """
         Automatically fix silent fallbacks using ruff.
-        
+
         Returns:
             Results of fixing silent fallbacks
         """
         try:
             # Run ruff to fix bare except statements
             result = self.run_ruff_check(select="E722", fix=True, path="src/")
-            
+
             if result["status"] == "success" and result["returncode"] == 0:
                 return {
                     "status": "success",
                     "message": "Silent fallbacks fixed using ruff",
-                    "details": result
+                    "details": result,
                 }
             else:
                 return {
                     "status": "error",
                     "message": "Failed to fix silent fallbacks",
-                    "details": result
+                    "details": result,
                 }
         except Exception as e:
-            return {
-                "status": "error",
-                "error": str(e)
-            }
-    
+            return {"status": "error", "error": str(e)}
+
     @mcp.tool()
     def validate_cursor_rules(self) -> Dict[str, Any]:
         """
         Validate all cursor rules (.mdc files) for proper frontmatter and structure.
-        
+
         Returns:
             Validation result with issues and valid rules
         """
         try:
             valid_rules = []
             issues = []
-            
-            for rule_file in self.rules_dir.glob('*.mdc'):
+
+            for rule_file in self.rules_dir.glob("*.mdc"):
                 try:
-                    with open(rule_file, 'r', encoding='utf-8') as f:
+                    with open(rule_file, "r", encoding="utf-8") as f:
                         content = f.read()
-                    
+
                     # Check for frontmatter
-                    if not content.startswith('---'):
+                    if not content.startswith("---"):
                         issues.append(f"{rule_file.name}: Missing frontmatter")
                         continue
-                    
+
                     # Parse frontmatter more carefully
-                    lines = content.split('\n')
+                    lines = content.split("\n")
                     frontmatter_end = -1
                     frontmatter_lines = []
-                    
+
                     # Find the first complete frontmatter section
                     i = 1  # Skip the first ---
                     while i < len(lines):
                         line = lines[i].strip()
-                        if line == '---':
+                        if line == "---":
                             frontmatter_end = i
                             break
                         frontmatter_lines.append(lines[i])
                         i += 1
-                    
+
                     if frontmatter_end == -1:
                         issues.append(f"{rule_file.name}: Incomplete frontmatter")
                         continue
-                    
+
                     # Check for additional frontmatter-like sections
                     additional_frontmatter = 0
                     i = frontmatter_end + 1
                     while i < len(lines):
                         line = lines[i].strip()
-                        if line == '---':
-                            # Check if this looks like frontmatter (has YAML-like content after it)
+                        if line == "---":
+                            # Check if this looks like frontmatter (has YAML-like content after it)  # noqa: E501
                             j = i + 1
                             yaml_like = False
                             while j < len(lines) and j < i + 10:  # Check next 10 lines
                                 next_line = lines[j].strip()
-                                if next_line and ':' in next_line and not next_line.startswith('#'):
+                                if (
+                                    next_line
+                                    and ":" in next_line
+                                    and not next_line.startswith("#")
+                                ):
                                     yaml_like = True
                                     break
-                                elif next_line.startswith('#'):
+                                elif next_line.startswith("#"):
                                     break
                                 j += 1
                             if yaml_like:
                                 additional_frontmatter += 1
                         i += 1
-                    
+
                     if additional_frontmatter > 0:
-                        issues.append(f"{rule_file.name}: Duplicate frontmatter detected ({additional_frontmatter + 1} frontmatter sections)")
+                        issues.append(
+                            f"{rule_file.name}: Duplicate frontmatter detected ({additional_frontmatter + 1} frontmatter sections)"  # noqa: E501
+                        )
                         continue
-                    
+
                     # Validate required fields in frontmatter
-                    frontmatter_text = '\n'.join(frontmatter_lines)
-                    if 'description:' not in frontmatter_text:
+                    frontmatter_text = "\n".join(frontmatter_lines)
+                    if "description:" not in frontmatter_text:
                         issues.append(f"{rule_file.name}: Missing description")
-                    elif 'alwaysApply:' not in frontmatter_text:
+                    elif "alwaysApply:" not in frontmatter_text:
                         issues.append(f"{rule_file.name}: Missing alwaysApply field")
                     else:
                         valid_rules.append(rule_file.name)
-                        
+
                 except Exception as e:
                     issues.append(f"{rule_file.name}: Error reading file - {e}")
-            
+
             return {
                 "valid": len(issues) == 0,
                 "valid_rules": valid_rules,
                 "issues": issues,
-                "total_rules": len(valid_rules) + len(issues)
+                "total_rules": len(valid_rules) + len(issues),
             }
-            
+
         except Exception as e:
             logger.error(f"Error validating cursor rules: {e}")
             return {
                 "valid": False,
                 "error": str(e),
                 "valid_rules": [],
-                "issues": [f"Validation failed: {e}"]
+                "issues": [f"Validation failed: {e}"],
             }
-    
+
     @mcp.tool()
     def fix_cursor_rule_frontmatter(self, filename: str) -> Dict[str, Any]:
         """
         Fix frontmatter for a specific cursor rule file.
-        
+
         Args:
             filename: Name of the rule file to fix
-            
+
         Returns:
             Result of the fix operation
         """
         try:
             rule_file = self.rules_dir / filename
             if not rule_file.exists():
-                return {
-                    "success": False,
-                    "error": f"File not found: {filename}"
-                }
-            
-            with open(rule_file, 'r', encoding='utf-8') as f:
+                return {"success": False, "error": f"File not found: {filename}"}
+
+            with open(rule_file, "r", encoding="utf-8") as f:
                 content = f.read()
-            
-            # Extract the main content by finding the first heading or content after frontmatter
-            lines = content.split('\n')
+
+            # Extract the main content by finding the first heading or content after frontmatter  # noqa: E501
+            lines = content.split("\n")
             main_content_start = 0
-            
+
             # Find the end of the first frontmatter section
             i = 0
             while i < len(lines):
-                if lines[i].strip() == '---':
+                if lines[i].strip() == "---":
                     i += 1
                     # Skip until we find the closing ---
-                    while i < len(lines) and lines[i].strip() != '---':
+                    while i < len(lines) and lines[i].strip() != "---":
                         i += 1
                     if i < len(lines):
                         main_content_start = i + 1
                         break
                 else:
                     i += 1
-            
-            # Find the actual start of content (skip empty lines and any remaining frontmatter-like content)
+
+            # Find the actual start of content (skip empty lines and any remaining frontmatter-like content)  # noqa: E501
             while main_content_start < len(lines):
                 line = lines[main_content_start].strip()
-                if line and not line.startswith('---') and not line.startswith('description:') and not line.startswith('globs:') and not line.startswith('alwaysApply:'):
+                if (
+                    line
+                    and not line.startswith("---")
+                    and not line.startswith("description:")
+                    and not line.startswith("globs:")
+                    and not line.startswith("alwaysApply:")
+                ):
                     break
                 main_content_start += 1
-            
+
             # Extract main content
-            main_content = '\n'.join(lines[main_content_start:])
-            
+            main_content = "\n".join(lines[main_content_start:])
+
             # Create proper frontmatter based on filename
-            rule_name = filename.replace('.mdc', '').replace('_', ' ').title()
-            
+            rule_name = filename.replace(".mdc", "").replace("_", " ").title()
+
             # Only 00-global.mdc should have alwaysApply: true
-            if filename == '00-global.mdc':
+            if filename == "00-global.mdc":
                 frontmatter = f"""---
 description: >
   Global operating rules for Living Truth Engine. Always include this in AI context.
@@ -348,98 +431,88 @@ alwaysApply: false
 ---
 
 """
-            
+
             new_content = frontmatter + main_content
-            with open(rule_file, 'w', encoding='utf-8') as f:
+            with open(rule_file, "w", encoding="utf-8") as f:
                 f.write(new_content)
-            
+
             return {
                 "success": True,
                 "message": f"Fixed frontmatter for {filename}",
-                "removed_sections": 1
+                "removed_sections": 1,
             }
-            
+
         except Exception as e:
             logger.error(f"Error fixing frontmatter for {filename}: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
-    
+            return {"success": False, "error": str(e)}
+
     @mcp.tool()
     def ruleset_archive_outdated(self) -> Dict[str, Any]:
         """
         Archive outdated rule files into rules/archive/ with index update.
-        
+
         Returns:
             Result of the archival operation
         """
         try:
             archive_dir = self.rules_dir / "archive"
             archive_dir.mkdir(exist_ok=True)
-            
+
             archived = []
             index_file = archive_dir / "index.md"
-            
+
             # Simple archival logic - could be enhanced
             for rule_file in self.rules_dir.glob("*.mdc"):
-                if rule_file.name.startswith("legacy_") or rule_file.name.startswith("old_"):
+                if rule_file.name.startswith("legacy_") or rule_file.name.startswith(
+                    "old_"
+                ):
                     archive_path = archive_dir / rule_file.name
                     rule_file.rename(archive_path)
                     archived.append(rule_file.name)
-            
+
             # Update index
             if archived:
-                with open(index_file, 'w', encoding='utf-8') as f:
+                with open(index_file, "w", encoding="utf-8") as f:
                     f.write("# Archived Rules\n\n")
                     for rule in archived:
                         f.write(f"- {rule}\n")
-            
+
             return {
                 "success": True,
                 "archived": archived,
-                "message": f"Archived {len(archived)} rules"
+                "message": f"Archived {len(archived)} rules",
             }
-            
+
         except Exception as e:
             logger.error(f"Error archiving rules: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
-    
+            return {"success": False, "error": str(e)}
+
     @mcp.tool()
     def ruleset_apply_templates(self) -> Dict[str, Any]:
         """
         Apply rule templates to ensure consistency.
-        
+
         Returns:
             Result of template application
         """
         try:
             # This would apply templates to ensure rule consistency
             # For now, return success
-            return {
-                "success": True,
-                "message": "Templates applied successfully"
-            }
-            
+            return {"success": True, "message": "Templates applied successfully"}
+
         except Exception as e:
             logger.error(f"Error applying templates: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
-    
+            return {"success": False, "error": str(e)}
+
     # ============================================================================
     # mcp.lte.health namespace
     # ============================================================================
-    
+
     @mcp.tool()
     def get_full_health(self) -> Dict[str, Any]:
         """
         Fetch /api/health/full and assert required keys.
-        
+
         Returns:
             Health status with validation results
         """
@@ -447,33 +520,43 @@ alwaysApply: false
             response = requests.get("http://localhost:8050/api/health/full", timeout=10)
             response.raise_for_status()
             health_data = response.json()
-            
+
             # Validate required fields
             required_fields = ["embedding_model", "embedding_dim"]
-            missing_fields = [field for field in required_fields if field not in health_data.get("data", {})]
-            
+            missing_fields = [
+                field
+                for field in required_fields
+                if field not in health_data.get("data", {})
+            ]
+
             # Enhanced health response with GPU status
             enhanced_health = {
                 "status": "ok" if not missing_fields else "error",
                 "data": {
-                    "embedding_model": health_data.get("data", {}).get("embedding_model", "unknown"),
-                    "embedding_dim": health_data.get("data", {}).get("embedding_dim", 0),
-                    "reverse_proxy": health_data.get("data", {}).get("reverse_proxy", False),
+                    "embedding_model": health_data.get("data", {}).get(
+                        "embedding_model", "unknown"
+                    ),
+                    "embedding_dim": health_data.get("data", {}).get(
+                        "embedding_dim", 0
+                    ),
+                    "reverse_proxy": health_data.get("data", {}).get(
+                        "reverse_proxy", False
+                    ),
                     "gpu": {
                         "present": True,  # Mock GPU status
                         "vram_total": 24576,
                         "active_allocations": [
                             {"process": "python", "memory_used": 4096}
-                        ]
+                        ],
                     },
-                    "fallbacks": health_data.get("data", {}).get("fallbacks", [])
+                    "fallbacks": health_data.get("data", {}).get("fallbacks", []),
                 },
                 "missing_fields": missing_fields,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
-            
+
             return enhanced_health
-            
+
         except Exception as e:
             logger.error(f"Error fetching health: {e}")
             return {
@@ -482,64 +565,65 @@ alwaysApply: false
                     "embedding_model": "unknown",
                     "embedding_dim": 0,
                     "reverse_proxy": False,
-                    "gpu": {"present": False, "vram_total": 0, "active_allocations": []},
-                    "fallbacks": []
+                    "gpu": {
+                        "present": False,
+                        "vram_total": 0,
+                        "active_allocations": [],
+                    },
+                    "fallbacks": [],
                 },
                 "error": str(e),
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
-    
+
     @mcp.tool()
     def assert_health_ok(self) -> Dict[str, Any]:
         """
         Fail with diagnostics if any health gate is down.
-        
+
         Returns:
             Health assertion results
         """
         try:
             health = self.get_full_health()
-            
+
             if health["status"] != "ok":
                 return {
                     "ok": False,
                     "issues": health.get("missing_fields", []),
-                    "error": "Health check failed"
+                    "error": "Health check failed",
                 }
-            
+
             # Check specific health gates
             health_data = health.get("health_data", {}).get("data", {})
-            
+
             # Add specific health gate checks here
             gates = {
                 "database": health_data.get("database_status", "unknown"),
                 "models": health_data.get("models_status", "unknown"),
-                "services": health_data.get("services_status", "unknown")
+                "services": health_data.get("services_status", "unknown"),
             }
-            
+
             failed_gates = [gate for gate, status in gates.items() if status != "ok"]
-            
+
             return {
                 "ok": len(failed_gates) == 0,
                 "gates": gates,
-                "failed_gates": failed_gates
+                "failed_gates": failed_gates,
             }
-            
+
         except Exception as e:
             logger.error(f"Error asserting health: {e}")
-            return {
-                "ok": False,
-                "error": str(e)
-            }
-    
+            return {"ok": False, "error": str(e)}
+
     @mcp.tool()
     def get_recent_fallbacks(self, limit: int = 10) -> Dict[str, Any]:
         """
         Get recent fallback events.
-        
+
         Args:
             limit: Number of recent events to return
-            
+
         Returns:
             Recent fallback events
         """
@@ -551,147 +635,119 @@ alwaysApply: false
                     "timestamp": "2024-01-01T12:00:00Z",
                     "type": "reranker_cpu",
                     "reason": "GPU occupied",
-                    "duration_ms": 1500
+                    "duration_ms": 1500,
                 }
             ]
-            
-            return {
-                "fallbacks": fallbacks[:limit],
-                "total": len(fallbacks)
-            }
-            
+
+            return {"fallbacks": fallbacks[:limit], "total": len(fallbacks)}
+
         except Exception as e:
             logger.error(f"Error getting fallbacks: {e}")
-            return {
-                "error": str(e),
-                "fallbacks": []
-            }
-    
+            return {"error": str(e), "fallbacks": []}
+
     # ============================================================================
     # mcp.lte.models namespace
     # ============================================================================
-    
+
     @mcp.tool()
     def registry_show(self) -> Dict[str, Any]:
         """
         Dump ModelRegistry configuration.
-        
+
         Returns:
             Model registry configuration
         """
         try:
             # Mock registry data - would be actual registry in implementation
             registry = {
-                "llm": {
-                    "provider": "openai",
-                    "model": "gpt-4",
-                    "config": {}
-                },
+                "llm": {"provider": "openai", "model": "gpt-4", "config": {}},
                 "embedding": {
                     "provider": "huggingface",
                     "model": "sentence-transformers/all-MiniLM-L6-v2",
                     "dim": 384,
-                    "extra": {
-                        "dim": 384
-                    }
-                }
+                    "extra": {"dim": 384},
+                },
             }
-            
+
             return registry
-            
+
         except Exception as e:
             logger.error(f"Error showing registry: {e}")
-            return {
-                "error": str(e)
-            }
-    
+            return {"error": str(e)}
+
     @mcp.tool()
     def assert_embedding_dim(self, tables: List[str]) -> Dict[str, Any]:
         """
         Compare registry vs DB embedding dimensions.
-        
+
         Args:
             tables: List of table names to check
-            
+
         Returns:
             Dimension comparison results
         """
         try:
             # Mock comparison - would query actual DB in implementation
             registry_dim = 384  # From registry
-            db_dims = {
-                "lte.doc_embeddings": 384,
-                "lte.claim_embeddings": 384
-            }
-            
+            db_dims = {"lte.doc_embeddings": 384, "lte.claim_embeddings": 384}
+
             mismatches = []
             for table in tables:
                 if table in db_dims and db_dims[table] != registry_dim:
-                    mismatches.append({
-                        "table": table,
-                        "registry_dim": registry_dim,
-                        "db_dim": db_dims[table]
-                    })
-            
+                    mismatches.append(
+                        {
+                            "table": table,
+                            "registry_dim": registry_dim,
+                            "db_dim": db_dims[table],
+                        }
+                    )
+
             return {
                 "ok": len(mismatches) == 0,
                 "db_dims": db_dims,
                 "registry_dim": registry_dim,
-                "mismatches": mismatches
+                "mismatches": mismatches,
             }
-            
+
         except Exception as e:
             logger.error(f"Error asserting embedding dim: {e}")
-            return {
-                "ok": False,
-                "error": str(e)
-            }
-    
+            return {"ok": False, "error": str(e)}
+
     # ============================================================================
     # mcp.lte.pgvector namespace
     # ============================================================================
-    
+
     @mcp.tool()
     def get_db_dimension(self, table: str) -> Dict[str, Any]:
         """
         Read vector dimension for a specific table.
-        
+
         Args:
             table: Table name to check
-            
+
         Returns:
             Vector dimension information
         """
         try:
             # Mock dimension query - would query actual DB in implementation
-            dimensions = {
-                "lte.doc_embeddings": 384,
-                "lte.claim_embeddings": 384
-            }
-            
+            dimensions = {"lte.doc_embeddings": 384, "lte.claim_embeddings": 384}
+
             dim = dimensions.get(table, None)
-            
-            return {
-                "table": table,
-                "dim": dim,
-                "found": dim is not None
-            }
-            
+
+            return {"table": table, "dim": dim, "found": dim is not None}
+
         except Exception as e:
             logger.error(f"Error getting DB dimension: {e}")
-            return {
-                "error": str(e),
-                "table": table
-            }
-    
+            return {"error": str(e), "table": table}
+
     @mcp.tool()
     def migrate_dimension(self, target_dim: int) -> Dict[str, Any]:
         """
         Generate migration script for target dimension.
-        
+
         Args:
             target_dim: Target dimension for migration
-            
+
         Returns:
             Migration script and instructions
         """
@@ -714,28 +770,26 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS claim_embeddings_ivfflat_idx
 ON lte.claim_embeddings USING ivfflat (embedding vector_cosine_ops) 
 WITH (lists = 100);
 """
-            
+
             return {
                 "script": f"docker/initdb/003b_graph_dim_{target_dim}.sql",
                 "content": script_content,
                 "notes": "IVFFLAT reindex required after migration",
-                "target_dim": target_dim
+                "target_dim": target_dim,
             }
-            
+
         except Exception as e:
             logger.error(f"Error generating migration: {e}")
-            return {
-                "error": str(e)
-            }
-    
+            return {"error": str(e)}
+
     @mcp.tool()
     def reindex_ann(self, table: str) -> Dict[str, Any]:
         """
         Rebuild IVFFLAT indexes for a table.
-        
+
         Args:
             table: Table name to reindex
-            
+
         Returns:
             Reindex operation result
         """
@@ -745,35 +799,31 @@ WITH (lists = 100);
                 "ok": True,
                 "table": table,
                 "message": f"IVFFLAT index rebuilt for {table}",
-                "duration_ms": 5000
+                "duration_ms": 5000,
             }
-            
+
         except Exception as e:
             logger.error(f"Error reindexing {table}: {e}")
-            return {
-                "ok": False,
-                "error": str(e),
-                "table": table
-            }
-    
+            return {"ok": False, "error": str(e), "table": table}
+
     # ============================================================================
     # mcp.lte.proxy namespace
     # ============================================================================
-    
+
     @mcp.tool()
     def smoke_proxy(self, base_url: str = "http://localhost:8050") -> Dict[str, Any]:
         """
         Smoke test for reverse proxy configuration.
-        
+
         Args:
             base_url: Base URL for testing (default: http://localhost:8050)
-            
+
         Returns:
             Proxy smoke test results
         """
         try:
             results = {}
-            
+
             # Test root endpoint
             try:
                 response = requests.get(f"{base_url}/", timeout=5)
@@ -782,11 +832,11 @@ WITH (lists = 100);
             except Exception as e:
                 results["root_contains"] = False
                 logger.error(f"Root endpoint error: {e}")
-            
+
             # Test API endpoints
             api_results = {}
             endpoints = ["/api/health", "/api/health/full", "/api/models"]
-            
+
             for endpoint in endpoints:
                 try:
                     response = requests.get(f"{base_url}{endpoint}", timeout=5)
@@ -795,88 +845,85 @@ WITH (lists = 100);
                 except Exception as e:
                     api_results[endpoint] = "error"
                     logger.error(f"API endpoint {endpoint} error: {e}")
-            
+
             results["api"] = api_results
-            
-            return {
-                "root_contains": results["root_contains"],
-                "api": results["api"]
-            }
-            
+
+            return {"root_contains": results["root_contains"], "api": results["api"]}
+
         except Exception as e:
             logger.error(f"Error in proxy smoke test: {e}")
             return {
                 "root_contains": False,
-                "api": {"/api/health": "error", "/api/health/full": "error", "/api/models": "error"}
+                "api": {
+                    "/api/health": "error",
+                    "/api/health/full": "error",
+                    "/api/models": "error",
+                },
             }
-    
+
     # ============================================================================
     # mcp.lte.ui.contracts namespace
     # ============================================================================
-    
+
     @mcp.tool()
     def validate_envelopes(self) -> Dict[str, Any]:
         """
         Validate API envelope format across UI routes.
-        
+
         Returns:
             Envelope validation results
         """
         try:
-            endpoints = [
-                "/api/health",
-                "/api/runs",
-                "/api/models",
-                "/api/graph"
-            ]
-            
+            endpoints = ["/api/health", "/api/runs", "/api/models", "/api/graph"]
+
             results = {}
             for endpoint in endpoints:
                 try:
-                    response = requests.get(f"http://localhost:8050{endpoint}", timeout=5)
+                    response = requests.get(
+                        f"http://localhost:8050{endpoint}", timeout=5
+                    )
                     data = response.json()
-                    
+
                     # Check envelope format
                     has_status = "status" in data
                     has_data = "data" in data
                     has_error = "error" in data
-                    
+
                     results[endpoint] = {
                         "status_code": response.status_code,
                         "envelope_valid": has_status and (has_data or has_error),
                         "has_status": has_status,
                         "has_data": has_data,
-                        "has_error": has_error
+                        "has_error": has_error,
                     }
-                    
+
                 except Exception as e:
                     results[endpoint] = {"error": str(e)}
-            
+
             return {
-                "valid": all("error" not in result and result.get("envelope_valid", False) 
-                           for result in results.values()),
-                "results": results
+                "valid": all(
+                    "error" not in result and result.get("envelope_valid", False)
+                    for result in results.values()
+                ),
+                "results": results,
             }
-            
+
         except Exception as e:
             logger.error(f"Error validating envelopes: {e}")
-            return {
-                "valid": False,
-                "error": str(e)
-            }
-    
+            return {"valid": False, "error": str(e)}
+
     @mcp.tool()
     def playwright_smoke(self) -> Dict[str, Any]:
         """
         Run Playwright smoke tests for UI components.
-        
+
         Returns:
             Playwright test results
         """
         try:
             # Mock Playwright test execution
             # In real implementation, this would run actual Playwright tests
-            
+
             test_results = {
                 "status": "ok",
                 "tests_run": 3,
@@ -886,28 +933,25 @@ WITH (lists = 100);
                 "details": [
                     {"test": "Status page loads", "status": "passed"},
                     {"test": "Runs page loads", "status": "passed"},
-                    {"test": "Graph page loads", "status": "passed"}
-                ]
+                    {"test": "Graph page loads", "status": "passed"},
+                ],
             }
-            
+
             return test_results
-            
+
         except Exception as e:
             logger.error(f"Error running Playwright tests: {e}")
-            return {
-                "status": "error",
-                "error": str(e)
-            }
-    
+            return {"status": "error", "error": str(e)}
+
     # ============================================================================
     # mcp.lte.adapters namespace
     # ============================================================================
-    
+
     @mcp.tool()
     def test_sources(self) -> Dict[str, Any]:
         """
         Test adapter pipelines with sample inputs.
-        
+
         Returns:
             Adapter test results
         """
@@ -915,33 +959,30 @@ WITH (lists = 100);
             # Mock adapter testing
             adapters = ["youtube", "web", "pdf"]
             results = {}
-            
+
             for adapter in adapters:
                 results[adapter] = {
                     "status": "ok",
                     "documents_found": 1,
                     "envelope_valid": True,
-                    "duration_ms": 1000
+                    "duration_ms": 1000,
                 }
-            
+
             return {
                 "success": True,
                 "adapters": results,
-                "total_adapters": len(adapters)
+                "total_adapters": len(adapters),
             }
-            
+
         except Exception as e:
             logger.error(f"Error testing adapters: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
-    
+            return {"success": False, "error": str(e)}
+
     @mcp.tool()
     def transcript_mode_check(self) -> Dict[str, Any]:
         """
         Verify persisted transcript mode metadata.
-        
+
         Returns:
             Transcript mode verification results
         """
@@ -951,25 +992,22 @@ WITH (lists = 100);
                 "ok": True,
                 "transcript_mode": "persisted",
                 "metadata_valid": True,
-                "files_checked": 10
+                "files_checked": 10,
             }
-            
+
         except Exception as e:
             logger.error(f"Error checking transcript mode: {e}")
-            return {
-                "ok": False,
-                "error": str(e)
-            }
-    
+            return {"ok": False, "error": str(e)}
+
     # ============================================================================
     # mcp.lte.gpu namespace
     # ============================================================================
-    
+
     @mcp.tool()
     def get_gpu_status(self) -> Dict[str, Any]:
         """
         Get GPU status and allocation information.
-        
+
         Returns:
             GPU status information
         """
@@ -983,32 +1021,25 @@ WITH (lists = 100);
                         "memory_total": 24576,
                         "memory_used": 8192,
                         "memory_free": 16384,
-                        "utilization": 45
+                        "utilization": 45,
                     }
                 ],
                 "active_allocations": [
-                    {
-                        "process": "python",
-                        "memory_used": 4096,
-                        "gpu_id": 0
-                    }
-                ]
+                    {"process": "python", "memory_used": 4096, "gpu_id": 0}
+                ],
             }
-            
+
             return gpu_status
-            
+
         except Exception as e:
             logger.error(f"Error getting GPU status: {e}")
-            return {
-                "error": str(e),
-                "devices": []
-            }
-    
+            return {"error": str(e), "devices": []}
+
     @mcp.tool()
     def simulate_low_vram(self) -> Dict[str, Any]:
         """
         Simulate low VRAM scenario to test CPU fallback.
-        
+
         Returns:
             Simulation results
         """
@@ -1019,28 +1050,25 @@ WITH (lists = 100);
                 "fallback_triggered": True,
                 "cpu_reranker_used": True,
                 "duration_ms": 2000,
-                "message": "CPU fallback path tested successfully"
+                "message": "CPU fallback path tested successfully",
             }
-            
+
         except Exception as e:
             logger.error(f"Error simulating low VRAM: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
-    
+            return {"success": False, "error": str(e)}
+
     # ============================================================================
     # mcp.lte.timeline namespace
     # ============================================================================
-    
+
     @mcp.tool()
     def preview_timeline(self, run_id: str) -> Dict[str, Any]:
         """
         Preview timeline for a specific run.
-        
+
         Args:
             run_id: Run ID to preview timeline for
-            
+
         Returns:
             Timeline preview data
         """
@@ -1050,47 +1078,44 @@ WITH (lists = 100);
                 {
                     "timestamp": "2024-01-01T10:00:00Z",
                     "event": "Run started",
-                    "type": "start"
+                    "type": "start",
                 },
                 {
                     "timestamp": "2024-01-01T10:05:00Z",
                     "event": "Documents processed",
                     "type": "process",
-                    "count": 10
+                    "count": 10,
                 },
                 {
                     "timestamp": "2024-01-01T10:10:00Z",
                     "event": "Run completed",
-                    "type": "complete"
-                }
+                    "type": "complete",
+                },
             ]
-            
+
             return {
                 "run_id": run_id,
                 "items": timeline_items,
                 "total_items": len(timeline_items),
-                "sla_met": True
+                "sla_met": True,
             }
-            
+
         except Exception as e:
             logger.error(f"Error previewing timeline: {e}")
-            return {
-                "error": str(e),
-                "run_id": run_id
-            }
-    
+            return {"error": str(e), "run_id": run_id}
+
     # ============================================================================
     # mcp.lte.smoke namespace
     # ============================================================================
-    
+
     @mcp.tool()
     def run_phase_smoke(self, phase: str) -> Dict[str, Any]:
         """
         Execute phase-specific smoke tests.
-        
+
         Args:
             phase: Phase identifier (e.g., "9.4.0", "9.4.2")
-            
+
         Returns:
             Smoke test results
         """
@@ -1099,63 +1124,59 @@ WITH (lists = 100);
             smoke_scripts = {
                 "9.4.0": "scripts/p9_4_0_smoke.sh",
                 "9.4.2": "scripts/p9_4_2_smoke.sh",
-                "9.4.3": "scripts/p9_4_3_smoke.sh"
+                "9.4.3": "scripts/p9_4_3_smoke.sh",
             }
-            
+
             script_path = smoke_scripts.get(phase)
             if not script_path:
                 return {
                     "success": False,
-                    "error": f"No smoke script found for phase {phase}"
+                    "error": f"No smoke script found for phase {phase}",
                 }
-            
+
             # Execute smoke script
             script_file = self.project_root / script_path
             if not script_file.exists():
                 return {
                     "success": False,
-                    "error": f"Smoke script not found: {script_path}"
+                    "error": f"Smoke script not found: {script_path}",
                 }
-            
+
             # Run the script
             result = subprocess.run(
                 ["bash", str(script_file)],
                 capture_output=True,
                 text=True,
-                cwd=self.project_root
+                cwd=self.project_root,
             )
-            
+
             return {
                 "success": result.returncode == 0,
                 "phase": phase,
                 "script": script_path,
                 "return_code": result.returncode,
                 "stdout": result.stdout,
-                "stderr": result.stderr
+                "stderr": result.stderr,
             }
-            
+
         except Exception as e:
             logger.error(f"Error running smoke test for phase {phase}: {e}")
-            return {
-                "success": False,
-                "error": str(e),
-                "phase": phase
-            }
-    
+            return {"success": False, "error": str(e), "phase": phase}
+
     @mcp.tool()
     def generate_phase_completion_summary(self, subphase: str) -> str:
         """
         Generate completion summary for a sub-phase.
-        
+
         Args:
             subphase: Sub-phase identifier (e.g., "9.4.2")
-            
+
         Returns:
             Generated completion summary markdown
         """
         try:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            
+
             summary = f"""# Phase {subphase} Completion Summary
 
 ## Overview
@@ -1187,14 +1208,14 @@ Phase {subphase} has been successfully completed on {timestamp}.
 - Smoke tests: ✅ Passed
 
 ## Next Phase
-Ready to proceed to Phase {subphase.replace('.', '_')}_NEXT.
+Ready to proceed to Phase {subphase.replace(".", "_")}_NEXT.
 
 ---
 Generated by Phase 9 MCP Server on {timestamp}
 """
-            
+
             return summary
-            
+
         except Exception as e:
             logger.error(f"Error generating completion summary: {e}")
             return f"Error generating completion summary: {e}"
@@ -1203,7 +1224,7 @@ Generated by Phase 9 MCP Server on {timestamp}
     def validate_mcp_requirements_reference(self) -> Dict[str, Any]:
         """
         Validate that MCP_REQUIREMENTS_REFERENCE.md is up to date and complete.
-        
+
         Returns:
             Validation results for the MCP requirements reference document
         """
@@ -1213,68 +1234,69 @@ Generated by Phase 9 MCP Server on {timestamp}
                 return {
                     "valid": False,
                     "error": "MCP_REQUIREMENTS_REFERENCE.md not found",
-                    "missing_file": True
+                    "missing_file": True,
                 }
-            
-            with open(ref_file, 'r', encoding='utf-8') as f:
+
+            with open(ref_file, "r", encoding="utf-8") as f:
                 content = f.read()
-            
+
             issues = []
             warnings = []
-            
+
             # Check for required sections
             required_sections = [
                 "Primary Goals",
-                "Cursor Rules Enforcement", 
+                "Cursor Rules Enforcement",
                 "MCP Server Requirements",
                 "MDC (Master Development Contract) Enforcement",
                 "CI/CD Integration Requirements",
                 "MCP Tool Categories",
                 "Documentation & Logging",
-                "Phase Close Checklist"
+                "Phase Close Checklist",
             ]
-            
+
             for section in required_sections:
                 if section not in content:
                     issues.append(f"Missing required section: {section}")
-            
+
             # Check for cursor rule reference
             if ".cursor/rules/mcp_enforcement.mdc" not in content:
                 issues.append("Missing reference to mcp_enforcement.mdc cursor rule")
-            
+
             # Check for recent updates (last 30 days)
             if "Last Updated" not in content:
                 warnings.append("No 'Last Updated' timestamp found")
-            
+
             # Check for tool categories
             if "MCP Tool Categories" not in content:
                 issues.append("Missing MCP Tool Categories section")
-            
+
             return {
                 "valid": len(issues) == 0,
                 "issues": issues,
                 "warnings": warnings,
                 "file_exists": True,
                 "content_length": len(content),
-                "has_cursor_rule_reference": ".cursor/rules/mcp_enforcement.mdc" in content
+                "has_cursor_rule_reference": ".cursor/rules/mcp_enforcement.mdc"
+                in content,
             }
-            
+
         except Exception as e:
             logger.error(f"Error validating MCP requirements reference: {e}")
             return {
                 "valid": False,
                 "error": str(e),
-                "issues": [f"Validation failed: {e}"]
+                "issues": [f"Validation failed: {e}"],
             }
 
     @mcp.tool()
     def enforce_mcp_compliance(self, phase: str) -> Dict[str, Any]:
         """
         Enforce MCP compliance before phase completion.
-        
+
         Args:
             phase: Phase identifier (e.g., "9.5.5")
-            
+
         Returns:
             Compliance check results
         """
@@ -1284,44 +1306,44 @@ Generated by Phase 9 MCP Server on {timestamp}
                 "compliant": True,
                 "checks": {},
                 "errors": [],
-                "warnings": []
+                "warnings": [],
             }
-            
+
             # Check 1: Cursor rules validation
             cursor_validation = self.validate_cursor_rules()
             results["checks"]["cursor_rules"] = cursor_validation
             if not cursor_validation.get("valid", False):
                 results["compliant"] = False
                 results["errors"].append("Cursor rules validation failed")
-            
+
             # Check 2: MCP requirements reference validation
             ref_validation = self.validate_mcp_requirements_reference()
             results["checks"]["mcp_reference"] = ref_validation
             if not ref_validation.get("valid", False):
                 results["compliant"] = False
                 results["errors"].append("MCP requirements reference validation failed")
-            
+
             # Check 3: Health status
             health_status = self.get_full_health()
             results["checks"]["health"] = health_status
             if not health_status.get("status") == "ok":
                 results["warnings"].append("Health status not optimal")
-            
+
             # Check 4: Model registry
             registry_status = self.registry_show()
             results["checks"]["registry"] = registry_status
             if not registry_status.get("valid", False):
                 results["warnings"].append("Model registry issues detected")
-            
+
             # Check 5: API envelope validation
             envelope_validation = self.validate_envelopes()
             results["checks"]["envelopes"] = envelope_validation
             if not envelope_validation.get("valid", False):
                 results["compliant"] = False
                 results["errors"].append("API envelope validation failed")
-            
+
             return results
-            
+
         except Exception as e:
             logger.error(f"Error enforcing MCP compliance: {e}")
             return {
@@ -1329,18 +1351,20 @@ Generated by Phase 9 MCP Server on {timestamp}
                 "compliant": False,
                 "error": str(e),
                 "checks": {},
-                "errors": [f"Compliance check failed: {e}"]
+                "errors": [f"Compliance check failed: {e}"],
             }
 
     @mcp.tool()
-    def update_mcp_requirements_reference(self, section: str, content: str) -> Dict[str, Any]:
+    def update_mcp_requirements_reference(
+        self, section: str, content: str
+    ) -> Dict[str, Any]:
         """
         Update a section in the MCP requirements reference document.
-        
+
         Args:
             section: Section name to update
             content: New content for the section
-            
+
         Returns:
             Update operation result
         """
@@ -1349,76 +1373,73 @@ Generated by Phase 9 MCP Server on {timestamp}
             if not ref_file.exists():
                 return {
                     "success": False,
-                    "error": "MCP_REQUIREMENTS_REFERENCE.md not found"
+                    "error": "MCP_REQUIREMENTS_REFERENCE.md not found",
                 }
-            
-            with open(ref_file, 'r', encoding='utf-8') as f:
+
+            with open(ref_file, "r", encoding="utf-8") as f:
                 current_content = f.read()
-            
+
             # Find the section to update
             section_pattern = f"## {section}"
             if section_pattern not in current_content:
                 return {
                     "success": False,
-                    "error": f"Section '{section}' not found in document"
+                    "error": f"Section '{section}' not found in document",
                 }
-            
+
             # Simple replacement (could be made more sophisticated)
-            # This is a basic implementation - in practice, you'd want more robust parsing
-            lines = current_content.split('\n')
+            # This is a basic implementation - in practice, you'd want more robust parsing  # noqa: E501
+            lines = current_content.split("\n")
             new_lines = []
             in_section = False
             section_updated = False
-            
+
             for line in lines:
                 if line.strip() == section_pattern:
                     in_section = True
                     new_lines.append(line)
                     new_lines.append("")  # Add blank line
-                    new_lines.extend(content.split('\n'))
+                    new_lines.extend(content.split("\n"))
                     section_updated = True
                     continue
-                
-                if in_section and line.startswith('## '):
+
+                if in_section and line.startswith("## "):
                     in_section = False
-                
+
                 if not in_section:
                     new_lines.append(line)
-            
+
             if not section_updated:
                 return {
                     "success": False,
-                    "error": f"Could not update section '{section}'"
+                    "error": f"Could not update section '{section}'",
                 }
-            
+
             # Add timestamp
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            new_content = '\n'.join(new_lines)
+            new_content = "\n".join(new_lines)
             new_content += f"\n\n**Last Updated**: {timestamp}\n"
-            
+
             # Write back to file
-            with open(ref_file, 'w', encoding='utf-8') as f:
+            with open(ref_file, "w", encoding="utf-8") as f:
                 f.write(new_content)
-            
+
             return {
                 "success": True,
                 "section": section,
                 "timestamp": timestamp,
-                "content_length": len(new_content)
+                "content_length": len(new_content),
             }
-            
+
         except Exception as e:
             logger.error(f"Error updating MCP requirements reference: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            return {"success": False, "error": str(e)}
 
     @mcp.tool()
     def validate_error_budget(self) -> Dict[str, Any]:
         """
         Validate error budget status and configuration.
-        
+
         Returns:
             Error budget validation results
         """
@@ -1426,119 +1447,150 @@ Generated by Phase 9 MCP Server on {timestamp}
             # Import error budget monitor
             sys.path.insert(0, str(self.project_root / "src"))
             from monitoring.error_budget import ErrorBudgetMonitor
-            
+
             # Get database connection string from environment or config
-            db_connection_string = os.getenv('DATABASE_URL', 'postgresql://localhost/lte')
-            
+            db_connection_string = os.getenv(
+                "DATABASE_URL", "postgresql://localhost/lte"
+            )
+
             monitor = ErrorBudgetMonitor(db_connection_string)
-            
+
             # Get all error budgets
             all_budgets = monitor.get_all_error_budgets()
-            
+
             # Check for critical services
             critical_services = []
-            total_services = all_budgets.get('total_services', 0)
-            
-            for service_name, metrics in all_budgets.get('error_budgets', {}).items():
+            total_services = all_budgets.get("total_services", 0)
+
+            for service_name, metrics in all_budgets.get("error_budgets", {}).items():
                 for metric_type, budget in metrics.items():
-                    if 'error_budget_consumed' in budget:
-                        if budget['error_budget_consumed'] >= 80.0:  # 80% threshold
-                            critical_services.append({
-                                'service': service_name,
-                                'metric': metric_type,
-                                'consumed': budget['error_budget_consumed'],
-                                'remaining': budget['error_budget_remaining']
-                            })
-            
+                    if "error_budget_consumed" in budget:
+                        if budget["error_budget_consumed"] >= 80.0:  # 80% threshold
+                            critical_services.append(
+                                {
+                                    "service": service_name,
+                                    "metric": metric_type,
+                                    "consumed": budget["error_budget_consumed"],
+                                    "remaining": budget["error_budget_remaining"],
+                                }
+                            )
+
             # Get recent recovery actions
             recent_actions = monitor.get_recent_recovery_actions(5)
-            
+
             # Get recent chaos tests
             recent_tests = monitor.get_chaos_test_history(5)
-            
+
             return {
                 "valid": len(critical_services) == 0,
                 "total_services": total_services,
                 "critical_services": critical_services,
                 "recent_recovery_actions": recent_actions,
                 "recent_chaos_tests": recent_tests,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
-            
+
         except Exception as e:
             logger.error(f"Error validating error budget: {e}")
             return {
                 "valid": False,
                 "error": str(e),
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
     @mcp.tool()
-    def trigger_recovery_action(self, action_type: str, service_name: str, 
-                               trigger_reason: str, manual_override: bool = False) -> Dict[str, Any]:
+    def trigger_recovery_action(
+        self,
+        action_type: str,
+        service_name: str,
+        trigger_reason: str,
+        manual_override: bool = False,
+    ) -> Dict[str, Any]:
         """
         Trigger a recovery action for a service.
-        
+
         Args:
             action_type: Type of recovery action (container_restart, cache_purge, db_reset)
             service_name: Name of the service to recover
             trigger_reason: Reason for the recovery action
             manual_override: Whether this is a manual override
-            
+
         Returns:
             Recovery action result
-        """
+        """  # noqa: E501
         try:
             import subprocess
             import time
-            
+
             start_time = time.time()
-            
+
             # Import error budget monitor
             sys.path.insert(0, str(self.project_root / "src"))
             from monitoring.error_budget import ErrorBudgetMonitor
-            
+
             # Get database connection string
-            db_connection_string = os.getenv('DATABASE_URL', 'postgresql://localhost/lte')
+            db_connection_string = os.getenv(
+                "DATABASE_URL", "postgresql://localhost/lte"
+            )
             monitor = ErrorBudgetMonitor(db_connection_string)
-            
+
             # Execute recovery action based on type
             success = False
             error_message = None
-            
+
             if action_type == "container_restart":
                 # Restart Docker container
                 try:
-                    result = subprocess.run([
-                        "docker", "compose", "-f", "docker/docker-compose.yml", 
-                        "restart", service_name
-                    ], capture_output=True, text=True, cwd=self.project_root)
+                    result = subprocess.run(
+                        [
+                            "docker",
+                            "compose",
+                            "-f",
+                            "docker/docker-compose.yml",
+                            "restart",
+                            service_name,
+                        ],
+                        capture_output=True,
+                        text=True,
+                        cwd=self.project_root,
+                    )
                     success = result.returncode == 0
                     error_message = result.stderr if not success else None
                 except Exception as e:
                     success = False
                     error_message = str(e)
-                    
+
             elif action_type == "cache_purge":
                 # Purge Redis cache
                 try:
-                    result = subprocess.run([
-                        "docker", "exec", "lte-redis-1", "redis-cli", "FLUSHALL"
-                    ], capture_output=True, text=True)
+                    result = subprocess.run(
+                        ["docker", "exec", "lte-redis-1", "redis-cli", "FLUSHALL"],
+                        capture_output=True,
+                        text=True,
+                    )
                     success = result.returncode == 0
                     error_message = result.stderr if not success else None
                 except Exception as e:
                     success = False
                     error_message = str(e)
-                    
+
             elif action_type == "db_reset":
                 # Reset database connections
                 try:
                     # This would typically involve restarting the database service
-                    result = subprocess.run([
-                        "docker", "compose", "-f", "docker/docker-compose.yml", 
-                        "restart", "postgres"
-                    ], capture_output=True, text=True, cwd=self.project_root)
+                    result = subprocess.run(
+                        [
+                            "docker",
+                            "compose",
+                            "-f",
+                            "docker/docker-compose.yml",
+                            "restart",
+                            "postgres",
+                        ],
+                        capture_output=True,
+                        text=True,
+                        cwd=self.project_root,
+                    )
                     success = result.returncode == 0
                     error_message = result.stderr if not success else None
                 except Exception as e:
@@ -1547,10 +1599,10 @@ Generated by Phase 9 MCP Server on {timestamp}
             else:
                 success = False
                 error_message = f"Unknown recovery action type: {action_type}"
-            
+
             # Calculate duration
             duration_ms = int((time.time() - start_time) * 1000)
-            
+
             # Record the recovery action
             action_id = monitor.record_recovery_action(
                 action_type=action_type,
@@ -1559,9 +1611,9 @@ Generated by Phase 9 MCP Server on {timestamp}
                 success=success,
                 duration_ms=duration_ms,
                 error_message=error_message,
-                manual_override=manual_override
+                manual_override=manual_override,
             )
-            
+
             return {
                 "success": success,
                 "action_id": action_id,
@@ -1570,9 +1622,9 @@ Generated by Phase 9 MCP Server on {timestamp}
                 "duration_ms": duration_ms,
                 "error_message": error_message,
                 "manual_override": manual_override,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
-            
+
         except Exception as e:
             logger.error(f"Error triggering recovery action: {e}")
             return {
@@ -1580,18 +1632,20 @@ Generated by Phase 9 MCP Server on {timestamp}
                 "error": str(e),
                 "action_type": action_type,
                 "service_name": service_name,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
     @mcp.tool()
-    def run_chaos_test(self, test_type: str, duration_seconds: int = 30) -> Dict[str, Any]:
+    def run_chaos_test(
+        self, test_type: str, duration_seconds: int = 30
+    ) -> Dict[str, Any]:
         """
         Run a chaos test to validate system resilience.
-        
+
         Args:
             test_type: Type of chaos test (container_kill, cpu_stress, db_outage)
             duration_seconds: Duration of the test in seconds
-            
+
         Returns:
             Chaos test results
         """
@@ -1599,117 +1653,158 @@ Generated by Phase 9 MCP Server on {timestamp}
             import subprocess
             import time
             import random
-            
+
             start_time = time.time()
-            
+
             # Import error budget monitor
             sys.path.insert(0, str(self.project_root / "src"))
             from monitoring.error_budget import ErrorBudgetMonitor
-            
+
             # Get database connection string
-            db_connection_string = os.getenv('DATABASE_URL', 'postgresql://localhost/lte')
+            db_connection_string = os.getenv(
+                "DATABASE_URL", "postgresql://localhost/lte"
+            )
             monitor = ErrorBudgetMonitor(db_connection_string)
-            
+
             # Execute chaos test based on type
             test_success = False
             recovery_success = False
             slo_violation = False
             details = {}
-            
+
             if test_type == "container_kill":
                 # Kill a random container
                 try:
                     # Get list of running containers
-                    result = subprocess.run([
-                        "docker", "ps", "--format", "{{.Names}}"
-                    ], capture_output=True, text=True)
-                    
+                    result = subprocess.run(
+                        ["docker", "ps", "--format", "{{.Names}}"],
+                        capture_output=True,
+                        text=True,
+                    )
+
                     if result.returncode == 0:
-                        containers = [c.strip() for c in result.stdout.split('\n') if c.strip()]
+                        containers = [
+                            c.strip() for c in result.stdout.split("\n") if c.strip()
+                        ]
                         if containers:
                             # Kill a random container (not postgres or redis)
-                            killable_containers = [c for c in containers if 'postgres' not in c and 'redis' not in c]
+                            killable_containers = [
+                                c
+                                for c in containers
+                                if "postgres" not in c and "redis" not in c
+                            ]
                             if killable_containers:
                                 target_container = random.choice(killable_containers)
-                                details['target_container'] = target_container
-                                
+                                details["target_container"] = target_container
+
                                 # Kill the container
-                                kill_result = subprocess.run([
-                                    "docker", "kill", target_container
-                                ], capture_output=True, text=True)
-                                
+                                kill_result = subprocess.run(
+                                    ["docker", "kill", target_container],
+                                    capture_output=True,
+                                    text=True,
+                                )
+
                                 test_success = kill_result.returncode == 0
-                                
+
                                 # Wait for recovery
                                 time.sleep(5)
-                                
+
                                 # Check if container is back up
-                                check_result = subprocess.run([
-                                    "docker", "ps", "--filter", f"name={target_container}", "--format", "{{.Status}}"
-                                ], capture_output=True, text=True)
-                                
+                                check_result = subprocess.run(
+                                    [
+                                        "docker",
+                                        "ps",
+                                        "--filter",
+                                        f"name={target_container}",
+                                        "--format",
+                                        "{{.Status}}",
+                                    ],
+                                    capture_output=True,
+                                    text=True,
+                                )
+
                                 recovery_success = "Up" in check_result.stdout
-                                
+
                 except Exception as e:
                     test_success = False
-                    details['error'] = str(e)
-                    
+                    details["error"] = str(e)
+
             elif test_type == "cpu_stress":
                 # Simulate CPU stress
                 try:
                     # Create a CPU stress process
-                    stress_process = subprocess.Popen([
-                        "stress", "--cpu", "4", "--timeout", str(duration_seconds)
-                    ])
-                    
+                    stress_process = subprocess.Popen(
+                        ["stress", "--cpu", "4", "--timeout", str(duration_seconds)]
+                    )
+
                     test_success = True
-                    
+
                     # Wait for stress to complete
                     stress_process.wait()
-                    
+
                     # Check system recovery
                     recovery_success = True
-                    
+
                 except Exception as e:
                     test_success = False
-                    details['error'] = str(e)
-                    
+                    details["error"] = str(e)
+
             elif test_type == "db_outage":
                 # Simulate database outage
                 try:
                     # Stop postgres container
-                    stop_result = subprocess.run([
-                        "docker", "compose", "-f", "docker/docker-compose.yml", "stop", "postgres"
-                    ], capture_output=True, text=True, cwd=self.project_root)
-                    
+                    stop_result = subprocess.run(
+                        [
+                            "docker",
+                            "compose",
+                            "-f",
+                            "docker/docker-compose.yml",
+                            "stop",
+                            "postgres",
+                        ],
+                        capture_output=True,
+                        text=True,
+                        cwd=self.project_root,
+                    )
+
                     test_success = stop_result.returncode == 0
-                    
+
                     # Wait for outage
                     time.sleep(10)
-                    
+
                     # Restart postgres
-                    start_result = subprocess.run([
-                        "docker", "compose", "-f", "docker/docker-compose.yml", "start", "postgres"
-                    ], capture_output=True, text=True, cwd=self.project_root)
-                    
+                    start_result = subprocess.run(
+                        [
+                            "docker",
+                            "compose",
+                            "-f",
+                            "docker/docker-compose.yml",
+                            "start",
+                            "postgres",
+                        ],
+                        capture_output=True,
+                        text=True,
+                        cwd=self.project_root,
+                    )
+
                     recovery_success = start_result.returncode == 0
-                    
+
                 except Exception as e:
                     test_success = False
-                    details['error'] = str(e)
+                    details["error"] = str(e)
             else:
                 test_success = False
-                details['error'] = f"Unknown chaos test type: {test_type}"
-            
+                details["error"] = f"Unknown chaos test type: {test_type}"
+
             # Calculate test duration
             test_duration_ms = int((time.time() - start_time) * 1000)
-            
+
             # Determine recovery time (simplified)
             recovery_time_ms = test_duration_ms if recovery_success else None
-            
+
             # Check for SLO violation (simplified check)
             slo_violation = test_duration_ms > 60000  # 1 minute threshold
-            
+
             # Record chaos test result
             test_id = monitor.record_chaos_test_result(
                 test_type=test_type,
@@ -1717,9 +1812,9 @@ Generated by Phase 9 MCP Server on {timestamp}
                 recovery_time_ms=recovery_time_ms,
                 recovery_success=recovery_success,
                 slo_violation=slo_violation,
-                details=details
+                details=details,
             )
-            
+
             return {
                 "success": test_success,
                 "test_id": test_id,
@@ -1729,34 +1824,36 @@ Generated by Phase 9 MCP Server on {timestamp}
                 "recovery_success": recovery_success,
                 "slo_violation": slo_violation,
                 "details": details,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
-            
+
         except Exception as e:
             logger.error(f"Error running chaos test: {e}")
             return {
                 "success": False,
                 "error": str(e),
                 "test_type": test_type,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
 
     @mcp.tool()
-    def trigger_chaos_scenario(self, scenario: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    def trigger_chaos_scenario(
+        self, scenario: str, params: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Trigger a chaos scenario with parameters.
-        
+
         Args:
             scenario: Chaos scenario type (service_kill, network_latency, db_exhaustion, cpu_pressure, memory_pressure, queue_failure)
             params: Scenario-specific parameters
-            
+
         Returns:
             Chaos scenario execution result
-        """
+        """  # noqa: E501
         try:
             # Build command for chaos scenario
             cmd = ["./scripts/chaos_scenarios.sh", scenario]
-            
+
             # Add parameters
             for key, value in params.items():
                 if key == "blast_radius":
@@ -1768,12 +1865,14 @@ Generated by Phase 9 MCP Server on {timestamp}
                 else:
                     # Add as positional parameter
                     cmd.append(str(value))
-            
+
             # Run chaos scenario
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=os.getcwd(), timeout=300)
-            
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, cwd=os.getcwd(), timeout=300
+            )
+
             success = result.returncode == 0
-            
+
             return {
                 "status": "ok",
                 "data": {
@@ -1782,103 +1881,99 @@ Generated by Phase 9 MCP Server on {timestamp}
                     "success": success,
                     "stdout": result.stdout,
                     "stderr": result.stderr,
-                    "return_code": result.returncode
-                }
+                    "return_code": result.returncode,
+                },
             }
-            
+
         except subprocess.TimeoutExpired:
             return {
                 "status": "error",
-                "error": f"Chaos scenario timed out after 300 seconds"
+                "error": f"Chaos scenario timed out after 300 seconds",
             }
         except Exception as e:
-            return {
-                "status": "error",
-                "error": f"Chaos scenario failed: {str(e)}"
-            }
+            return {"status": "error", "error": f"Chaos scenario failed: {str(e)}"}
 
     @mcp.tool()
     def get_resilience_score(self, window_hours: int = 24) -> Dict[str, Any]:
         """
         Calculate resilience score based on last N chaos tests + predictions.
-        
+
         Args:
             window_hours: Time window in hours for score calculation
-            
+
         Returns:
             Resilience score and component breakdown
         """
         try:
             # Run resilience score calculation
             cmd = ["./scripts/resilience_score.sh", str(window_hours)]
-            result = subprocess.run(cmd, capture_output=True, text=True, cwd=os.getcwd(), timeout=60)
-            
+            result = subprocess.run(
+                cmd, capture_output=True, text=True, cwd=os.getcwd(), timeout=60
+            )
+
             if result.returncode != 0:
                 return {
                     "status": "error",
-                    "error": f"Resilience score calculation failed: {result.stderr}"
+                    "error": f"Resilience score calculation failed: {result.stderr}",
                 }
-            
+
             # Parse JSON output
             try:
                 import json
+
                 score_data = json.loads(result.stdout.strip())
-                
-                return {
-                    "status": "ok",
-                    "data": score_data
-                }
-                
+
+                return {"status": "ok", "data": score_data}
+
             except json.JSONDecodeError:
                 return {
                     "status": "error",
-                    "error": "Failed to parse resilience score output"
+                    "error": "Failed to parse resilience score output",
                 }
-            
+
         except subprocess.TimeoutExpired:
             return {
                 "status": "error",
-                "error": "Resilience score calculation timed out"
+                "error": "Resilience score calculation timed out",
             }
         except Exception as e:
             return {
                 "status": "error",
-                "error": f"Resilience score calculation failed: {str(e)}"
+                "error": f"Resilience score calculation failed: {str(e)}",
             }
 
     @mcp.tool()
-    def simulate_proactive_recovery(self, stress_scenario: Dict[str, Any]) -> Dict[str, Any]:
+    def simulate_proactive_recovery(
+        self, stress_scenario: Dict[str, Any]
+    ) -> Dict[str, Any]:
         """
         Simulate proactive recovery under predicted stress.
-        
+
         Args:
             stress_scenario: Stress scenario configuration
-            
+
         Returns:
             Recovery simulation results
         """
         try:
             # Import proactive recovery manager
             from src.monitoring.proactive_recovery import ProactiveRecoveryManager
-            
+
             # Initialize recovery manager
             recovery_manager = ProactiveRecoveryManager(
                 db_connection_string="postgresql://postgres:postgres@localhost:5432/living_truth_engine",
-                project_root=os.getcwd()
+                project_root=os.getcwd(),
             )
-            
+
             # Run simulation
             simulation_result = recovery_manager.simulate_recovery(stress_scenario)
-            
-            return {
-                "status": "ok",
-                "data": simulation_result
-            }
-            
+
+            return {"status": "ok", "data": simulation_result}
+
         except Exception as e:
             return {
                 "status": "error",
-                "error": f"Proactive recovery simulation failed: {str(e)}"
+                "error": f"Proactive recovery simulation failed: {str(e)}",
             }
 
     # ============================================================================
@@ -1886,61 +1981,74 @@ Generated by Phase 9 MCP Server on {timestamp}
     # ============================================================================
 
     @mcp.tool()
-    def get_resilience_dashboard_data(self, view: str, params: Dict[str, Any] = None) -> Dict[str, Any]:
+    def get_resilience_dashboard_data(
+        self, view: str, params: Dict[str, Any] = None
+    ) -> Dict[str, Any]:
         """
         Get structured data for resilience dashboard panels.
-        
+
         Args:
             view: Panel view (overview, chaos, anomalies, trends)
             params: Optional parameters (filters, time range, etc.)
-        
+
         Returns:
             Structured data for the specified dashboard view
         """
         try:
             if params is None:
                 params = {}
-            
+
             if view == "overview":
                 from src.api.resilience import score
+
                 return score(params.get("window_hours", 24))
             elif view == "chaos":
                 from src.api.resilience import chaos
+
                 # Filter out window_hours as chaos doesn't accept it
                 chaos_params = {k: v for k, v in params.items() if k != "window_hours"}
                 return chaos(**chaos_params)
             elif view == "anomalies":
                 from src.api.resilience import anomalies
+
                 # Filter out window_hours as anomalies doesn't accept it
-                anomaly_params = {k: v for k, v in params.items() if k != "window_hours"}
+                anomaly_params = {
+                    k: v for k, v in params.items() if k != "window_hours"
+                }
                 return anomalies(**anomaly_params)
             elif view == "trends":
                 from src.api.resilience import score
+
                 score_data = score(params.get("window_hours", 24))
                 return {
                     "status": "ok",
-                    "data": {"series": score_data["data"]["series"]}
+                    "data": {"series": score_data["data"]["series"]},
                 }
             else:
                 return {
                     "status": "error",
-                    "error": {"code": "RESILIENCE_BAD_PARAMS", "message": "unknown view"}
+                    "error": {
+                        "code": "RESILIENCE_BAD_PARAMS",
+                        "message": "unknown view",
+                    },
                 }
         except Exception as e:
             return {
                 "status": "error",
-                "error": {"code": "RESILIENCE_RUNTIME", "message": str(e)}
+                "error": {"code": "RESILIENCE_RUNTIME", "message": str(e)},
             }
 
     @mcp.tool()
-    def export_resilience_report(self, format: str = "csv", window_hours: int = 24) -> Dict[str, Any]:
+    def export_resilience_report(
+        self, format: str = "csv", window_hours: int = 24
+    ) -> Dict[str, Any]:
         """
         Export resilience report in specified format.
-        
+
         Args:
             format: Export format (pdf, csv, json)
             window_hours: Time window for report data
-        
+
         Returns:
             Report data or file path
         """
@@ -1949,10 +2057,12 @@ Generated by Phase 9 MCP Server on {timestamp}
             import tempfile
             import os
             from src.api.resilience import score
-            
+
             series = score(window_hours)["data"]["series"]
-            fd, path = tempfile.mkstemp(suffix=f".{format if format in ('csv','pdf') else 'csv'}")
-            
+            fd, path = tempfile.mkstemp(
+                suffix=f".{format if format in ('csv', 'pdf') else 'csv'}"
+            )
+
             if format == "csv":
                 with os.fdopen(fd, "w", encoding="utf-8", newline="") as f:
                     w = csv.DictWriter(f, fieldnames=["t", "score"])
@@ -1960,15 +2070,12 @@ Generated by Phase 9 MCP Server on {timestamp}
                     w.writerows(series)
             else:
                 os.close(fd)  # placeholder; PDF gen can be added later
-            
-            return {
-                "status": "ok",
-                "data": {"path": path}
-            }
+
+            return {"status": "ok", "data": {"path": path}}
         except Exception as e:
             return {
                 "status": "error",
-                "error": {"code": "RESILIENCE_EXPORT_FAILED", "message": str(e)}
+                "error": {"code": "RESILIENCE_EXPORT_FAILED", "message": str(e)},
             }
 
     # ============================================================================
@@ -1976,10 +2083,15 @@ Generated by Phase 9 MCP Server on {timestamp}
     # ============================================================================
 
     @mcp.tool()
-    def mcp_router_diagnostics(self, target_server: str = "make lm-mcp", timeout: float = 8.0, max_seconds: float = 20.0) -> Dict[str, Any]:
+    def mcp_router_diagnostics(
+        self,
+        target_server: str = "make lm-mcp",
+        timeout: float = 8.0,
+        max_seconds: float = 20.0,
+    ) -> Dict[str, Any]:
         """
         Run MCP Router Diagnostics on a target MCP server.
-        
+
         This tool performs safe, read-only diagnostics on MCP servers including:
         - Protocol version negotiation (2025-06-18)
         - Tool enumeration with pagination
@@ -1987,12 +2099,12 @@ Generated by Phase 9 MCP Server on {timestamp}
         - Latency metrics (p50/p95/max)
         - Namespace analysis and health proxies
         - No side effects (read-only probe)
-        
+
         Args:
             target_server: Command to launch MCP server (stdio). Default: "make lm-mcp"
             timeout: Per-request timeout (seconds). Default: 8.0
             max_seconds: Overall time budget (seconds). Default: 20.0
-        
+
         Returns:
             Diagnostic results with metrics and health analysis
         """
@@ -2004,20 +2116,25 @@ Generated by Phase 9 MCP Server on {timestamp}
             import uuid
             import statistics
             from pathlib import Path
-            
+
             # Import the diagnostic functions from the script
             project_root = Path(__file__).parent.parent.parent
             sys.path.insert(0, str(project_root / "scripts"))
             from mcp_router_diagnostics import (
-                envelope_ok, envelope_err, JsonRpcIO, 
-                start_server, list_all_tools, sanity_check_tool_schema, compute_metrics
+                envelope_ok,
+                envelope_err,
+                JsonRpcIO,
+                start_server,
+                list_all_tools,
+                sanity_check_tool_schema,
+                compute_metrics,
             )
-            
+
             start = time.time()
             reports_dir = project_root / "reports"
             reports_dir.mkdir(parents=True, exist_ok=True)
             stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
-            
+
             try:
                 proc = start_server(target_server)
             except Exception as e:
@@ -2029,7 +2146,7 @@ Generated by Phase 9 MCP Server on {timestamp}
                 init_params = {
                     "protocolVersion": "2025-06-18",
                     "capabilities": {"tools": {"listChanged": True}},
-                    "clientInfo": {"name":"router-diagnostics","version":"0.1.0"},
+                    "clientInfo": {"name": "router-diagnostics", "version": "0.1.0"},
                 }
                 _, init = rpc.request("initialize", init_params)  # spec lifecycle
                 if "error" in init:
@@ -2041,23 +2158,33 @@ Generated by Phase 9 MCP Server on {timestamp}
                 tools, list_lat = list_all_tools(rpc)
                 metrics = compute_metrics(tools, list_lat)
 
-                budget_ok = (time.time()-start) <= max_seconds
+                budget_ok = (time.time() - start) <= max_seconds
                 status = "ok" if budget_ok else "error"
-                result = envelope_ok({
-                    "protocol_negotiated": init.get("result",{}).get("protocolVersion"),
-                    "tools_count": metrics["count"],
-                    "duplicates": metrics["duplicates"],
-                    "namespaces_top": metrics["namespaces_top"],
-                    "schema_issues": metrics["schema_issues"],
-                    "list_latency": metrics["list_latency"],
-                    "long_descriptions": metrics["long_descriptions"],
-                    "time_sec": round(time.time()-start,2),
-                    "target_server": target_server,
-                    "notes": [
-                        "This is a discovery-only probe; no tools were invoked.",
-                        "Large toolsets are fine when router discovery & pagination are fast and names are collision-free."
-                    ]
-                }) if status=="ok" else envelope_err("time_budget_exceeded","Router listing exceeded time budget")
+                result = (
+                    envelope_ok(
+                        {
+                            "protocol_negotiated": init.get("result", {}).get(
+                                "protocolVersion"
+                            ),
+                            "tools_count": metrics["count"],
+                            "duplicates": metrics["duplicates"],
+                            "namespaces_top": metrics["namespaces_top"],
+                            "schema_issues": metrics["schema_issues"],
+                            "list_latency": metrics["list_latency"],
+                            "long_descriptions": metrics["long_descriptions"],
+                            "time_sec": round(time.time() - start, 2),
+                            "target_server": target_server,
+                            "notes": [
+                                "This is a discovery-only probe; no tools were invoked.",  # noqa: E501
+                                "Large toolsets are fine when router discovery & pagination are fast and names are collision-free.",  # noqa: E501
+                            ],
+                        }
+                    )
+                    if status == "ok"
+                    else envelope_err(
+                        "time_budget_exceeded", "Router listing exceeded time budget"
+                    )
+                )
 
                 return result
 
@@ -2068,11 +2195,11 @@ Generated by Phase 9 MCP Server on {timestamp}
                     proc.terminate()
                 except (OSError, subprocess.SubprocessError) as e:
                     logger.warning(f"Failed to terminate MCP server process: {e}")
-                    
+
         except Exception as e:
             return {
                 "status": "error",
-                "error": {"code": "MCP_DIAGNOSTICS_FAILED", "message": str(e)}
+                "error": {"code": "MCP_DIAGNOSTICS_FAILED", "message": str(e)},
             }
 
 

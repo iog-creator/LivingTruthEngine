@@ -31,6 +31,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root / "src"))
 
 from mcp.server.fastmcp import FastMCP
+
 mcp = FastMCP()
 
 # Setup logging
@@ -38,12 +39,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Define valid parameter types for validation
-VALID_TYPES = ['string', 'int', 'float', 'bool', 'list', 'dict', 'any']
+VALID_TYPES = ["string", "int", "float", "bool", "list", "dict", "any"]
 
 
 class MCPHubServer:
     """MCP Hub Server for consolidated tool management."""
-    
+
     def __init__(self):
         """Initialize the MCP Hub Server."""
         # Use absolute path to the project root
@@ -51,36 +52,45 @@ class MCPHubServer:
         self.registry_path = project_root / "config" / "tool_registry.json"
         self.registry = self.load_registry()
         self.loaded_modules = {}
-        logger.info(f"MCP Hub Server initialized with {self.registry.get('total_tools', 0)} tools")
-    
+        logger.info(
+            f"MCP Hub Server initialized with {self.registry.get('total_tools', 0)} tools"  # noqa: E501
+        )
+
     def load_registry(self) -> Dict[str, Any]:
         """
         Load the tool registry from JSON file with automatic backup.
-        
+
         Returns:
             Registry dictionary
         """
-        backup_path = self.registry_path.with_suffix('.json.bak')
-        
+        backup_path = self.registry_path.with_suffix(".json.bak")
+
         # Prefer loading the primary registry; backup is best-effort only.
         if self.registry_path.exists():
             # Try to create a backup, but do not fail if we lack permissions
             try:
                 import shutil
+
                 shutil.copy2(self.registry_path, backup_path)
                 logger.debug(f"Created backup: {backup_path}")
             except Exception as backup_err:
-                logger.warning(f"Could not create registry backup ({backup_path}): {backup_err}")
+                logger.warning(
+                    f"Could not create registry backup ({backup_path}): {backup_err}"
+                )
 
             # Load primary registry
             try:
-                with open(self.registry_path, 'r', encoding='utf-8') as f:
+                with open(self.registry_path, "r", encoding="utf-8") as f:
                     registry = json.load(f)
                 self.validate_registry(registry)
-                logger.info(f"Loaded tool registry with {registry.get('total_tools', 0)} tools")
+                logger.info(
+                    f"Loaded tool registry with {registry.get('total_tools', 0)} tools"
+                )
                 return registry
             except Exception as read_err:
-                logger.error(f"Failed reading primary registry, will try backup: {read_err}")
+                logger.error(
+                    f"Failed reading primary registry, will try backup: {read_err}"
+                )
 
         else:
             logger.warning(f"Registry file not found: {self.registry_path}")
@@ -89,7 +99,7 @@ class MCPHubServer:
         if backup_path.exists():
             try:
                 logger.info(f"Attempting to load from backup: {backup_path}")
-                with open(backup_path, 'r', encoding='utf-8') as f:
+                with open(backup_path, "r", encoding="utf-8") as f:
                     backup_registry = json.load(f)
                 self.validate_registry(backup_registry)
                 logger.info("Successfully loaded registry from backup")
@@ -103,77 +113,99 @@ class MCPHubServer:
     def validate_registry(self, registry: Dict[str, Any]) -> bool:
         """
         Validate registry structure and content.
-        
+
         Args:
             registry: Registry dictionary to validate
-            
+
         Returns:
             True if valid, raises ValueError if invalid
         """
         validation_errors = []
-        
+
         if not isinstance(registry, dict):
             validation_errors.append("Registry must be a dictionary")
-        
-        if 'servers' not in registry:
+
+        if "servers" not in registry:
             validation_errors.append("Registry missing 'servers' key")
-        
+
         if validation_errors:
-            raise ValueError(f"Registry validation failed: {'; '.join(validation_errors)}")
-        
-        required_tool_fields = ['name', 'description', 'server', 'module', 'function']
-        
-        for server_name, server_data in registry['servers'].items():
+            raise ValueError(
+                f"Registry validation failed: {'; '.join(validation_errors)}"
+            )
+
+        required_tool_fields = ["name", "description", "server", "module", "function"]
+
+        for server_name, server_data in registry["servers"].items():
             if not isinstance(server_data, dict):
-                validation_errors.append(f"Server '{server_name}' data must be a dictionary")
+                validation_errors.append(
+                    f"Server '{server_name}' data must be a dictionary"
+                )
                 continue
-            
-            if 'tools' not in server_data:
+
+            if "tools" not in server_data:
                 validation_errors.append(f"Server '{server_name}' missing 'tools' key")
                 continue
-            
-            for tool in server_data['tools']:
+
+            for tool in server_data["tools"]:
                 if not isinstance(tool, dict):
-                    validation_errors.append(f"Tool in server '{server_name}' must be a dictionary")
+                    validation_errors.append(
+                        f"Tool in server '{server_name}' must be a dictionary"
+                    )
                     continue
-                
+
                 # Check required fields
                 for field in required_tool_fields:
                     if field not in tool:
-                        validation_errors.append(f"Tool '{tool.get('name', 'unknown')}' missing required field: {field}")
-                
+                        validation_errors.append(
+                            f"Tool '{tool.get('name', 'unknown')}' missing required field: {field}"  # noqa: E501
+                        )
+
                 # Validate params_schema if present
-                if 'params_schema' in tool:
-                    if not isinstance(tool['params_schema'], dict):
-                        validation_errors.append(f"Tool '{tool['name']}' params_schema must be a dictionary")
+                if "params_schema" in tool:
+                    if not isinstance(tool["params_schema"], dict):
+                        validation_errors.append(
+                            f"Tool '{tool['name']}' params_schema must be a dictionary"
+                        )
                     else:
-                        for param_name, param_def in tool['params_schema'].items():
+                        for param_name, param_def in tool["params_schema"].items():
                             if not isinstance(param_def, dict):
-                                validation_errors.append(f"Tool '{tool['name']}' parameter '{param_name}' definition must be a dictionary")
-                            elif 'type' not in param_def:
-                                validation_errors.append(f"Tool '{tool['name']}' parameter '{param_name}' missing 'type' field")
-                            elif param_def['type'] not in VALID_TYPES:
-                                validation_errors.append(f"Tool '{tool['name']}' parameter '{param_name}' has invalid type '{param_def['type']}'. Valid types: {VALID_TYPES}")
-        
+                                validation_errors.append(
+                                    f"Tool '{tool['name']}' parameter '{param_name}' definition must be a dictionary"  # noqa: E501
+                                )
+                            elif "type" not in param_def:
+                                validation_errors.append(
+                                    f"Tool '{tool['name']}' parameter '{param_name}' missing 'type' field"  # noqa: E501
+                                )
+                            elif param_def["type"] not in VALID_TYPES:
+                                validation_errors.append(
+                                    f"Tool '{tool['name']}' parameter '{param_name}' has invalid type '{param_def['type']}'. Valid types: {VALID_TYPES}"  # noqa: E501
+                                )
+
         # Check registry size limits
-        total_tools = sum(len(server.get('tools', [])) for server in registry['servers'].values())
+        total_tools = sum(
+            len(server.get("tools", [])) for server in registry["servers"].values()
+        )
         if total_tools > 200:
-            validation_errors.append(f"Registry too large: {total_tools} tools (max 200)")
-        
+            validation_errors.append(
+                f"Registry too large: {total_tools} tools (max 200)"
+            )
+
         if validation_errors:
-            error_msg = f"Registry validation failed with {len(validation_errors)} errors: {'; '.join(validation_errors[:5])}"
+            error_msg = f"Registry validation failed with {len(validation_errors)} errors: {'; '.join(validation_errors[:5])}"  # noqa: E501
             if len(validation_errors) > 5:
                 error_msg += f" (and {len(validation_errors) - 5} more)"
             raise ValueError(error_msg)
-        
-        logger.info(f"Registry validation passed for {sum(len(server.get('tools', [])) for server in registry['servers'].values())} tools")
+
+        logger.info(
+            f"Registry validation passed for {sum(len(server.get('tools', [])) for server in registry['servers'].values())} tools"  # noqa: E501
+        )
         return True
-    
+
     def reload_registry(self) -> Dict[str, Any]:
         """Reload the tool registry from file."""
         self.registry = self.load_registry()
         return self.registry
-    
+
     def get_tool_by_name(self, tool_name: str) -> Optional[Dict[str, Any]]:
         """Get tool definition by name."""
         for server_name, server_data in self.registry.get("servers", {}).items():
@@ -181,7 +213,7 @@ class MCPHubServer:
                 if tool_def["name"] == tool_name:
                     return tool_def
         return None
-    
+
     def load_module(self, module_name: str) -> Any:
         """Dynamically load a module."""
         if module_name not in self.loaded_modules:
@@ -192,17 +224,17 @@ class MCPHubServer:
                 logger.error(f"Error loading module {module_name}: {e}")
                 return None
         return self.loaded_modules[module_name]
-    
+
     def _execute_tool_internal(self, tool_name: str, params: Dict[str, Any]) -> Any:
         """Execute a tool by name with parameters."""
         import time
-        
+
         tool_def = self.get_tool_by_name(tool_name)
         if not tool_def:
             raise ValueError(f"Tool '{tool_name}' not found in registry")
 
         start_time = time.time()
-        
+
         try:
             module_name = tool_def["module"]
             function_name = tool_def["function"]
@@ -215,82 +247,90 @@ class MCPHubServer:
             # Get the function
             func = getattr(module, function_name, None)
             if not func:
-                raise AttributeError(f"Function '{function_name}' not found in module '{module_name}'")
+                raise AttributeError(
+                    f"Function '{function_name}' not found in module '{module_name}'"
+                )
 
             # Execute the function
             logger.info(f"Executing tool: {tool_name} with params: {params}")
             result = func(**params)
-            
+
             # Performance monitoring
             duration = time.time() - start_time
             logger.info(f"Executed {tool_name} in {duration:.2f}s")
-            
+
             if duration > 1.0:
                 logger.warning(f"Slow execution for {tool_name}: {duration:.2f}s")
-            
+
             if duration > 2.0:
-                logger.error(f"Alert: Execution exceeded 2s for {tool_name}: {duration:.2f}s")
+                logger.error(
+                    f"Alert: Execution exceeded 2s for {tool_name}: {duration:.2f}s"
+                )
                 # Optional: send_alert("slow_execution", tool_name, duration)
-            
+
             return result
 
         except Exception as e:
             duration = time.time() - start_time
-            logger.error(f"Error executing tool '{tool_name}' after {duration:.2f}s: {e}")
+            logger.error(
+                f"Error executing tool '{tool_name}' after {duration:.2f}s: {e}"
+            )
             logger.error(traceback.format_exc())
             raise
-    
+
     @mcp.tool()
     def list_tools(self, query: str = "", server: str = "") -> List[Dict[str, Any]]:
         """
         List available tools with optional filtering.
-        
+
         Args:
             query: Filter tools by name or description
             server: Filter by server name
-            
+
         Returns:
             List of tool definitions matching the criteria
         """
         tools = []
         query_lower = query.lower()
         server_lower = server.lower()
-        
+
         for server_name, server_data in self.registry.get("servers", {}).items():
             if server and server_lower not in server_name.lower():
                 continue
-                
+
             for tool_def in server_data.get("tools", []):
                 tool_name = tool_def["name"].lower()
                 description = tool_def.get("description", "").lower()
-                
+
                 if not query or query_lower in tool_name or query_lower in description:
-                    tools.append({
-                        "name": tool_def["name"],
-                        "description": tool_def.get("description", ""),
-                        "server": server_name,
-                        "module": tool_def.get("module", ""),
-                        "params_schema": tool_def.get("params_schema", {})
-                    })
-        
+                    tools.append(
+                        {
+                            "name": tool_def["name"],
+                            "description": tool_def.get("description", ""),
+                            "server": server_name,
+                            "module": tool_def.get("module", ""),
+                            "params_schema": tool_def.get("params_schema", {}),
+                        }
+                    )
+
         logger.info(f"Listed {len(tools)} tools (query: '{query}', server: '{server}')")
         return tools
-    
+
     @mcp.tool()
     def get_tool_details(self, tool_name: str) -> Dict[str, Any]:
         """
         Get detailed information about a specific tool.
-        
+
         Args:
             tool_name: Name of the tool to get details for
-            
+
         Returns:
             Detailed tool definition including schema and metadata
         """
         tool_def = self.get_tool_by_name(tool_name)
         if not tool_def:
             raise ValueError(f"Tool '{tool_name}' not found")
-        
+
         return {
             "name": tool_def["name"],
             "description": tool_def.get("description", ""),
@@ -298,42 +338,42 @@ class MCPHubServer:
             "module": tool_def.get("module", ""),
             "function": tool_def.get("function", ""),
             "params_schema": tool_def.get("params_schema", {}),
-            "registry_version": self.registry.get("version", "unknown")
+            "registry_version": self.registry.get("version", "unknown"),
         }
-    
+
     @mcp.tool()
     def execute_tool(self, tool_name: str, params: Dict[str, Any]) -> Any:
         """
         Execute any tool by name with parameters.
-        
+
         Args:
             tool_name: Name of the tool to execute
             params: Parameters to pass to the tool
-            
+
         Returns:
             Result from the tool execution
         """
         return self._execute_tool_internal(tool_name, params)
-    
+
     @mcp.tool()
     def search_tools(self, query: str) -> List[Dict[str, Any]]:
         """
         Search tools by semantic query.
-        
+
         Args:
             query: Search query to match against tool names and descriptions
-            
+
         Returns:
             List of matching tools with relevance information
         """
         results = []
         query_lower = query.lower()
-        
+
         for server_name, server_data in self.registry.get("servers", {}).items():
             for tool_def in server_data.get("tools", []):
                 tool_name = tool_def["name"].lower()
                 description = tool_def.get("description", "").lower()
-                
+
                 # Simple relevance scoring
                 relevance = 0
                 if query_lower in tool_name:
@@ -342,81 +382,89 @@ class MCPHubServer:
                     relevance += 5
                 if query_lower in server_name.lower():
                     relevance += 2
-                
+
                 if relevance > 0:
-                    results.append({
-                        "name": tool_def["name"],
-                        "description": tool_def.get("description", ""),
-                        "server": server_name,
-                        "relevance": relevance,
-                        "module": tool_def.get("module", "")
-                    })
-        
+                    results.append(
+                        {
+                            "name": tool_def["name"],
+                            "description": tool_def.get("description", ""),
+                            "server": server_name,
+                            "relevance": relevance,
+                            "module": tool_def.get("module", ""),
+                        }
+                    )
+
         # Sort by relevance
         results.sort(key=lambda x: x["relevance"], reverse=True)
         logger.info(f"Search found {len(results)} tools for query: '{query}'")
         return results
-    
+
     @mcp.tool()
     def batch_execute_tools(self, tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Execute multiple tools in sequence.
-        
+
         Args:
             tools: List of tool execution requests with 'name' and 'params'
-            
+
         Returns:
             List of results from each tool execution
         """
         import time
-        
+
         start_time = time.time()
         results = []
-        
+
         for i, tool_request in enumerate(tools):
             try:
                 tool_name = tool_request.get("name")
                 params = tool_request.get("params", {})
-                
+
                 if not tool_name:
-                    results.append({
-                        "index": i,
-                        "success": False,
-                        "error": "Missing tool name"
-                    })
+                    results.append(
+                        {"index": i, "success": False, "error": "Missing tool name"}
+                    )
                     continue
-                
+
                 result = self._execute_tool_internal(tool_name, params)
-                results.append({
-                    "index": i,
-                    "tool_name": tool_name,
-                    "success": True,
-                    "result": result
-                })
-                
+                results.append(
+                    {
+                        "index": i,
+                        "tool_name": tool_name,
+                        "success": True,
+                        "result": result,
+                    }
+                )
+
             except Exception as e:
-                results.append({
-                    "index": i,
-                    "tool_name": tool_request.get("name", "unknown"),
-                    "success": False,
-                    "error": str(e)
-                })
-        
+                results.append(
+                    {
+                        "index": i,
+                        "tool_name": tool_request.get("name", "unknown"),
+                        "success": False,
+                        "error": str(e),
+                    }
+                )
+
         total_duration = time.time() - start_time
-        successful_count = len([r for r in results if r['success']])
-        
-        logger.info(f"Batch executed {len(tools)} tools in {total_duration:.2f}s, {successful_count} successful")
-        
+        successful_count = len([r for r in results if r["success"]])
+
+        logger.info(
+            f"Batch executed {len(tools)} tools in {total_duration:.2f}s, {successful_count} successful"  # noqa: E501
+        )
+
         if total_duration > 5.0:
-            logger.warning(f"Slow batch execution: {total_duration:.2f}s for {len(tools)} tools")
-        
+            logger.warning(
+                f"Slow batch execution: {total_duration:.2f}s for {len(tools)} tools"
+            )
+
         return results
-    
+
     @mcp.tool()
     def get_status(self) -> Dict[str, Any]:
         """
         Get hub server status and health information.
-        
+
         Returns:
             Status information including tool counts and health
         """
@@ -424,15 +472,15 @@ class MCPHubServer:
             len(server_data.get("tools", []))
             for server_data in self.registry.get("servers", {}).values()
         )
-        
+
         # Get tool categories for Phase 2 components
         categories = self.get_tool_categories()
         phase2_tools = {
             "notebook": len(categories.get("notebook", [])),
             "agi": len(categories.get("agi", [])),
-            "channel_archiver": len(categories.get("channel_archiver", []))
+            "channel_archiver": len(categories.get("channel_archiver", [])),
         }
-        
+
         return {
             "status": "healthy",
             "hub_version": "1.0.0",
@@ -446,15 +494,15 @@ class MCPHubServer:
                 "notebook_agent_tools": phase2_tools["notebook"],
                 "agi_integration_tools": phase2_tools["agi"],
                 "channel_archiver_tools": phase2_tools["channel_archiver"],
-                "total_phase2_tools": sum(phase2_tools.values())
-            }
+                "total_phase2_tools": sum(phase2_tools.values()),
+            },
         }
-    
+
     @mcp.tool()
     def reload_registry(self) -> str:
         """
         Reload the tool registry from file.
-        
+
         Returns:
             Status message about the reload operation
         """
@@ -463,16 +511,16 @@ class MCPHubServer:
                 len(server_data.get("tools", []))
                 for server_data in self.registry.get("servers", {}).values()
             )
-            
+
             self.registry = self.load_registry()
-            
+
             new_count = sum(
                 len(server_data.get("tools", []))
                 for server_data in self.registry.get("servers", {}).values()
             )
-            
+
             return f"Registry reloaded successfully. Tools: {old_count} -> {new_count}"
-            
+
         except Exception as e:
             return f"Error reloading registry: {e}"
 
@@ -480,251 +528,303 @@ class MCPHubServer:
     def test_registry_recovery(self) -> str:
         """
         Test registry recovery by simulating corruption and loading from backup.
-        
+
         Returns:
             Test results message
         """
         try:
             logger.info("Starting registry recovery test...")
-            
+
             # Test backup creation
-            backup_path = self.registry_path.with_suffix('.json.bak')
+            backup_path = self.registry_path.with_suffix(".json.bak")
             import shutil
+
             shutil.copy2(self.registry_path, backup_path)
-            
+
             # Test backup loading
-            with open(backup_path, 'r') as f:
+            with open(backup_path, "r") as f:
                 backup_data = json.load(f)
-            
+
             # Validate backup data
             self.validate_registry(backup_data)
-            
+
             logger.info("Registry recovery test completed successfully")
-            return f"✅ Registry recovery test PASSED. Total tools: {backup_data.get('total_tools', 0)}"
-            
+            return f"✅ Registry recovery test PASSED. Total tools: {backup_data.get('total_tools', 0)}"  # noqa: E501
+
         except Exception as e:
             logger.error(f"Registry recovery test failed: {e}")
             return f"❌ Registry recovery test FAILED: {e}"
-    
+
     @mcp.tool()
     def execute_analysis_tool(self, tool_name: str, params: Dict[str, Any]) -> Any:
         """
         Execute analysis-specific tools with enhanced error handling.
-        
+
         Args:
             tool_name: Name of the analysis tool to execute
             params: Parameters for the tool
-            
+
         Returns:
             Analysis result
         """
         # Validate that this is an analysis tool
         analysis_tools = [
-            "query_langflow", "analyze_transcript", "generate_viz",
-            "batch_analysis_operations"
+            "query_langflow",
+            "analyze_transcript",
+            "generate_viz",
+            "batch_analysis_operations",
         ]
-        
+
         if tool_name not in analysis_tools:
-            raise ValueError(f"'{tool_name}' is not an analysis tool. Available: {analysis_tools}")
-        
+            raise ValueError(
+                f"'{tool_name}' is not an analysis tool. Available: {analysis_tools}"
+            )
+
         return self._execute_tool_internal(tool_name, params)
-    
+
     @mcp.tool()
     def execute_system_tool(self, tool_name: str, params: Dict[str, Any]) -> Any:
         """
         Execute system management tools with enhanced error handling.
-        
+
         Args:
             tool_name: Name of the system tool to execute
             params: Parameters for the tool
-            
+
         Returns:
             System operation result
         """
         # Validate that this is a system tool
         system_tools = [
-            "get_status", "list_sources", "get_lm_studio_models",
-            "batch_system_operations"
+            "get_status",
+            "list_sources",
+            "get_lm_studio_models",
+            "batch_system_operations",
         ]
-        
+
         if tool_name not in system_tools:
-            raise ValueError(f"'{tool_name}' is not a system tool. Available: {system_tools}")
-        
+            raise ValueError(
+                f"'{tool_name}' is not a system tool. Available: {system_tools}"
+            )
+
         return self._execute_tool_internal(tool_name, params)
-    
+
     @mcp.tool()
     def execute_langflow_tool(self, tool_name: str, params: Dict[str, Any]) -> Any:
         """
         Execute Langflow-specific tools with enhanced error handling.
-        
+
         Args:
             tool_name: Name of the Langflow tool to execute
             params: Parameters for the tool
-            
+
         Returns:
             Langflow operation result
         """
         # Validate that this is a Langflow tool
         langflow_tools = [
-            "query_langflow", "create_langflow", "export_flow_to_file",
-            "load_flow_from_file", "get_langflow_status"
+            "query_langflow",
+            "create_langflow",
+            "export_flow_to_file",
+            "load_flow_from_file",
+            "get_langflow_status",
         ]
-        
+
         if tool_name not in langflow_tools:
-            raise ValueError(f"'{tool_name}' is not a Langflow tool. Available: {langflow_tools}")
-        
+            raise ValueError(
+                f"'{tool_name}' is not a Langflow tool. Available: {langflow_tools}"
+            )
+
         return self._execute_tool_internal(tool_name, params)
-    
+
     @mcp.tool()
     def execute_notebook_tool(self, tool_name: str, params: Dict[str, Any]) -> Any:
         """
         Execute Notebook Agent tools with enhanced error handling.
-        
+
         Args:
             tool_name: Name of the notebook tool to execute
             params: Parameters for the tool
-            
+
         Returns:
             Notebook operation result
         """
         try:
             start_time = datetime.now()
-            
+
             # Validate tool exists and is notebook-related
             tool_info = self.get_tool_by_name(tool_name)
             if not tool_info:
                 return {"error": f"Tool '{tool_name}' not found"}
-            
-            notebook_keywords = ["notebook", "study_guide", "document", "research", "youtube_transcript"]
-            if not any(keyword in tool_info.get("description", "").lower() for keyword in notebook_keywords):
+
+            notebook_keywords = [
+                "notebook",
+                "study_guide",
+                "document",
+                "research",
+                "youtube_transcript",
+            ]
+            if not any(
+                keyword in tool_info.get("description", "").lower()
+                for keyword in notebook_keywords
+            ):
                 return {"error": f"Tool '{tool_name}' is not a notebook tool"}
-            
+
             # Execute the tool
             result = self._execute_tool_internal(tool_name, params)
-            
+
             # Performance monitoring
             execution_time = (datetime.now() - start_time).total_seconds()
             if execution_time > 2:
-                logger.warning(f"Slow notebook tool execution: {execution_time}s for {tool_name}")
-            
+                logger.warning(
+                    f"Slow notebook tool execution: {execution_time}s for {tool_name}"
+                )
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Notebook tool execution error: {e}")
             return {"error": f"Notebook tool execution failed: {str(e)}"}
-    
+
     @mcp.tool()
     def execute_agi_tool(self, tool_name: str, params: Dict[str, Any]) -> Any:
         """
         Execute AGI Integration tools with enhanced error handling.
-        
+
         Args:
             tool_name: Name of the AGI tool to execute
             params: Parameters for the tool
-            
+
         Returns:
             AGI operation result
         """
         try:
             start_time = datetime.now()
-            
+
             # Validate tool exists and is AGI-related
             tool_info = self.get_tool_by_name(tool_name)
             if not tool_info:
                 return {"error": f"Tool '{tool_name}' not found"}
-            
-            agi_keywords = ["agi", "integration", "cross_validate", "integrated_insights"]
-            if not any(keyword in tool_info.get("description", "").lower() for keyword in agi_keywords):
+
+            agi_keywords = [
+                "agi",
+                "integration",
+                "cross_validate",
+                "integrated_insights",
+            ]
+            if not any(
+                keyword in tool_info.get("description", "").lower()
+                for keyword in agi_keywords
+            ):
                 return {"error": f"Tool '{tool_name}' is not an AGI tool"}
-            
+
             # Execute the tool
             result = self._execute_tool_internal(tool_name, params)
-            
+
             # Performance monitoring
             execution_time = (datetime.now() - start_time).total_seconds()
             if execution_time > 2:
-                logger.warning(f"Slow AGI tool execution: {execution_time}s for {tool_name}")
-            
+                logger.warning(
+                    f"Slow AGI tool execution: {execution_time}s for {tool_name}"
+                )
+
             return result
-            
+
         except Exception as e:
             logger.error(f"AGI tool execution error: {e}")
             return {"error": f"AGI tool execution failed: {str(e)}"}
-    
+
     @mcp.tool()
-    def execute_channel_archiver_tool(self, tool_name: str, params: Dict[str, Any]) -> Any:
+    def execute_channel_archiver_tool(
+        self, tool_name: str, params: Dict[str, Any]
+    ) -> Any:
         """
         Execute Channel Archiver tools with enhanced error handling.
-        
+
         Args:
             tool_name: Name of the channel archiver tool to execute
             params: Parameters for the tool
-            
+
         Returns:
             Channel archiver operation result
         """
         try:
             start_time = datetime.now()
-            
+
             # Validate tool exists and is channel archiver-related
             tool_info = self.get_tool_by_name(tool_name)
             if not tool_info:
                 return {"error": f"Tool '{tool_name}' not found"}
-            
-            archiver_keywords = ["channel", "youtube", "archive", "transcript", "knowledge_base"]
-            if not any(keyword in tool_info.get("description", "").lower() for keyword in archiver_keywords):
+
+            archiver_keywords = [
+                "channel",
+                "youtube",
+                "archive",
+                "transcript",
+                "knowledge_base",
+            ]
+            if not any(
+                keyword in tool_info.get("description", "").lower()
+                for keyword in archiver_keywords
+            ):
                 return {"error": f"Tool '{tool_name}' is not a channel archiver tool"}
-            
+
             # Execute the tool
             result = self._execute_tool_internal(tool_name, params)
-            
+
             # Performance monitoring
             execution_time = (datetime.now() - start_time).total_seconds()
             if execution_time > 2:
-                logger.warning(f"Slow channel archiver tool execution: {execution_time}s for {tool_name}")
-            
+                logger.warning(
+                    f"Slow channel archiver tool execution: {execution_time}s for {tool_name}"  # noqa: E501
+                )
+
             return result
-            
+
         except Exception as e:
             logger.error(f"Channel archiver tool execution error: {e}")
             return {"error": f"Channel archiver tool execution failed: {str(e)}"}
-    
+
     @mcp.tool()
     def get_phase2_integration_status(self) -> Dict[str, Any]:
         """
         Get comprehensive Phase 2 integration status.
-        
+
         Returns:
             Detailed status of all Phase 2 components
         """
         try:
             categories = self.get_tool_categories()
-            
+
             # Get tool details for each Phase 2 category
             notebook_tools = categories.get("notebook", [])
             agi_tools = categories.get("agi", [])
             channel_archiver_tools = categories.get("channel_archiver", [])
-            
+
             # Get detailed tool information
             def get_tool_details(tool_names):
                 details = []
                 for tool_name in tool_names:
                     tool_info = self.get_tool_by_name(tool_name)
                     if tool_info:
-                        details.append({
-                            "name": tool_name,
-                            "description": tool_info.get("description", ""),
-                            "server": tool_info.get("server", ""),
-                            "status": "available"
-                        })
+                        details.append(
+                            {
+                                "name": tool_name,
+                                "description": tool_info.get("description", ""),
+                                "server": tool_info.get("server", ""),
+                                "status": "available",
+                            }
+                        )
                     else:
-                        details.append({
-                            "name": tool_name,
-                            "description": "Tool not found in registry",
-                            "status": "missing"
-                        })
+                        details.append(
+                            {
+                                "name": tool_name,
+                                "description": "Tool not found in registry",
+                                "status": "missing",
+                            }
+                        )
                 return details
-            
+
             status = {
                 "phase2_completion": "completed",
                 "timestamp": datetime.now().isoformat(),
@@ -733,62 +833,105 @@ class MCPHubServer:
                         "status": "integrated",
                         "tools_count": len(notebook_tools),
                         "tools": get_tool_details(notebook_tools),
-                        "description": "Advanced notebook agent with document processing and research capabilities"
+                        "description": "Advanced notebook agent with document processing and research capabilities",  # noqa: E501
                     },
                     "agi_integration": {
                         "status": "integrated",
                         "tools_count": len(agi_tools),
                         "tools": get_tool_details(agi_tools),
-                        "description": "AGI system integration with cross-validation and confidence scoring"
+                        "description": "AGI system integration with cross-validation and confidence scoring",  # noqa: E501
                     },
                     "channel_archiver": {
                         "status": "integrated",
                         "tools_count": len(channel_archiver_tools),
                         "tools": get_tool_details(channel_archiver_tools),
-                        "description": "YouTube channel archiving with transcript processing and knowledge base generation"
-                    }
+                        "description": "YouTube channel archiving with transcript processing and knowledge base generation",  # noqa: E501
+                    },
                 },
                 "summary": {
-                    "total_phase2_tools": len(notebook_tools) + len(agi_tools) + len(channel_archiver_tools),
+                    "total_phase2_tools": len(notebook_tools)
+                    + len(agi_tools)
+                    + len(channel_archiver_tools),
                     "integration_quality": "high",
                     "mcp_coverage": "100%",
-                    "architecture_compliance": "full"
-                }
+                    "architecture_compliance": "full",
+                },
             }
-            
+
             return status
-            
+
         except Exception as e:
             logger.error(f"Phase 2 integration status error: {e}")
             return {
                 "phase2_completion": "error",
                 "error": str(e),
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
             }
-    
+
     @mcp.tool()
     def get_tool_categories(self) -> Dict[str, List[str]]:
         """
         Get available tool categories and their tools.
-        
+
         Returns:
             Dictionary mapping categories to tool lists
         """
         categories = {
-            "analysis": ["query_langflow", "analyze_transcript", "generate_viz", "batch_analysis_operations"],
-            "system": ["get_status", "list_sources", "get_lm_studio_models", "batch_system_operations"],
-            "langflow": ["query_langflow", "create_langflow", "export_flow_to_file", "load_flow_from_file", "get_langflow_status"],
-            "notebook": ["process_notebook_query", "generate_study_guide", "summarize_documents", "conduct_web_research", "fetch_youtube_transcript", "get_notebook_agent_status"],
-            "agi": ["analyze_with_agi_integration", "get_agi_components_status", "get_agi_integration_status", "cross_validate_findings", "generate_integrated_insights"],
-            "channel_archiver": ["archive_youtube_channel", "build_channel_knowledge_base", "query_channel_knowledge", "get_channel_archive_status", "list_archived_videos", "get_video_transcript"],
-            "github": ["list_repositories", "create_issue", "search_repositories", "get_github_status"],
+            "analysis": [
+                "query_langflow",
+                "analyze_transcript",
+                "generate_viz",
+                "batch_analysis_operations",
+            ],
+            "system": [
+                "get_status",
+                "list_sources",
+                "get_lm_studio_models",
+                "batch_system_operations",
+            ],
+            "langflow": [
+                "query_langflow",
+                "create_langflow",
+                "export_flow_to_file",
+                "load_flow_from_file",
+                "get_langflow_status",
+            ],
+            "notebook": [
+                "process_notebook_query",
+                "generate_study_guide",
+                "summarize_documents",
+                "conduct_web_research",
+                "fetch_youtube_transcript",
+                "get_notebook_agent_status",
+            ],
+            "agi": [
+                "analyze_with_agi_integration",
+                "get_agi_components_status",
+                "get_agi_integration_status",
+                "cross_validate_findings",
+                "generate_integrated_insights",
+            ],
+            "channel_archiver": [
+                "archive_youtube_channel",
+                "build_channel_knowledge_base",
+                "query_channel_knowledge",
+                "get_channel_archive_status",
+                "list_archived_videos",
+                "get_video_transcript",
+            ],
+            "github": [
+                "list_repositories",
+                "create_issue",
+                "search_repositories",
+                "get_github_status",
+            ],
             "database": ["test_connection", "list_tables", "execute_query"],
             "models": ["search_models", "get_model_info", "generate_lm_studio_text"],
             "documentation": ["crawl_docs", "retrieve_docs"],
             "workflow": ["query_rulego_chain", "list_rulego_chains"],
-            "solver": ["solve_constraint", "route_llm"]
+            "solver": ["solve_constraint", "route_llm"],
         }
-        
+
         return categories
 
     @mcp.tool()
@@ -802,7 +945,7 @@ class MCPHubServer:
 
         Returns:
             Result of the GitHub tool execution
-        """
+        """  # noqa: E501
         github_tools = [
             "list_repositories",
             "create_issue",
@@ -811,139 +954,160 @@ class MCPHubServer:
         ]
 
         if tool_name not in github_tools:
-            raise ValueError(f"'{tool_name}' is not a GitHub tool. Available: {github_tools}")
+            raise ValueError(
+                f"'{tool_name}' is not a GitHub tool. Available: {github_tools}"
+            )
 
         return self._execute_tool_internal(tool_name, params)
-    
+
     @mcp.tool()
-    def execute_category_tools(self, category: str, tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    def execute_category_tools(
+        self, category: str, tools: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
         """
         Execute multiple tools from a specific category.
-        
+
         Args:
             category: Category name (analysis, system, langflow, etc.)
             tools: List of tool execution requests
-            
+
         Returns:
             Results from tool executions
         """
         categories = self.get_tool_categories()
         if category not in categories:
-            raise ValueError(f"Unknown category '{category}'. Available: {list(categories.keys())}")
-        
+            raise ValueError(
+                f"Unknown category '{category}'. Available: {list(categories.keys())}"
+            )
+
         valid_tools = categories[category]
         results = []
-        
+
         for tool_request in tools:
             tool_name = tool_request.get("name")
             if tool_name not in valid_tools:
-                results.append({
-                    "tool_name": tool_name,
-                    "success": False,
-                    "error": f"Tool '{tool_name}' not in category '{category}'"
-                })
+                results.append(
+                    {
+                        "tool_name": tool_name,
+                        "success": False,
+                        "error": f"Tool '{tool_name}' not in category '{category}'",
+                    }
+                )
                 continue
-            
+
             try:
                 params = tool_request.get("params", {})
                 result = self.execute_tool(tool_name, params)
-                results.append({
-                    "tool_name": tool_name,
-                    "success": True,
-                    "result": result
-                })
+                results.append(
+                    {"tool_name": tool_name, "success": True, "result": result}
+                )
             except Exception as e:
-                results.append({
-                    "tool_name": tool_name,
-                    "success": False,
-                    "error": str(e)
-                })
-        
+                results.append(
+                    {"tool_name": tool_name, "success": False, "error": str(e)}
+                )
+
         return results
 
     @mcp.tool()
     def build_tool(self, tool_def: Dict[str, Any]) -> str:
         """
         Build and add a new tool to registry.
-        
+
         Args:
             tool_def: Tool definition with required fields
-            
+
         Returns:
             Success message
         """
-        required = ['name', 'description', 'server', 'module', 'function', 'params_schema']
+        required = [
+            "name",
+            "description",
+            "server",
+            "module",
+            "function",
+            "params_schema",
+        ]
         if not all(k in tool_def for k in required):
             raise ValueError(f"Invalid tool definition. Required fields: {required}")
-        
+
         # Validate params_schema
-        for param_name, param_def in tool_def['params_schema'].items():
-            if 'type' not in param_def:
+        for param_name, param_def in tool_def["params_schema"].items():
+            if "type" not in param_def:
                 raise ValueError(f"Parameter '{param_name}' missing type definition")
-            elif param_def['type'] not in VALID_TYPES:
-                raise ValueError(f"Parameter '{param_name}' has invalid type '{param_def['type']}'. Valid types: {VALID_TYPES}")
-        
+            elif param_def["type"] not in VALID_TYPES:
+                raise ValueError(
+                    f"Parameter '{param_name}' has invalid type '{param_def['type']}'. Valid types: {VALID_TYPES}"  # noqa: E501
+                )
+
         # Add to registry
-        if 'servers' not in self.registry:
-            self.registry['servers'] = {}
-        
-        server_name = tool_def['server']
-        if server_name not in self.registry['servers']:
-            self.registry['servers'][server_name] = {'tools': []}
-        
+        if "servers" not in self.registry:
+            self.registry["servers"] = {}
+
+        server_name = tool_def["server"]
+        if server_name not in self.registry["servers"]:
+            self.registry["servers"][server_name] = {"tools": []}
+
         # Check if tool already exists
-        existing_tools = [t['name'] for t in self.registry['servers'][server_name]['tools']]
-        if tool_def['name'] in existing_tools:
-            raise ValueError(f"Tool '{tool_def['name']}' already exists in server '{server_name}'")
-        
-        self.registry['servers'][server_name]['tools'].append(tool_def)
-        
+        existing_tools = [
+            t["name"] for t in self.registry["servers"][server_name]["tools"]
+        ]
+        if tool_def["name"] in existing_tools:
+            raise ValueError(
+                f"Tool '{tool_def['name']}' already exists in server '{server_name}'"
+            )
+
+        self.registry["servers"][server_name]["tools"].append(tool_def)
+
         # Update total count
-        total_tools = sum(len(server['tools']) for server in self.registry['servers'].values())
-        self.registry['total_tools'] = total_tools
-        
+        total_tools = sum(
+            len(server["tools"]) for server in self.registry["servers"].values()
+        )
+        self.registry["total_tools"] = total_tools
+
         # Save to file
-        with open(self.registry_path, 'w') as f:
+        with open(self.registry_path, "w") as f:
             json.dump(self.registry, f, indent=2)
-        
+
         logger.info(f"Built tool: {tool_def['name']} in server {server_name}")
-        return f"✅ Tool '{tool_def['name']}' created successfully in server '{server_name}'"
+        return f"✅ Tool '{tool_def['name']}' created successfully in server '{server_name}'"  # noqa: E501
 
     @mcp.tool()
     def update_tool(self, tool_name: str, updates: Dict[str, Any]) -> str:
         """
         Update an existing tool in registry.
-        
+
         Args:
             tool_name: Name of the tool to update
             updates: Dictionary of fields to update
-            
+
         Returns:
             Success message
         """
         tool_found = False
-        for server_name, server_data in self.registry.get('servers', {}).items():
-            for tool in server_data.get('tools', []):
-                if tool['name'] == tool_name:
+        for server_name, server_data in self.registry.get("servers", {}).items():
+            for tool in server_data.get("tools", []):
+                if tool["name"] == tool_name:
                     # Validate updates
-                    if 'params_schema' in updates:
-                        for param_name, param_def in updates['params_schema'].items():
-                            if 'type' not in param_def:
-                                raise ValueError(f"Parameter '{param_name}' missing type definition")
-                    
+                    if "params_schema" in updates:
+                        for param_name, param_def in updates["params_schema"].items():
+                            if "type" not in param_def:
+                                raise ValueError(
+                                    f"Parameter '{param_name}' missing type definition"
+                                )
+
                     tool.update(updates)
                     tool_found = True
                     break
             if tool_found:
                 break
-        
+
         if not tool_found:
             raise ValueError(f"Tool '{tool_name}' not found in registry")
-        
+
         # Save to file
-        with open(self.registry_path, 'w') as f:
+        with open(self.registry_path, "w") as f:
             json.dump(self.registry, f, indent=2)
-        
+
         logger.info(f"Updated tool: {tool_name}")
         return f"✅ Tool '{tool_name}' updated successfully"
 
@@ -951,32 +1115,36 @@ class MCPHubServer:
     def delete_tool(self, tool_name: str) -> str:
         """
         Delete a tool from registry.
-        
+
         Args:
             tool_name: Name of the tool to delete
-            
+
         Returns:
             Success message
         """
         tool_found = False
-        for server_name, server_data in self.registry.get('servers', {}).items():
-            original_count = len(server_data.get('tools', []))
-            server_data['tools'] = [t for t in server_data.get('tools', []) if t['name'] != tool_name]
-            if len(server_data['tools']) < original_count:
+        for server_name, server_data in self.registry.get("servers", {}).items():
+            original_count = len(server_data.get("tools", []))
+            server_data["tools"] = [
+                t for t in server_data.get("tools", []) if t["name"] != tool_name
+            ]
+            if len(server_data["tools"]) < original_count:
                 tool_found = True
                 break
-        
+
         if not tool_found:
             raise ValueError(f"Tool '{tool_name}' not found in registry")
-        
+
         # Update total count
-        total_tools = sum(len(server['tools']) for server in self.registry['servers'].values())
-        self.registry['total_tools'] = total_tools
-        
+        total_tools = sum(
+            len(server["tools"]) for server in self.registry["servers"].values()
+        )
+        self.registry["total_tools"] = total_tools
+
         # Save to file
-        with open(self.registry_path, 'w') as f:
+        with open(self.registry_path, "w") as f:
             json.dump(self.registry, f, indent=2)
-        
+
         logger.info(f"Deleted tool: {tool_name}")
         return f"✅ Tool '{tool_name}' deleted successfully"
 
@@ -995,4 +1163,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()

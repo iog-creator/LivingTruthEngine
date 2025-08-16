@@ -7,12 +7,7 @@ from .channel_archiver import (
     ChannelArchiver,
     VideoInfo,
     ArchiveResult,
-    ChannelArchiveSummary
+    ChannelArchiveSummary,
 )
 
-__all__ = [
-    "ChannelArchiver",
-    "VideoInfo",
-    "ArchiveResult",
-    "ChannelArchiveSummary"
-] 
+__all__ = ["ChannelArchiver", "VideoInfo", "ArchiveResult", "ChannelArchiveSummary"]

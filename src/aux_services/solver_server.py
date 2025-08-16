@@ -2,7 +2,7 @@
 Lightweight MCP Solver stub service
 
 Provides health endpoint and minimal identity needed by MCP solver adapter and health checks.
-"""
+"""  # noqa: E501
 
 from typing import Dict
 from fastapi import FastAPI
@@ -19,6 +19,3 @@ def health() -> Dict[str, str]:
 @app.get("/")
 def root() -> Dict[str, str]:
     return {"message": "MCP Solver stub running"}
-
-
-
