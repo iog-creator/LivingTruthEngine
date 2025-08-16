@@ -44,11 +44,11 @@ ruff-line-length:
 fix-fallbacks:
 	python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; server = Phase9MCPServer(); result = server.fix_silent_fallbacks(); print('Fix silent fallbacks result:', result)"
 
-# Validate all Cursor rules frontmatter (strict schema + checksum)
+# Validate all Cursor rules frontmatter (Cursor-spec: description, globs, alwaysApply)
 rules-validate:
-	@python scripts/validate_cursor_rules_frontmatter.py --strict
+	@python scripts/validate_cursor_rules_frontmatter.py
 
-# Best-effort fixer: adds/repairs missing frontmatter (preserves body); re-run validate after
+# Best-effort fixer: migrate to Cursor-spec frontmatter; re-run validate after
 rules-fix:
 	@python scripts/fix_cursor_rules_frontmatter.py
 	@$(MAKE) rules-validate
@@ -56,10 +56,19 @@ rules-fix:
 # One-time: enable project githooks (pre-commit runs rules-validate)
 enable-githooks:
 	@mkdir -p .githooks
-	@printf '%s\n' '#!/usr/bin/env bash' 'python scripts/validate_cursor_rules_frontmatter.py --strict' > .githooks/pre-commit
+	@printf '%s\n' '#!/usr/bin/env bash' 'python scripts/validate_cursor_rules_frontmatter.py' > .githooks/pre-commit
 	@chmod +x .githooks/pre-commit
 	@git config core.hooksPath .githooks
 	@echo "✓ Git hooks enabled (rules-validate on pre-commit)"
+
+reports: meta-index
+	@echo "✓ Reports ready in ./reports"
+
+.PHONY: meta-index
+meta-index:
+	@mkdir -p reports
+	@python scripts/collect_yaml_meta.py > reports/ssot_meta_index.json
+	@echo "✓ SSOT metadata index: reports/ssot_meta_index.json"
 
 
 

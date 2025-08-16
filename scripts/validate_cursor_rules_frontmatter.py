@@ -1,106 +1,88 @@
 #!/usr/bin/env python3
 """
-Validate Cursor rule files: .cursor/rules/*.mdc
-- Requires YAML frontmatter at the top delimited by '---' ... '---'
-- Enforces required keys + types
-- Verifies body checksum if provided; suggests fix otherwise
+Cursor Rules Frontmatter Validator (Cursor-spec)
+Valid schema: YAML frontmatter with keys:
+  - description: str (required)
+  - globs: str | list[str] (optional; implies Auto-Attached if present)
+  - alwaysApply: bool (optional; implies Always when true)
+Other keys are nonstandard and will be flagged (error by default).
 
-Exit code:
-  0 on success
-  1 on schema or checksum errors
-Output: JSON envelope to STDOUT
+Special case: 00-global.mdc must have alwaysApply: true.
+
+Refs:
+  - Cursor docs "Rules for AI": frontmatter controls (description, globs, alwaysApply)
 """
 from __future__ import annotations
-import hashlib, json, re, sys
+import json, re, sys
 from pathlib import Path
 try:
-    import yaml
-except Exception as e:
-    print(json.dumps({"status":"error","error":{"code":"pyyaml_missing","message":"PyYAML is required: pip install pyyaml"}}))
-    sys.exit(1)
+	import yaml
+except ImportError:
+	print(json.dumps({"status":"error","error":{"code":"pyyaml_missing","message":"PyYAML is required: pip install pyyaml"}}))
+	sys.exit(1)
 
 ROOT = Path(".").resolve()
 RULES_DIR = ROOT/".cursor"/"rules"
-
-REQUIRED = {
-    "description": str,
-    "alwaysApply": bool,
-    "rule_id": str,
-    "title": str,
-    "phase": str,            # e.g., "9.5.7.4.6"
-    "applies": str,          # "always" | "phase" | "optional"
-    "enforcement": str,      # "strict" | "advisory"
-    "owner": str,
-    "updated": str,          # ISO date YYYY-MM-DD
-    "version": int,
-    "scope": (str, list),    # "all" or ["**/*", ...]
-    "summary": str,
-}
-OPTIONAL = {
-    "links": list,
-    "checksum": str,         # sha256 of *body* (content after closing frontmatter)
-}
-
 FM_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n(.*)\Z", re.DOTALL)
+ALLOWED_KEYS = {"description","globs","alwaysApply"}
 
-def sha256_text(s: str) -> str:
-    return hashlib.sha256(s.encode("utf-8")).hexdigest()
+def parse_frontmatter(path: Path):
+	txt = path.read_text(encoding="utf-8", errors="ignore")
+	m = FM_RE.match(txt)
+	if not m:
+		return None, txt
+	try:
+		meta = yaml.safe_load(m.group(1)) or {}
+		if not isinstance(meta, dict):
+			meta = {}
+	except yaml.YAMLError:
+		meta = {}
+	body = m.group(2)
+	return meta, body
 
-def parse_rule(path: Path):
-    txt = path.read_text(encoding="utf-8", errors="ignore")
-    m = FM_RE.match(txt)
-    if not m:
-        return None, txt  # no or invalid frontmatter
-    front, body = m.group(1), m.group(2)
-    try:
-        meta = yaml.safe_load(front) or {}
-        if not isinstance(meta, dict):
-            meta = {}
-    except Exception:
-        meta = {}
-    return meta, body
+def is_string_list(x):
+	return isinstance(x, list) and all(isinstance(i,str) for i in x)
 
-def validate():
-    errors, warnings = [], []
-    checked = []
-    if not RULES_DIR.exists():
-        return {"status":"ok","data":{"checked":0,"notes":["No .cursor/rules directory found"]}}
-    for path in sorted(RULES_DIR.glob("*.mdc")):
-        meta, body = parse_rule(path)
-        rule_name = path.name
-        if meta is None:
-            errors.append({"file": rule_name, "issue":"missing_or_invalid_frontmatter"})
-            continue
-        # required keys/types
-        for k, t in REQUIRED.items():
-            if k not in meta:
-                errors.append({"file": rule_name, "issue": f"missing_key:{k}"})
-            else:
-                ok = isinstance(meta[k], t if isinstance(t, type) else t)
-                if not ok:
-                    errors.append({"file": rule_name, "issue": f"type_mismatch:{k}", "expected": str(t), "actual": str(type(meta[k]).__name__)})
-        # special constraints for 00-global.mdc
-        if path.name == "00-global.mdc":
-            if meta.get("applies") != "always":
-                errors.append({"file": rule_name, "issue": "global_applies_must_be_always"})
-            if meta.get("enforcement") != "strict":
-                errors.append({"file": rule_name, "issue": "global_enforcement_must_be_strict"})
-            if meta.get("scope") not in ("all", ["**/*"]):
-                warnings.append({"file": rule_name, "issue":"global_scope_should_be_all"})
-            if meta.get("alwaysApply") != True:
-                errors.append({"file": rule_name, "issue": "global_alwaysApply_must_be_true"})
-        # checksum (optional but recommended)
-        body_hash = sha256_text(body or "")
-        if "checksum" in meta and meta.get("checksum") != body_hash:
-            errors.append({"file": rule_name, "issue":"checksum_mismatch","expected":body_hash,"actual":meta.get("checksum")})
-        elif "checksum" not in meta:
-            warnings.append({"file": rule_name, "issue":"checksum_missing","expected":body_hash})
-        checked.append(rule_name)
-    status = "ok" if not errors else "error"
-    out = {"status": status, "data": {"checked": len(checked), "errors": errors, "warnings": warnings}}
-    return out
+def validate_rule(path: Path):
+	meta, body = parse_frontmatter(path)
+	errs, warns = [], []
+	if meta is None:
+		errs.append("missing_or_invalid_frontmatter"); return errs, warns
+	# required: description
+	if "description" not in meta or not isinstance(meta["description"], str) or not meta["description"].strip():
+		errs.append("missing_or_invalid:description")
+	# optional: globs (str or list[str])
+	if "globs" in meta and not (isinstance(meta["globs"], str) or is_string_list(meta["globs"])):
+		errs.append("invalid_type:globs")
+	# optional: alwaysApply (bool)
+	if "alwaysApply" in meta and not isinstance(meta["alwaysApply"], bool):
+		errs.append("invalid_type:alwaysApply")
+	# special case 00-global
+	if path.name == "00-global.mdc":
+		if not meta.get("alwaysApply", False):
+			errs.append("global_must_set_alwaysApply_true")
+		# globs is not needed for 00-global; warn if present
+		if "globs" in meta:
+			warns.append("global_globs_unnecessary")
+	# nonstandard keys
+	extras = [k for k in meta.keys() if k not in ALLOWED_KEYS]
+	if extras:
+		errs.append(f"nonstandard_keys:{extras}")
+	return errs, warns
+
+def main():
+	checked=0; errors=[]; warnings=[]
+	if not RULES_DIR.exists():
+		print(json.dumps({"status":"ok","data":{"checked":0,"notes":["no .cursor/rules directory"]}})); return
+	for p in sorted(RULES_DIR.glob("*.mdc")):
+		checked+=1
+		e,w = validate_rule(p)
+		if e: errors.append({"file":p.name,"issues":e})
+		if w: warnings.append({"file":p.name,"issues":w})
+	status = "ok" if not errors else "error"
+	out = {"status":status,"data":{"checked":checked,"errors":errors,"warnings":warnings}}
+	print(json.dumps(out, indent=2))
+	sys.exit(0 if status=="ok" else 1)
 
 if __name__ == "__main__":
-    res = validate()
-    print(json.dumps(res, indent=2))
-    sys.exit(0 if res["status"]=="ok" else 1)
+	main()
