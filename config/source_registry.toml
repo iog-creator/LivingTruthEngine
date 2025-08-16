@@ -1,0 +1,91 @@
+# Living Truth Engine - Phase 9 Source Registry
+# Multi-source ingestion configuration for websites, PDFs, and YouTube channels
+
+# Default source configuration
+[defaults]
+max_depth = 2
+ocr_required = false
+js_render = false
+limit = 10
+sort = "oldest"
+
+# YouTube channel sources
+[[sources]]
+name = "imagination_podcast"
+type = "youtube"
+url = "https://www.youtube.com/@imaginationpodcastofficial"
+description = "Imagination Podcast Official Channel"
+limit = 10
+sort = "oldest"
+max_depth = 3
+ocr_required = false
+js_render = false
+
+[[sources]]
+name = "research_channel"
+type = "youtube"
+url = "https://www.youtube.com/@researchchannel"
+description = "Research Channel for Academic Content"
+limit = 5
+sort = "latest"
+max_depth = 2
+ocr_required = false
+js_render = false
+
+# Web sources
+[[sources]]
+name = "research_archive"
+type = "web"
+url = "https://example.com/research-archive"
+description = "Research Archive Website"
+max_depth = 2
+js_render = true
+ocr_required = false
+
+[[sources]]
+name = "documentation_site"
+type = "web"
+url = "https://docs.example.com"
+description = "Documentation Site"
+max_depth = 3
+js_render = false
+ocr_required = false
+
+# PDF sources
+[[sources]]
+name = "pdf_repository"
+type = "pdf"
+url = "https://example.com/pdfs/"
+description = "PDF Repository"
+max_depth = 1
+ocr_required = true
+js_render = false
+
+# Source type configurations
+[source_types.youtube]
+extractor = "youtube_adapter"
+supported_params = ["limit", "sort", "max_depth", "ocr_required", "js_render"]
+default_limit = 10
+default_sort = "oldest"
+default_max_depth = 3
+
+[source_types.web]
+extractor = "web_fetcher"
+supported_params = ["max_depth", "js_render", "ocr_required"]
+default_max_depth = 2
+default_js_render = false
+default_ocr_required = false
+
+[source_types.pdf]
+extractor = "pdf_extractor"
+supported_params = ["max_depth", "ocr_required"]
+default_max_depth = 1
+default_ocr_required = true
+
+# Validation rules
+[validation]
+max_sources_per_run = 5
+max_total_docs_per_run = 100
+allowed_domains = ["youtube.com", "youtu.be", "example.com", "docs.example.com"]
+denied_domains = ["malicious-site.com"]
+max_url_length = 2048

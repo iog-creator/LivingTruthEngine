@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: archived
+last_reviewed: 2025-08-13
+related_files: ['src/mcp_servers/langflow_mcp_server.py', 'tests/test_langflow_mcp_server.py', '.cursor/mcp.json']
+---
+
 @project_overview.mdc
 @development_workflow.mdc
 @docker_best_practices.mdc

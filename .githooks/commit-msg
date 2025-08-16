@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+MSG_FILE="$1"
+if grep -qi '\[SSOT Verified\]' "$MSG_FILE"; then
+  exit 0
+fi
+echo "ERROR: Commit message must include [SSOT Verified] once SSOT checks pass." >&2
+exit 1

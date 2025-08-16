@@ -1,13 +1,20 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['~/.cursor/mcp.json']
+---
+
 # Living Truth Engine - MCP Server Documentation
 
 ## Overview
 
-The Flowise MCP Server provides integration between Cursor IDE and the Living Truth Engine's Flowise-based AI system for survivor testimony analysis and evidence corroboration.
+The Langflow MCP Server provides integration between Cursor IDE and the Living Truth Engine's Langflow-based AI system for survivor testimony analysis and evidence corroboration.
 
 ## Available Tools
 
-### 1. `query_flowise`
-**Description**: Query the Flowise chatflow for survivor testimony analysis, evidence corroboration, anonymization, structured outputs (summary, study guide, timeline, audio), and visualizations
+### 1. `query_Langflow`
+**Description**: Query the Langflow chatflow for survivor testimony analysis, evidence corroboration, anonymization, structured outputs (summary, study guide, timeline, audio), and visualizations
 
 **Parameters**:
 - `query` (string, required): Query string (e.g., 'Survivor testimony patterns' or YouTube URL)
@@ -19,7 +26,7 @@ The Flowise MCP Server provides integration between Cursor IDE and the Living Tr
 {
   "method": "tools.execute",
   "params": [
-    "query_flowise",
+    "query_Langflow",
     {
       "query": "survivor testimony patterns",
       "anonymize": true,
@@ -43,7 +50,7 @@ The Flowise MCP Server provides integration between Cursor IDE and the Living Tr
 ```
 
 ### 3. `fix_flow`
-**Description**: Request updates to the Flowise graph (e.g., 'Add node for web research')
+**Description**: Request updates to the Langflow graph (e.g., 'Add node for web research')
 
 **Parameters**:
 - `fix_request` (string, required): Description of fix or update needed
@@ -65,9 +72,9 @@ The Flowise MCP Server provides integration between Cursor IDE and the Living Tr
 
 ### Environment Variables
 The MCP server requires these environment variables (set in `.env`):
-- `FLOWISE_API_ENDPOINT`: Flowise API endpoint (default: http://localhost:3000)
-- `FLOWISE_API_KEY`: Flowise API key
-- `FLOWISE_CHATFLOW_ID`: Flowise chatflow ID
+- `Langflow_API_ENDPOINT`: Langflow API endpoint (default: http://localhost:7860)
+- `Langflow_API_KEY`: Langflow API key
+- `Langflow_CHATFLOW_ID`: Langflow chatflow ID
 
 ### Virtual Environment
 - **Environment**: `living_venv`
@@ -80,13 +87,13 @@ The MCP server requires these environment variables (set in `.env`):
 Located at `~/.cursor/mcp.json`:
 ```json
 {
-  "flowise-mcp-server": {
+  "Langflow-mcp-server": {
     "command": "${PROJECT_ROOT}/NotebookLM/LivingTruthEngine/living_venv/bin/python",
-    "args": ["${PROJECT_ROOT}/NotebookLM/LivingTruthEngine/flowise_mcp_server.py"],
+    "args": ["${PROJECT_ROOT}/NotebookLM/LivingTruthEngine/Langflow_mcp_server.py"],
     "env": {
-      "FLOWISE_API_ENDPOINT": "http://localhost:3000",
-      "FLOWISE_API_KEY": "your_flowise_api_key",
-      "FLOWISE_CHATFLOW_ID": "your_chatflow_id",
+      "Langflow_API_ENDPOINT": "http://localhost:7860",
+      "Langflow_API_KEY": "your_Langflow_api_key",
+      "Langflow_CHATFLOW_ID": "your_chatflow_id",
       "PYTHONPATH": "${PROJECT_ROOT}/NotebookLM/LivingTruthEngine"
     }
   }
@@ -96,19 +103,19 @@ Located at `~/.cursor/mcp.json`:
 ### Usage in Cursor
 1. Restart Cursor to load the MCP server
 2. Use the tools through Cursor's AI interface
-3. Example: "Use query_flowise to analyze 'survivor testimony patterns' with anonymize=true and output_type=study guide"
+3. Example: "Use query_Langflow to analyze 'survivor testimony patterns' with anonymize=true and output_type=study guide"
 
 ## Troubleshooting
 
 ### Common Issues
 1. **Environment not activated**: Ensure `living_venv` is activated
 2. **Missing environment variables**: Check `.env` file configuration
-3. **Flowise not running**: Start Flowise with `flowise start`
+3. **Langflow not running**: Start Langflow with `Langflow start`
 4. **Permission errors**: Check file permissions and Python path
 
 ### Logs
 - MCP server logs: `mcp_server.log`
-- Flowise logs: Check Flowise UI at http://localhost:3000
+- Langflow logs: Check Langflow UI at http://localhost:7860
 
 ## Development
 
@@ -121,10 +128,10 @@ Located at `~/.cursor/mcp.json`:
 ### Testing
 ```bash
 # Test tool listing
-echo '{"method": "tools.list", "params": []}' | python flowise_mcp_server.py
+echo '{"method": "tools.list", "params": []}' | python Langflow_mcp_server.py
 
 # Test tool execution
-echo '{"method": "tools.execute", "params": ["get_status"]}' | python flowise_mcp_server.py
+echo '{"method": "tools.execute", "params": ["get_status"]}' | python Langflow_mcp_server.py
 ```
 
 ## Security Considerations
@@ -138,5 +145,5 @@ echo '{"method": "tools.execute", "params": ["get_status"]}' | python flowise_mc
 
 - MCP server runs in the same process as Cursor
 - Tool execution is synchronous
-- Large queries may take time depending on Flowise graph complexity
+- Large queries may take time depending on Langflow graph complexity
 - Dashboard visualizations are generated asynchronously 

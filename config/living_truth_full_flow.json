@@ -38,7 +38,7 @@
   ],
   "metadata": {
     "name": "Living Truth Engine",
-    "description": "Flowise chatflow for survivor testimony analysis",
+    "description": "Langflow workflow for survivor testimony analysis",
     "version": "1.0.0",
     "author": "Living Truth Engine Team"
   }

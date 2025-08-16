@@ -1,0 +1,40 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['scripts/analyze/archive_imagination_podcast*.py', 'scripts/analyze/analyze_imagination_podcast_*.py']
+---
+
+
+
+# Analysis Scripts and MCP-First Batching
+
+## Analysis scripts location
+```text
+- All analysis/archive scripts are in `scripts/analyze/`
+  - Examples: `scripts/analyze/analyze_imagination_podcast_*.py`, `scripts/analyze/archive_imagination_podcast*.py`
+- Prefer MCP Hub meta-tools with batching instead of invoking scripts directly.
+- Phase 8.1: Use unified dashboard interface at http://localhost:8050 for analysis
+```
+
+## MCP-first batching usage
+```text
+- Analysis: use `batch_execute_tools` or `execute_category_tools('analysis', ...)` for grouped operations
+- GitHub via Hub: use `execute_github_tool` or `execute_category_tools('github', ...)`
+  - Allowed GitHub tools: list_repositories, search_repositories, create_issue, get_github_status
+```
+
+## Phase 8.1 Dashboard Integration
+```text
+- Unified Interface: All analysis functionality accessible via dashboard at http://localhost:8050
+- Quick Start: Pre-filled defaults for immediate analysis (10 videos, oldest first, depth 3)
+- Run Management: Browse and manage analysis results with detailed bundle views
+- Advanced Controls: Expert toggles and raw MCP tool access
+- Progressive Disclosure: Simple defaults with expandable advanced options
+ - Fallbacks: Dashboard reads runs, details, and corpus from data/runs when MCP is unavailable in container
+```
+
+## Checklist additions
+- Trigger analysis through MCP when possible (batching preferred)
+- Use unified dashboard interface for user-friendly analysis workflows
+- Verify script paths under `scripts/analyze/` in docs/tests

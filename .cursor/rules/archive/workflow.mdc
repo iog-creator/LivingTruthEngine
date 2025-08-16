@@ -1,0 +1,39 @@
+---
+description: Mandatory bring-up → smoke → verify loop. Keep scope tiny. Use docs.
+alwaysApply: false
+globs:
+  - "**/*.py"
+  - "src/**"
+  - "scripts/**"
+  - "docs/**"
+---
+
+# Bring-up → Smoke → Verify (must follow)
+
+**Before any code or “it works” claim:**
+1) Run `bash scripts/bring_up.sh && bash scripts/smoke_youtube.sh`
+   - If either fails, STOP. Fix only that failing step. Re-run both.
+2) When both pass, bind UI to the proven endpoints (no direct container calls).
+
+## Use these seams (single source of truth)
+- GET /api/health  (+ /api/health/full if present)
+- GET /api/tools
+- POST /api/runs/youtube/start
+- GET /api/runs, /api/runs/{id}, /api/runs/{id}/corpus
+
+## Non-negotiables
+- All responses use `{status, data, error}`.
+- No disk/tool-registry fallbacks. If MCP/tools are down → return 503 with a clear reason.
+- If autosubs are used, record it in metrics and surface it in UI text (no silent fallback).
+
+## Keep context light — point to docs
+Before coding, skim:
+- ROOT_OVERVIEW.md (endpoints/ports)
+- README.md / QUICKSTART.md (health & usage)
+- Phase docs for the current scope (e.g., PHASE_8_2_PLAN.md)
+
+## PR checklist (reviewers enforce)
+- Pasted outputs of both scripts (“Bring-up & Smoke evidence”)
+- One scoped change (backend OR UI, unless trivial glue)
+- Minimal tests green
+- Docs updated (if behavior/UI changed)

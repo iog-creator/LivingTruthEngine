@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: archived
+last_reviewed: 2025-08-13
+related_files: []
+---
+
 # Revised Instructions for Cursor AI to Fix Alignment Issues in Living Truth Engine
 
 These instructions have been updated based on the latest README.md (August 2, 2025), which reflects the current Langflow-based system, integrated services (e.g., Redis, Neo4j, LM Studio), extensive MCP tools, and the new Ubuntu Cursor Fix section. Key revisions: Emphasize Langflow over Flowise equivalents; incorporate README's service URLs and MCP tool list (e.g., use existing `generate_viz` for visualizations, `query_langflow` for audio if integrated); align with updated project structure (e.g., scripts/setup/ for automation); reference the Cursor Fix for Ubuntu stability; use fresh GitHub summaries for optional servers (Rulego: Go-based with MCP auto-registration, no native Docker; Director: No exact repo found—use alternative from awesome-mcp-servers like mcp-solver for routing; DevDocs: Docker-supported with crawl scripts). Prioritize minimal changes for stability, following "if it ain't broke, don't fix it." Use MCP tools for automation (e.g., `mcp_living_truth_fastmcp_server_auto_update_all_documentation()` post-changes). Follow cursor rules: @mcp_server_integration.mdc for additions, @docker_best_practices.mdc for Docker, @coding_standards.mdc for code. Test with `mcp_living_truth_fastmcp_server_comprehensive_health_check()`. Project root: `/home/mccoy/Projects/NotebookLM/LivingTruthEngine`.

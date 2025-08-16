@@ -1,7 +1,7 @@
 {
-  "flowise": {
-    "api_endpoint": "http://localhost:3000",
-    "api_key": "your_flowise_api_key",
+  "Langflow": {
+    "api_endpoint": "http://localhost:7860",
+    "api_key": "your_Langflow_api_key",
     "chatflow_id": "your_chatflow_id"
   },
   "langchain": {

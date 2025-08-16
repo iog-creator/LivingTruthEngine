@@ -1,0 +1,3 @@
+{
+  "/(dashboard)/graph/page": "app/(dashboard)/graph/page.js"
+}

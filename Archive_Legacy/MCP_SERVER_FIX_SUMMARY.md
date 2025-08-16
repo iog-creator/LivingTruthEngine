@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: archived
+last_reviewed: 2025-08-13
+related_files: ['.cursor/mcp.json', 'src/mcp_servers/github_mcp_server.py', 'src/mcp_servers/postgresql_mcp_server.py', 'src/mcp_servers/langflow_mcp_server.py', 'src/mcp_servers/living_truth_fastmcp_server.py', 'src/mcp_servers/huggingface_mcp_server.py']
+---
+
 # MCP Server Fix Summary
 
 ## Overview

@@ -1,0 +1,44 @@
+# LLMs (served by LM Studio OR API)
+[llm.default]
+provider = "lmstudio"   # or "openai"|"hf"
+model    = "qwen/qwen3-8b-instruct"
+endpoint = "http://localhost:1234/v1"  # desktop LM Studio
+device   = "cuda_if_available"  # GPU primary, CPU fallback only if GPU not available
+
+# Embeddings (for pgvector)
+[embedding.default]
+provider = "hf"
+model    = "sentence-transformers/all-MiniLM-L6-v2"
+dim      = 384
+device   = "cuda"  # GPU primary
+
+# NER (non‑LLM)
+[ner.default]
+provider = "spacy"
+model    = "en_core_web_trf"
+
+# Reranker (non‑LLM)
+[reranker.default]
+provider = "hf"
+model    = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+device   = "cuda_preferred_cpu_fallback"  # GPU if <80% GPU mem load, otherwise CPU
+
+# OCR / STT (non‑LLM)
+[ocr.default]
+provider = "tesseract"
+lang     = "eng"
+
+[stt.default]
+provider = "whisper"
+model    = "base"
+
+# Diarization (optional non‑LLM)
+[diarization.default]
+provider = "pyannote"
+pipeline = "pyannote/speaker-diarization"
+
+# Topic modeling (non‑LLM)
+[topics.default]
+provider = "bertopic"
+backend  = "sentence-transformers/all-MiniLM-L6-v2"
+

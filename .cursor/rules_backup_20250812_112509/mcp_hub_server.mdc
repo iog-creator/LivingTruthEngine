@@ -1,0 +1,22 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: []
+---
+
+
+
+
+**This MCP Hub Server provides a scalable, organized, and Cursor-compliant solution for accessing all project tools while maintaining optimal performance.**
+
+## 📚 **Related Rules**
+- **@current_working_state.mdc** - Current system status and operational details
+- **@mcp_server_integration.mdc** - MCP server integration patterns and best practices
+- **@project_overview.mdc** - Overall project architecture and components
+- **@coding_standards.mdc** - Code quality and development standards
+
+**Cross-References**:
+- **Tool Usage Patterns**: See @mcp_server_integration.mdc#tool-usage-patterns
+- **Hub Server Status**: See @current_working_state.mdc#mcp-hub-server-status
+- **Hub Components**: See @project_overview.mdc#mcp-hub-server-components

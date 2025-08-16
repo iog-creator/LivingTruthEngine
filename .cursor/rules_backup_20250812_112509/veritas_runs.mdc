@@ -1,0 +1,287 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['merkle.json', 'metrics.json', 'manifest.json']
+---
+
+# Veritas Generalist Ingestion Runner - Development Guidelines
+
+## Overview
+Implements the Generalist Ingestion Runner and Job Runs UI. Enforce local-only by default.
+
+## Core Principles
+
+### Function Design
+- **Prefer small, single-purpose functions with type hints**
+- **Fail-fast pattern**: No fallback mechanisms, explicit error handling
+- **Local-first**: No external network calls unless explicitly configured
+- **Bundle-centric**: All operations produce verifiable .veritasrun bundles
+
+### Network and External Services
+- **No Hugging Face/network bursts unless HF_BURST=="on"**
+- **OCR default off**: Only set OCR_REQUIRED="true" to allow downstream handling
+- **Local processing**: Prefer local processing over external API calls
+- **Rate limiting**: Implement appropriate rate limiting for any external calls
+
+### Bundle Structure
+- **Produce .veritasrun bundles under data/outputs/runs/<ts>_<slug>.veritasrun**
+- **Each bundle must include**:
+  - `manifest.json`: Run metadata, flags, document list
+  - `corpus.jsonl`: Canonicalized documents in JSONL format
+  - `proofs/*.sha256`: Individual SHA-256 proof files for each document
+  - `merkle.json`: Merkle tree with root hash and leaf hashes
+  - `metrics.json`: Run statistics (doc count, bytes, duration, errors)
+
+### MCP Integration
+- **Expose MCP tools**: start_veritas_run, get_veritas_run_status, list_veritas_runs, open_veritas_bundle
+- **Tool registry**: Register all tools in config/tool_registry.json
+- **Error handling**: Return structured error responses, not exceptions
+- **Performance**: Target <1s response time for tool execution
+
+## Implementation Guidelines
+
+### VeritasRunner Class
+```python
+class VeritasRunner:
+    """Coordinates a verifiable, local-first ingestion run and writes a .veritasrun bundle."""
+    
+    def start(self, topic: str, max_docs: int = 10, sources: Optional[List[str]] = None) -> VeritasRunStatus:
+        """Start a new ingestion run and create bundle."""
+        
+    def get_status(self, run_id: str) -> VeritasRunStatus:
+        """Get status of a specific run."""
+        
+    def list_runs(self, limit: int = 20) -> List[str]:
+        """List available runs."""
+        
+    def open_bundle(self, run_id: str) -> Dict[str, Any]:
+        """Open and parse a bundle."""
+```
+
+### Bundle Writing
+```python
+def write_bundle(run_dir: str, docs: List[Dict[str, Any]], flags: Dict[str, Any]) -> Dict[str, Any]:
+    """Write a complete .veritasrun bundle with all required components."""
+```
+
+### Document Processing
+```python
+def to_canonical(raw: dict) -> dict:
+    """Convert raw document to canonical format."""
+    
+def sha256_text(text: str) -> str:
+    """Generate SHA-256 hash of text content."""
+    
+def build_merkle(leaves: List[str]) -> dict:
+    """Build merkle tree from document hashes."""
+```
+
+## Testing Requirements
+
+### Test Coverage
+- **Add tests/test_phase7_veritas.py** to assert bundle layout and MCP listing
+- **Bundle structure validation**: Verify all required files exist
+- **MCP tool testing**: Test all four Veritas MCP tools
+- **Flag validation**: Ensure flags match config/veritas_flags.toml
+- **Performance testing**: Verify response times meet targets
+
+### Test Structure
+```python
+def test_phase7_smoke_run():
+    """Test basic Veritas run creation and bundle structure."""
+    
+def test_veritas_mcp_tools():
+    """Test MCP tools for Veritas operations."""
+    
+def test_bundle_structure():
+    """Test complete bundle structure and validation."""
+```
+
+## Dashboard Integration
+
+### Job Runs Tab
+- **Enumerate bundles**: List all .veritasrun bundles in data/outputs/runs/
+- **Bundle viewer**: Display manifest, metrics, and merkle root
+- **Health checks**: Verify dashboard health endpoint
+- **Error handling**: Graceful handling of missing or corrupted bundles
+
+## Configuration
+
+### Flags File
+- **config/veritas_flags.toml**: Central configuration for all flags
+- **Default values**: Conservative defaults for local-only operation
+- **Flag validation**: Validate flags on startup and during operations
+
+## Error Handling
+
+### Fail-Fast Pattern
+- **No fallbacks**: Either work or throw explicit error
+- **Structured errors**: Return error objects, not exceptions
+- **Logging**: Comprehensive logging for debugging
+- **Validation**: Validate inputs and outputs at each step
+
+## Performance Targets
+
+### Response Times
+- **Bundle creation**: <2s for typical runs
+- **MCP tool execution**: <1s response time
+- **Dashboard loading**: <1s for Job Runs tab
+- **Test execution**: <30s for complete test suite
+
+## Security and Privacy
+
+### Data Handling
+- **PII scrubbing**: Standard PII scrubbing enabled by default
+- **Local storage**: All data stored locally in bundles
+- **No external transmission**: No data sent to external services unless configured
+- **Access control**: Proper file permissions for bundle directories
+
+## Maintenance
+
+### Code Quality
+- **Type hints**: Required for all functions
+- **Docstrings**: Comprehensive documentation
+- **Error handling**: Explicit error handling patterns
+- **Testing**: 100% test coverage for new functionality
+
+# Veritas Generalist Ingestion Runner - Development Guidelines
+
+## Overview
+Implements the Generalist Ingestion Runner and Job Runs UI. Enforce local-only by default.
+
+## Core Principles
+
+### Function Design
+- **Prefer small, single-purpose functions with type hints**
+- **Fail-fast pattern**: No fallback mechanisms, explicit error handling
+- **Local-first**: No external network calls unless explicitly configured
+- **Bundle-centric**: All operations produce verifiable .veritasrun bundles
+
+### Network and External Services
+- **No Hugging Face/network bursts unless HF_BURST=="on"**
+- **OCR default off**: Only set OCR_REQUIRED="true" to allow downstream handling
+- **Local processing**: Prefer local processing over external API calls
+- **Rate limiting**: Implement appropriate rate limiting for any external calls
+
+### Bundle Structure
+- **Produce .veritasrun bundles under data/outputs/runs/<ts>_<slug>.veritasrun**
+- **Each bundle must include**:
+  - `manifest.json`: Run metadata, flags, document list
+  - `corpus.jsonl`: Canonicalized documents in JSONL format
+  - `proofs/*.sha256`: Individual SHA-256 proof files for each document
+  - `merkle.json`: Merkle tree with root hash and leaf hashes
+  - `metrics.json`: Run statistics (doc count, bytes, duration, errors)
+
+### MCP Integration
+- **Expose MCP tools**: start_veritas_run, get_veritas_run_status, list_veritas_runs, open_veritas_bundle
+- **Tool registry**: Register all tools in config/tool_registry.json
+- **Error handling**: Return structured error responses, not exceptions
+- **Performance**: Target <1s response time for tool execution
+
+## Implementation Guidelines
+
+### VeritasRunner Class
+```python
+class VeritasRunner:
+    """Coordinates a verifiable, local-first ingestion run and writes a .veritasrun bundle."""
+    
+    def start(self, topic: str, max_docs: int = 10, sources: Optional[List[str]] = None) -> VeritasRunStatus:
+        """Start a new ingestion run and create bundle."""
+        
+    def get_status(self, run_id: str) -> VeritasRunStatus:
+        """Get status of a specific run."""
+        
+    def list_runs(self, limit: int = 20) -> List[str]:
+        """List available runs."""
+        
+    def open_bundle(self, run_id: str) -> Dict[str, Any]:
+        """Open and parse a bundle."""
+```
+
+### Bundle Writing
+```python
+def write_bundle(run_dir: str, docs: List[Dict[str, Any]], flags: Dict[str, Any]) -> Dict[str, Any]:
+    """Write a complete .veritasrun bundle with all required components."""
+```
+
+### Document Processing
+```python
+def to_canonical(raw: dict) -> dict:
+    """Convert raw document to canonical format."""
+    
+def sha256_text(text: str) -> str:
+    """Generate SHA-256 hash of text content."""
+    
+def build_merkle(leaves: List[str]) -> dict:
+    """Build merkle tree from document hashes."""
+```
+
+## Testing Requirements
+
+### Test Coverage
+- **Add tests/test_phase7_veritas.py** to assert bundle layout and MCP listing
+- **Bundle structure validation**: Verify all required files exist
+- **MCP tool testing**: Test all four Veritas MCP tools
+- **Flag validation**: Ensure flags match config/veritas_flags.toml
+- **Performance testing**: Verify response times meet targets
+
+### Test Structure
+```python
+def test_phase7_smoke_run():
+    """Test basic Veritas run creation and bundle structure."""
+    
+def test_veritas_mcp_tools():
+    """Test MCP tools for Veritas operations."""
+    
+def test_bundle_structure():
+    """Test complete bundle structure and validation."""
+```
+
+## Dashboard Integration
+
+### Job Runs Tab
+- **Enumerate bundles**: List all .veritasrun bundles in data/outputs/runs/
+- **Bundle viewer**: Display manifest, metrics, and merkle root
+- **Health checks**: Verify dashboard health endpoint
+- **Error handling**: Graceful handling of missing or corrupted bundles
+
+## Configuration
+
+### Flags File
+- **config/veritas_flags.toml**: Central configuration for all flags
+- **Default values**: Conservative defaults for local-only operation
+- **Flag validation**: Validate flags on startup and during operations
+
+## Error Handling
+
+### Fail-Fast Pattern
+- **No fallbacks**: Either work or throw explicit error
+- **Structured errors**: Return error objects, not exceptions
+- **Logging**: Comprehensive logging for debugging
+- **Validation**: Validate inputs and outputs at each step
+
+## Performance Targets
+
+### Response Times
+- **Bundle creation**: <2s for typical runs
+- **MCP tool execution**: <1s response time
+- **Dashboard loading**: <1s for Job Runs tab
+- **Test execution**: <30s for complete test suite
+
+## Security and Privacy
+
+### Data Handling
+- **PII scrubbing**: Standard PII scrubbing enabled by default
+- **Local storage**: All data stored locally in bundles
+- **No external transmission**: No data sent to external services unless configured
+- **Access control**: Proper file permissions for bundle directories
+
+## Maintenance
+
+### Code Quality
+- **Type hints**: Required for all functions
+- **Docstrings**: Comprehensive documentation
+- **Error handling**: Explicit error handling patterns
+- **Testing**: 100% test coverage for new functionality
+

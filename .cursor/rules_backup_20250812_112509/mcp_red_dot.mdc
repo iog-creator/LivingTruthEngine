@@ -1,0 +1,27 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['python3 -m json.tool .cursor/mcp.json', '.cursor/mcp.json']
+---
+
+## MCP Red Dot Prevention (concise)
+
+**Naming**
+- Use underscores, not dashes, in server/tool names: `my_mcp_server`, `get_status`.
+- Keep tool names ≤ 60 chars.
+
+**Workspace config (preferred)**
+- Use `.cursor/mcp.json` in this repo as the source of truth.
+- Avoid conflicting global configs; if present, ensure unique names.
+
+**Quick checks before editing MCP config**
+- No dashes in names; tool names ≤ 60 chars.
+- Absolute paths for commands.
+- Validate JSON: `python3 -m json.tool .cursor/mcp.json`
+- Test server standalone before relying on it.
+
+**Troubleshooting**
+- If red dot: check naming, tool length, then restart Cursor.
+- Tail logs: `~/.config/Cursor/logs/*/mcp*.log`
+- Search for stray configs: `find ~ -name "mcp.json" -type f`

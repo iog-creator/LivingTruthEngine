@@ -1,0 +1,83 @@
+---
+description: Enforce a strict Build-Verify-Iterate workflow for Living Truth Engine; all changes must pass bring-up, smoke, and tests before completion.
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# Build-Verify-Iterate Workflow Rule
+
+## Description
+Enforces a strict development workflow for the Living Truth Engine to prevent untested or unverified changes from being marked as complete.
+
+## 🎯 Key Objectives
+- Ensure every change is verified via bring-up → smoke → tests
+- Prevent silent fallbacks and code/docs drift
+- Keep changes small, reproducible, and observable
+
+## 🧭 Workflow Overview
+Every change — no matter how small — must go through this pipeline:
+1. BUILD
+2. VERIFY
+3. ITERATE
+
+---
+
+## 1) BUILD
+- Rebuild any container whose code was touched (especially `dashboard`).
+- Commands:
+```bash
+docker compose -f docker/docker-compose.yml build dashboard
+docker compose -f docker/docker-compose.yml up -d dashboard
+```
+- Prove the running container has your changes:
+```bash
+sha256sum src/dashboard/unified_dashboard.py | tee /tmp/local_dash_hash.txt
+DASH_CONT=$(docker ps --format '{{.Names}}' | grep -E 'dashboard|dash' | head -n1)
+docker exec -i "$DASH_CONT" /bin/sh -lc 'sha256sum src/dashboard/unified_dashboard.py' | tee /tmp/incontainer_dash_hash.txt
+diff -u /tmp/local_dash_hash.txt /tmp/incontainer_dash_hash.txt
+```
+
+## 2) VERIFY
+- Health gates:
+```bash
+curl -s http://localhost:8050/api/health/full | jq .
+```
+All gates must return status ok before continuing.
+
+- Tiny smoke run (limit=1, max_depth=1) on default channel from docs:
+```bash
+curl -s -X POST http://localhost:8050/api/runs/youtube/start \
+  -H 'Content-Type: application/json' \
+  -d '{"channel_url":"https://www.youtube.com/@imaginationpodcastofficial","limit":1,"sort":"oldest","max_depth":1}' | jq .
+```
+
+- Verify bundle and corpus:
+```bash
+curl -s http://localhost:8050/api/runs | jq .
+RID=<latest_run_id>
+curl -s http://localhost:8050/api/runs/$RID | jq .
+curl -s http://localhost:8050/api/runs/$RID/corpus | jq .
+```
+Expect `.veritasrun` folder, and files: `manifest.json`, `corpus.jsonl`, `merkle.json`, `metrics.json`; `corpus.jsonl` must contain ≥1 document.
+
+- Tests (fail-fast):
+```bash
+pytest tests/test_no_fallbacks.py tests/test_health_gates.py -v
+```
+
+## 3) ITERATE
+- If any step fails, stop and fix that step, then re-run from BUILD.
+- When a step passes:
+  - Update docs (`README.md`, `PHASE_*`, `CONSOLIDATED_COMPLETION_SUMMARY.md`).
+  - Commit with message: `phaseX.Y: <brief change> [verified]`.
+  - Paste bring-up & smoke outputs in PR under “Bring-up & Smoke evidence”.
+
+## 🔒 Additional Constraints
+- No hidden fallbacks; autosubs only if official fails and must be explicit in metrics and UI.
+- Use only documented API endpoints; no direct container or DB calls.
+- Responses respect envelope: `{status, data, error}`.
+
+## ✅ Success Metrics
+- 100% of changes tested end-to-end before “done”.
+- No doc/code drift.
+- Reproducible from fresh clone → bring-up → smoke → verified pass.

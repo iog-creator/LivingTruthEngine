@@ -1,0 +1,374 @@
+{
+  "documents": [
+    {
+      "id": "2cee3d8704f8b941",
+      "index": 0,
+      "source_type": "youtube",
+      "uri": "https://www.youtube.com/watch?v=j2KNIYq6pEs",
+      "title": "S5E94 | Cindy Metcalf - How Survivors Can Sue Their Perpetrators... and Win",
+      "text": "[No transcript available for video j2KNIYq6pEs]",
+      "canonicalized_at": "2025-08-11T02:46:26.265684+00:00",
+      "provenance": {
+        "extraction_method": "youtube_api",
+        "crawl_depth": 0,
+        "crawl_parent": null,
+        "processing_timestamp": "2025-08-11T02:46:26.265697+00:00",
+        "video_id": "j2KNIYq6pEs",
+        "upload_date": "NA",
+        "view_count": 204,
+        "duration": 4630
+      },
+      "metadata": {
+        "video_id": "j2KNIYq6pEs",
+        "upload_date": "NA",
+        "view_count": 204,
+        "duration": 4630,
+        "extraction_method": "youtube_api",
+        "char_count": 47,
+        "word_count": 6,
+        "source_type": "youtube"
+      },
+      "youtube": {
+        "video_id": "j2KNIYq6pEs",
+        "upload_date": "NA",
+        "view_count": 204,
+        "duration": 4630,
+        "channel": null,
+        "channel_id": null
+      }
+    },
+    {
+      "id": "46e8bd737336e493",
+      "index": 1,
+      "source_type": "youtube",
+      "uri": "https://www.youtube.com/watch?v=0xXsEyKguvU",
+      "title": "The Inspiration Behind 'The Imagination': How & Why I Started a Podcast",
+      "text": "[No transcript available for video 0xXsEyKguvU]",
+      "canonicalized_at": "2025-08-11T02:46:26.265708+00:00",
+      "provenance": {
+        "extraction_method": "youtube_api",
+        "crawl_depth": 0,
+        "crawl_parent": null,
+        "processing_timestamp": "2025-08-11T02:46:26.265710+00:00",
+        "video_id": "0xXsEyKguvU",
+        "upload_date": "NA",
+        "view_count": 1083,
+        "duration": 1544
+      },
+      "metadata": {
+        "video_id": "0xXsEyKguvU",
+        "upload_date": "NA",
+        "view_count": 1083,
+        "duration": 1544,
+        "extraction_method": "youtube_api",
+        "char_count": 47,
+        "word_count": 6,
+        "source_type": "youtube"
+      },
+      "youtube": {
+        "video_id": "0xXsEyKguvU",
+        "upload_date": "NA",
+        "view_count": 1083,
+        "duration": 1544,
+        "channel": null,
+        "channel_id": null
+      }
+    },
+    {
+      "id": "0cbb3fa5d524aba9",
+      "index": 2,
+      "source_type": "youtube",
+      "uri": "https://www.youtube.com/watch?v=VBH8H1WyN3k",
+      "title": "TIP Movie Night | CKLN MC Radio Series P5 - An Overview of Ritual Abuse, Mind Control & Dissociation",
+      "text": "[No transcript available for video VBH8H1WyN3k]",
+      "canonicalized_at": "2025-08-11T02:46:26.265716+00:00",
+      "provenance": {
+        "extraction_method": "youtube_api",
+        "crawl_depth": 0,
+        "crawl_parent": null,
+        "processing_timestamp": "2025-08-11T02:46:26.265717+00:00",
+        "video_id": "VBH8H1WyN3k",
+        "upload_date": "NA",
+        "view_count": 0,
+        "duration": 3570
+      },
+      "metadata": {
+        "video_id": "VBH8H1WyN3k",
+        "upload_date": "NA",
+        "view_count": 0,
+        "duration": 3570,
+        "extraction_method": "youtube_api",
+        "char_count": 47,
+        "word_count": 6,
+        "source_type": "youtube"
+      },
+      "youtube": {
+        "video_id": "VBH8H1WyN3k",
+        "upload_date": "NA",
+        "view_count": 0,
+        "duration": 3570,
+        "channel": null,
+        "channel_id": null
+      }
+    },
+    {
+      "id": "4f1f81065f82d5eb",
+      "index": 3,
+      "source_type": "youtube",
+      "uri": "https://www.youtube.com/watch?v=NS8qgbzKRwg",
+      "title": "TIP Movie Night | CKLN MC Radio Series 4 - Interview with US Government Abductee Ronald Howard Cohen",
+      "text": "[No transcript available for video NS8qgbzKRwg]",
+      "canonicalized_at": "2025-08-11T02:46:26.265722+00:00",
+      "provenance": {
+        "extraction_method": "youtube_api",
+        "crawl_depth": 0,
+        "crawl_parent": null,
+        "processing_timestamp": "2025-08-11T02:46:26.265723+00:00",
+        "video_id": "NS8qgbzKRwg",
+        "upload_date": "NA",
+        "view_count": 806,
+        "duration": 7130
+      },
+      "metadata": {
+        "video_id": "NS8qgbzKRwg",
+        "upload_date": "NA",
+        "view_count": 806,
+        "duration": 7130,
+        "extraction_method": "youtube_api",
+        "char_count": 47,
+        "word_count": 6,
+        "source_type": "youtube"
+      },
+      "youtube": {
+        "video_id": "NS8qgbzKRwg",
+        "upload_date": "NA",
+        "view_count": 806,
+        "duration": 7130,
+        "channel": null,
+        "channel_id": null
+      }
+    },
+    {
+      "id": "f7fa2de14ff13372",
+      "index": 4,
+      "source_type": "youtube",
+      "uri": "https://www.youtube.com/watch?v=D691xfozd3A",
+      "title": "S5E93 | Anya Wick - Jeffrey Epstein's Niece, The Cult of Ba'al Survivor, & a Voice for the Voiceless",
+      "text": "[No transcript available for video D691xfozd3A]",
+      "canonicalized_at": "2025-08-11T02:46:26.265726+00:00",
+      "provenance": {
+        "extraction_method": "youtube_api",
+        "crawl_depth": 0,
+        "crawl_parent": null,
+        "processing_timestamp": "2025-08-11T02:46:26.265728+00:00",
+        "video_id": "D691xfozd3A",
+        "upload_date": "NA",
+        "view_count": 13863,
+        "duration": 6985
+      },
+      "metadata": {
+        "video_id": "D691xfozd3A",
+        "upload_date": "NA",
+        "view_count": 13863,
+        "duration": 6985,
+        "extraction_method": "youtube_api",
+        "char_count": 47,
+        "word_count": 6,
+        "source_type": "youtube"
+      },
+      "youtube": {
+        "video_id": "D691xfozd3A",
+        "upload_date": "NA",
+        "view_count": 13863,
+        "duration": 6985,
+        "channel": null,
+        "channel_id": null
+      }
+    },
+    {
+      "id": "6a46a386ffd06276",
+      "index": 5,
+      "source_type": "youtube",
+      "uri": "https://www.youtube.com/watch?v=Bdrwd8p4fKc",
+      "title": "S5E92 | JR Sweet - MK ULTRA Mass Shootings & Assassinations, Amnesic Slavery, & Bloodline Networks",
+      "text": "[No transcript available for video Bdrwd8p4fKc]",
+      "canonicalized_at": "2025-08-11T02:46:26.265731+00:00",
+      "provenance": {
+        "extraction_method": "youtube_api",
+        "crawl_depth": 0,
+        "crawl_parent": null,
+        "processing_timestamp": "2025-08-11T02:46:26.265732+00:00",
+        "video_id": "Bdrwd8p4fKc",
+        "upload_date": "NA",
+        "view_count": 3014,
+        "duration": 8230
+      },
+      "metadata": {
+        "video_id": "Bdrwd8p4fKc",
+        "upload_date": "NA",
+        "view_count": 3014,
+        "duration": 8230,
+        "extraction_method": "youtube_api",
+        "char_count": 47,
+        "word_count": 6,
+        "source_type": "youtube"
+      },
+      "youtube": {
+        "video_id": "Bdrwd8p4fKc",
+        "upload_date": "NA",
+        "view_count": 3014,
+        "duration": 8230,
+        "channel": null,
+        "channel_id": null
+      }
+    },
+    {
+      "id": "bd70d4f72183c774",
+      "index": 6,
+      "source_type": "youtube",
+      "uri": "https://www.youtube.com/watch?v=k86D0zrNbxg",
+      "title": "TIP Movie Night | CKLN MC Radio Series 3: Claudia Mullen & Radiation Hearings Mind Control Testimony",
+      "text": "[No transcript available for video k86D0zrNbxg]",
+      "canonicalized_at": "2025-08-11T02:46:26.265735+00:00",
+      "provenance": {
+        "extraction_method": "youtube_api",
+        "crawl_depth": 0,
+        "crawl_parent": null,
+        "processing_timestamp": "2025-08-11T02:46:26.265737+00:00",
+        "video_id": "k86D0zrNbxg",
+        "upload_date": "NA",
+        "view_count": 904,
+        "duration": 4896
+      },
+      "metadata": {
+        "video_id": "k86D0zrNbxg",
+        "upload_date": "NA",
+        "view_count": 904,
+        "duration": 4896,
+        "extraction_method": "youtube_api",
+        "char_count": 47,
+        "word_count": 6,
+        "source_type": "youtube"
+      },
+      "youtube": {
+        "video_id": "k86D0zrNbxg",
+        "upload_date": "NA",
+        "view_count": 904,
+        "duration": 4896,
+        "channel": null,
+        "channel_id": null
+      }
+    },
+    {
+      "id": "45c10044e34d9121",
+      "index": 7,
+      "source_type": "youtube",
+      "uri": "https://www.youtube.com/watch?v=VngZLePoNME",
+      "title": "S5E91 | Sharri Burggraaf - GATE, MK ULTRA Medical Experimentation & Catholic Criminal Cult Overcomer",
+      "text": "[No transcript available for video VngZLePoNME]",
+      "canonicalized_at": "2025-08-11T02:46:26.265739+00:00",
+      "provenance": {
+        "extraction_method": "youtube_api",
+        "crawl_depth": 0,
+        "crawl_parent": null,
+        "processing_timestamp": "2025-08-11T02:46:26.265741+00:00",
+        "video_id": "VngZLePoNME",
+        "upload_date": "NA",
+        "view_count": 2142,
+        "duration": 11068
+      },
+      "metadata": {
+        "video_id": "VngZLePoNME",
+        "upload_date": "NA",
+        "view_count": 2142,
+        "duration": 11068,
+        "extraction_method": "youtube_api",
+        "char_count": 47,
+        "word_count": 6,
+        "source_type": "youtube"
+      },
+      "youtube": {
+        "video_id": "VngZLePoNME",
+        "upload_date": "NA",
+        "view_count": 2142,
+        "duration": 11068,
+        "channel": null,
+        "channel_id": null
+      }
+    },
+    {
+      "id": "cbe3ad27619f44f7",
+      "index": 8,
+      "source_type": "youtube",
+      "uri": "https://www.youtube.com/watch?v=yife06w3W5Q",
+      "title": "S5E90 | Magnolia Dove - From Satanic Ritual Abuse & MK ULTRA Networks to Angelic Intervention",
+      "text": "[No transcript available for video yife06w3W5Q]",
+      "canonicalized_at": "2025-08-11T02:46:26.265744+00:00",
+      "provenance": {
+        "extraction_method": "youtube_api",
+        "crawl_depth": 0,
+        "crawl_parent": null,
+        "processing_timestamp": "2025-08-11T02:46:26.265745+00:00",
+        "video_id": "yife06w3W5Q",
+        "upload_date": "NA",
+        "view_count": 2939,
+        "duration": 8365
+      },
+      "metadata": {
+        "video_id": "yife06w3W5Q",
+        "upload_date": "NA",
+        "view_count": 2939,
+        "duration": 8365,
+        "extraction_method": "youtube_api",
+        "char_count": 47,
+        "word_count": 6,
+        "source_type": "youtube"
+      },
+      "youtube": {
+        "video_id": "yife06w3W5Q",
+        "upload_date": "NA",
+        "view_count": 2939,
+        "duration": 8365,
+        "channel": null,
+        "channel_id": null
+      }
+    },
+    {
+      "id": "045cb6eaeea34c9d",
+      "index": 9,
+      "source_type": "youtube",
+      "uri": "https://www.youtube.com/watch?v=j7vhgKG_W2w",
+      "title": "TIP Movie Night | CKLN MC Radio Series P2 - Dr. Colin Ross Mind Control Interview with Wayne Morris",
+      "text": "[No transcript available for video j7vhgKG_W2w]",
+      "canonicalized_at": "2025-08-11T02:46:26.265748+00:00",
+      "provenance": {
+        "extraction_method": "youtube_api",
+        "crawl_depth": 0,
+        "crawl_parent": null,
+        "processing_timestamp": "2025-08-11T02:46:26.265749+00:00",
+        "video_id": "j7vhgKG_W2w",
+        "upload_date": "NA",
+        "view_count": 900,
+        "duration": 6643
+      },
+      "metadata": {
+        "video_id": "j7vhgKG_W2w",
+        "upload_date": "NA",
+        "view_count": 900,
+        "duration": 6643,
+        "extraction_method": "youtube_api",
+        "char_count": 47,
+        "word_count": 6,
+        "source_type": "youtube"
+      },
+      "youtube": {
+        "video_id": "j7vhgKG_W2w",
+        "upload_date": "NA",
+        "view_count": 900,
+        "duration": 6643,
+        "channel": null,
+        "channel_id": null
+      }
+    }
+  ]
+}

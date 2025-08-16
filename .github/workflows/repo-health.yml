@@ -1,0 +1,20 @@
+name: Repo Health
+on:
+  pull_request:
+  schedule:
+    - cron: "17 2 * * *"
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install pyyaml requests
+      - name: SSOT bundle
+        run: python scripts/verify_ssot_bundle.py
+      - name: Compose healthchecks
+        run: python scripts/verify_compose_healthchecks.py || true
+      - name: Models audit (LM Studio may be absent on CI)
+        env: { LM_STUDIO_ENDPOINT: http://localhost:1234/v1 }
+        run: python scripts/audit_models.py || true

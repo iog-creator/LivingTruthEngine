@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+python scripts/validate_cursor_rules_frontmatter.py --strict

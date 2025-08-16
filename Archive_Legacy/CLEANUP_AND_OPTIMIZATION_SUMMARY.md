@@ -1,3 +1,10 @@
+---
+phase: 9.3
+status: archived
+last_reviewed: 2025-08-13
+related_files: ['src/mcp_servers/living_truth_engine_mcp.py', 'src/mcp_servers/lm_studio_mcp_server.py', 'src/mcp_servers/living_truth_enhanced_mcp.py', 'src/mcp_servers/flowise_mcp_server.py', 'src/mcp_servers/basic_mcp_server.py', 'docs/LANGFLOW_SETUP.md', 'docs/INDEPENDENT_SERVICES.md', 'src/mcp_servers/github_mcp_server.py', 'docs/CLEANUP_AND_OPTIMIZATION_SUMMARY.md', 'src/mcp_servers/living_truth_mcp_server_v2.py', 'src/mcp_servers/living_truth_mcp_server_stdio.py', 'src/mcp_servers/living_truth_fastmcp_server.py', 'src/mcp_servers/huggingface_mcp_server.py', 'src/mcp_servers/living_truth_mcp_server.py', 'docs/LM_STUDIO_MODEL_ACCESS.md', 'docs/CURRENT_STATUS.md', 'src/mcp_servers/langflow_mcp_server.py', 'docs/LM_STUDIO_HEALTH_CHECK_FIX.md', 'docs/FORENSIC_ANALYSIS_SETUP.md', 'docs/AUTOMATED_DEVELOPMENT_SYSTEM.md', 'docs/CURRENT_SYSTEM_STATUS.md', 'docs/FLOWISE_FIXES.md', 'docs/MCP_SERVER_FIX_SUMMARY.md', 'docs/README.md', 'docs/DOCKER_SETUP.md', 'src/mcp_servers/cursor_detectable_mcp.py', 'src/mcp_servers/postgresql_mcp_server.py', 'docs/MCP_SERVER_UPDATES.md']
+---
+
 # Cleanup and Optimization Summary
 
 ## Overview

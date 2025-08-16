@@ -1,0 +1,25 @@
+version: 1
+policies:
+  - id: claims_consistency
+    when: "$.claim.type in ['factual','temporal']"
+    then:
+      - check: "exists($.evidence)"
+        fail: "Claim has no evidence"
+      - check: "$.confidence >= 0.5"
+        warn: "Low confidence claim"
+  
+  - id: document_quality
+    when: "$.source_type in ['youtube','web','pdf']"
+    then:
+      - check: "len($.text) > 50"
+        fail: "Document too short"
+      - check: "exists($.meta.url) || exists($.meta.title)"
+        warn: "Document missing metadata"
+  
+  - id: entity_validation
+    when: "$.entity_type in ['person','organization','location']"
+    then:
+      - check: "len($.name) > 1"
+        fail: "Entity name too short"
+      - check: "$.confidence >= 0.3"
+        warn: "Low confidence entity"

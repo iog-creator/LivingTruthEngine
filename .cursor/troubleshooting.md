@@ -1,8 +1,15 @@
+---
+phase: 9.3
+status: active
+last_reviewed: 2025-08-13
+related_files: ['living_truth_full_flow.json']
+---
+
 # Living Truth Engine - Troubleshooting Guide
 
 ## Overview
 
-This troubleshooting guide covers common issues and solutions for the Living Truth Engine project, including environment setup, MCP server problems, Flowise integration, and general development issues.
+This troubleshooting guide covers common issues and solutions for the Living Truth Engine project, including environment setup, MCP server problems, Langflow integration, and general development issues.
 
 ## Environment Issues
 
@@ -46,7 +53,7 @@ python -m spacy download en_core_web_sm
 #### Issue: Environment Variables Not Loading
 **Symptoms**: MCP server can't find API keys
 ```
-ERROR: FLOWISE_API_KEY and FLOWISE_CHATFLOW_ID must be set in .env
+ERROR: Langflow_API_KEY and Langflow_CHATFLOW_ID must be set in .env
 ```
 
 **Solution**:
@@ -77,9 +84,9 @@ ls -la .env
 2. **Verify MCP server path**:
    ```json
    {
-     "flowise-mcp-server": {
+     "Langflow-mcp-server": {
        "command": "${PROJECT_ROOT}/NotebookLM/LivingTruthEngine/living_venv/bin/python",
-       "args": ["${PROJECT_ROOT}/NotebookLM/LivingTruthEngine/flowise_mcp_server.py"]
+       "args": ["${PROJECT_ROOT}/NotebookLM/LivingTruthEngine/Langflow_mcp_server.py"]
      }
    }
    ```
@@ -88,7 +95,7 @@ ls -la .env
 
 4. **Test MCP server manually**:
    ```bash
-   echo '{"method": "tools.list", "params": []}' | python flowise_mcp_server.py
+   echo '{"method": "tools.list", "params": []}' | python Langflow_mcp_server.py
    ```
 
 #### Issue: MCP Server Tools Not Working
@@ -98,12 +105,12 @@ ls -la .env
 1. **Check environment variables**:
    ```bash
    source living_venv/bin/activate
-   python -c "import os; from dotenv import load_dotenv; load_dotenv(); print('API_KEY:', os.getenv('FLOWISE_API_KEY'))"
+   python -c "import os; from dotenv import load_dotenv; load_dotenv(); print('API_KEY:', os.getenv('Langflow_API_KEY'))"
    ```
 
 2. **Test individual tools**:
    ```bash
-   echo '{"method": "tools.execute", "params": ["get_status"]}' | python flowise_mcp_server.py
+   echo '{"method": "tools.execute", "params": ["get_status"]}' | python Langflow_mcp_server.py
    ```
 
 3. **Check logs**:
@@ -124,17 +131,17 @@ ls -la .env
 
 2. **Verify MCP server implementation**:
    ```python
-   # Check handle_request method in flowise_mcp_server.py
+   # Check handle_request method in Langflow_mcp_server.py
    def handle_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
        # Ensure proper method handling
    ```
 
-## Flowise Integration Issues
+## Langflow Integration Issues
 
-### Flowise Not Running
+### Langflow Not Running
 
-#### Issue: Flowise Installation Problems
-**Symptoms**: `npm install -g flowise` fails or hangs
+#### Issue: Langflow Installation Problems
+**Symptoms**: `npm install -g Langflow` fails or hangs
 
 **Solution**:
 1. **Check Node.js version**:
@@ -145,16 +152,16 @@ ls -la .env
 
 2. **Use sudo for global installation**:
    ```bash
-   sudo npm install -g flowise
+   sudo npm install -g Langflow
    ```
 
 3. **Alternative: Use Docker**:
    ```bash
-   docker run -d --name flowise -p 3000:3000 flowiseai/flowise
+   docker run -d --name Langflow -p 3000:3000 Langflowai/Langflow
    ```
 
-#### Issue: Flowise Not Starting
-**Symptoms**: `flowise start` fails or port 3000 unavailable
+#### Issue: Langflow Not Starting
+**Symptoms**: `Langflow start` fails or port 3000 unavailable
 
 **Solution**:
 1. **Check port availability**:
@@ -168,19 +175,19 @@ ls -la .env
    sudo kill -9 <PID>
    ```
 
-3. **Start Flowise with specific port**:
+3. **Start Langflow with specific port**:
    ```bash
-   flowise start --port 3001
+   Langflow start --port 3001
    ```
 
-### Flowise API Issues
+### Langflow API Issues
 
 #### Issue: API Authentication Errors
 **Symptoms**: 401 Unauthorized errors
 
 **Solution**:
-1. **Check API key in Flowise UI**:
-   - Go to http://localhost:3000
+1. **Check API key in Langflow UI**:
+   - Go to http://localhost:7860
    - Check API keys in settings
    - Copy correct API key to `.env`
 
@@ -191,11 +198,11 @@ ls -la .env
 3. **Test API manually**:
    ```bash
    curl -H "Authorization: Bearer YOUR_API_KEY" \
-        http://localhost:3000/api/v1/chatflows
+        http://localhost:7860/api/v1/chatflows
    ```
 
 #### Issue: Graph Import Problems
-**Symptoms**: Flowise graph not loading or errors
+**Symptoms**: Langflow graph not loading or errors
 
 **Solution**:
 1. **Check JSON format**:
@@ -203,14 +210,14 @@ ls -la .env
    python -m json.tool living_truth_full_flow.json
    ```
 
-2. **Import manually in Flowise UI**:
-   - Go to http://localhost:3000
+2. **Import manually in Langflow UI**:
+   - Go to http://localhost:7860
    - Click "Import" and select the JSON file
    - Configure credentials and variables
 
 3. **Check node compatibility**:
-   - Ensure all nodes are available in Flowise
-   - Update to latest Flowise version
+   - Ensure all nodes are available in Langflow
+   - Update to latest Langflow version
 
 ## Database Issues
 
@@ -371,7 +378,7 @@ ls -la .env
 3. **Check log files**:
    ```bash
    tail -f mcp_server.log
-   tail -f logs/flowise.log
+   tail -f logs/Langflow.log
    ```
 
 ### Common Error Messages
@@ -398,7 +405,7 @@ ls -la .env
 5. **Validate configuration**: Check all configuration files
 
 ### External Resources
-- **Flowise Documentation**: https://docs.flowiseai.com/
+- **Langflow Documentation**: https://docs.Langflowai.com/
 - **LangChain Documentation**: https://python.langchain.com/
 - **PostgreSQL Documentation**: https://www.postgresql.org/docs/
 - **Cursor Documentation**: https://docs.cursor.com/
