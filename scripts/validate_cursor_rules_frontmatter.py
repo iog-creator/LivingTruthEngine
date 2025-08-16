@@ -23,6 +23,8 @@ ROOT = Path(".").resolve()
 RULES_DIR = ROOT/".cursor"/"rules"
 
 REQUIRED = {
+    "description": str,
+    "alwaysApply": bool,
     "rule_id": str,
     "title": str,
     "phase": str,            # e.g., "9.5.7.4.6"
@@ -85,6 +87,8 @@ def validate():
                 errors.append({"file": rule_name, "issue": "global_enforcement_must_be_strict"})
             if meta.get("scope") not in ("all", ["**/*"]):
                 warnings.append({"file": rule_name, "issue":"global_scope_should_be_all"})
+            if meta.get("alwaysApply") != True:
+                errors.append({"file": rule_name, "issue": "global_alwaysApply_must_be_true"})
         # checksum (optional but recommended)
         body_hash = sha256_text(body or "")
         if "checksum" in meta and meta.get("checksum") != body_hash:

@@ -44,6 +44,8 @@ def parse(path: Path):
 def build_frontmatter(existing: dict, rule_id: str, body: str, is_global: bool):
     fm = dict(existing) if isinstance(existing, dict) else {}
     # Required defaults (preserve existing)
+    fm.setdefault("description", f"{rule_id.replace('_', ' ').title()} rule for Living Truth Engine")
+    fm.setdefault("alwaysApply", is_global)
     fm.setdefault("rule_id", rule_id)
     fm.setdefault("title", f"Cursor Rule: {rule_id}")
     fm.setdefault("phase", DEFAULT_PHASE)

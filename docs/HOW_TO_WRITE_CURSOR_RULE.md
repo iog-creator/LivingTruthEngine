@@ -5,6 +5,8 @@ Every rule in `.cursor/rules/*.mdc` **must start** with YAML frontmatter delimit
 ## Required frontmatter schema
 ```yaml
 ---
+description: "Brief description of what this rule covers"
+alwaysApply: false          # true for global rules, false for others
 rule_id: "<file name without .mdc>"
 title: "Short human title"
 phase: "9.5.7.4.6"          # tie rule to project phase (or current)
