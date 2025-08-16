@@ -57,6 +57,7 @@ Phase 9 represents the comprehensive evolution of the Living Truth Engine with m
 - **9.5.7.4.1**: SSOT Guard Hardening
 - **9.5.7.4.6**: LM Studio Tool/MCP Integration
 - **9.5.7.4.7**: SSOT Validator Stabilization
+- **9.5.7.4.10**: Cursor Rules Integrity Hardening
 
 ---
 
@@ -319,6 +320,65 @@ Phase 9 represents the comprehensive evolution of the Living Truth Engine with m
 - CI PRs green with FAST scope
 - Nightly FULL artifacts available
 - LM Studio `/tools/verify_ssot` is responsive
+
+---
+
+## 📋 **Phase 9.5.7.4.10: Cursor Rules Integrity Hardening**
+
+### **Status**: ✅ **COMPLETED**  
+**Date**: August 15, 2025  
+**Objective**: Enforce strict frontmatter schema on all `.cursor/rules/*.mdc` files and prevent silent degradation
+
+### **Key Achievements**
+- **Strict frontmatter schema enforcement**: All 33 rules now have valid YAML frontmatter
+- **Auto-repair system**: Safe in-place frontmatter repair while preserving rule body content
+- **Pre-commit protection**: Git hook prevents malformed rules from being committed
+- **CI integration**: `make check` now includes rules validation as first gate
+- **Checksum verification**: SHA256 integrity protection for rule content
+
+### **Deliverables**
+- `scripts/validate_cursor_rules_frontmatter.py` (strict validator + checksum)
+- `scripts/fix_cursor_rules_frontmatter.py` (safe fixer)
+- `docs/HOW_TO_WRITE_CURSOR_RULE.md` (author guide)
+- Makefile targets: `rules-validate`, `rules-fix`, `enable-githooks`
+- `.githooks/pre-commit` (regression prevention)
+
+### **Schema Enforced**
+```yaml
+---
+rule_id: "<file name without .mdc>"
+title: "Short human title"
+phase: "9.5.7.4.6"          # tie rule to project phase
+applies: "always"           # always | phase | optional
+enforcement: "strict"       # strict | advisory
+owner: "researcher-ssot"    # code owner
+updated: "YYYY-MM-DD"       # ISO date
+version: 1                  # increment on changes
+scope: "all"                # or list of globs
+summary: "What this rule enforces and why"
+links: []                   # optional references
+checksum: "<auto>"          # sha256 of body (auto-generated)
+---
+```
+
+### **Special Constraints for `00-global.mdc`**
+- `applies` must be `always`
+- `enforcement` must be `strict`
+- `scope` should be `all` (or `["**/*"]`)
+
+### **Commands Available**
+```bash
+make rules-validate    # Validate (fails CI on error)
+make rules-fix         # Auto-repair then validate
+make enable-githooks   # Enable pre-commit protection
+make check             # Full validation (now includes rules check)
+```
+
+### **Acceptance**
+- `make rules-validate` returns `{status:"ok"}` and exit 0 on healthy repo
+- `make rules-fix` reconstructs frontmatter and passes validation
+- `make check` fails if any rule is malformed
+- Pre-commit hook blocks commits with malformed rules
 
 ---
 

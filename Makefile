@@ -1,6 +1,11 @@
-.PHONY: check fix check-full ai ai-quick ai-only ssot ssot-agent masterlog lm-tools lm-mcp ruff-check ruff-fix ruff-comprehensive ruff-line-length fix-fallbacks
+.PHONY: check fix check-full ai ai-quick ai-only ssot ssot-agent masterlog lm-tools lm-mcp ruff-check ruff-fix ruff-comprehensive ruff-line-length fix-fallbacks rules-validate rules-fix enable-githooks
 check:
-	python scripts/verify_complete_ssot_system.py --scope fast
+	@$(MAKE) rules-validate
+	@python scripts/verify_complete_ssot_system.py --fix
+	@if [ "$${REPORT:-0}" = "1" ]; then \
+		echo "REPORT=1 → also generating SSOT agent report"; \
+		$(MAKE) ssot-agent; \
+	fi
 fix:
 	python scripts/verify_complete_ssot_system.py --scope full --fix
 check-full:
@@ -38,6 +43,23 @@ ruff-line-length:
 	python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; server = Phase9MCPServer(); result = server.run_ruff_line_length_fix(); print('Ruff line length fix result:', result)"
 fix-fallbacks:
 	python -c "from src.mcp_servers.phase9_mcp_server import Phase9MCPServer; server = Phase9MCPServer(); result = server.fix_silent_fallbacks(); print('Fix silent fallbacks result:', result)"
+
+# Validate all Cursor rules frontmatter (strict schema + checksum)
+rules-validate:
+	@python scripts/validate_cursor_rules_frontmatter.py --strict
+
+# Best-effort fixer: adds/repairs missing frontmatter (preserves body); re-run validate after
+rules-fix:
+	@python scripts/fix_cursor_rules_frontmatter.py
+	@$(MAKE) rules-validate
+
+# One-time: enable project githooks (pre-commit runs rules-validate)
+enable-githooks:
+	@mkdir -p .githooks
+	@printf '%s\n' '#!/usr/bin/env bash' 'python scripts/validate_cursor_rules_frontmatter.py --strict' > .githooks/pre-commit
+	@chmod +x .githooks/pre-commit
+	@git config core.hooksPath .githooks
+	@echo "✓ Git hooks enabled (rules-validate on pre-commit)"
 
 
 
