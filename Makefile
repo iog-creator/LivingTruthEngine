@@ -108,3 +108,10 @@ ci-ssot:
 	make meta-index && make meta-validate
 	python scripts/verify_complete_ssot_system.py --scope fast --fix || true
 	python scripts/validate_cursor_rules_frontmatter.py
+
+.PHONY: dash-ssot-check
+dash-ssot-check:
+	@mkdir -p reports
+	@ls reports/ssot_snapshot_*.json >/dev/null 2>&1 || make snapshot
+	@echo "▶ /api/health" && curl -sf http://127.0.0.1:8050/api/health | jq -e ".status==\"ok\"" >/dev/null
+	@echo "▶ /api/ssot/snapshot/latest" && curl -sf http://127.0.0.1:8050/api/ssot/snapshot/latest | jq -e ".status==\"ok\" and .data.file!=null" >/dev/null

@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2025-08-16T17:36:10Z",
+  "generated_at_utc": "2025-08-16T17:42:22Z",
   "rules": [
     {
       "file": ".cursor/rules/00-global.mdc",
@@ -82,6 +82,32 @@
       "globs": null,
       "alwaysApply": false,
       "type": "Agent-Requested"
+    },
+    {
+      "file": ".cursor/rules/dashboard_ssot_watchdog.mdc",
+      "description": "Dashboard must expose SSOT watchdog endpoints and have reports volume mounted",
+      "globs": null,
+      "alwaysApply": true,
+      "type": "Always",
+      "ssot_meta": [
+        {
+          "owner": "researcher-ssot",
+          "severity": "high",
+          "tags": [
+            "dashboard",
+            "ssot",
+            "mcp",
+            "watchdog"
+          ],
+          "phase": "9.5.7.4.15",
+          "dependsOn": [
+            "mcp-smoke",
+            "snapshot",
+            "dash-ssot-check"
+          ],
+          "autofixAllowed": false
+        }
+      ]
     },
     {
       "file": ".cursor/rules/database_schema_consistency.mdc",

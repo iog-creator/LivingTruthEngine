@@ -1,0 +1,20 @@
+---
+description: Dashboard must expose SSOT watchdog endpoints and have reports volume mounted
+alwaysApply: true
+---
+
+### SSOT Meta
+```yaml
+owner: researcher-ssot
+severity: high
+tags: [dashboard, ssot, mcp, watchdog]
+phase: 9.5.7.4.15
+dependsOn: [mcp-smoke, snapshot, dash-ssot-check]
+autofixAllowed: false
+```
+
+# Invariant
+
+* `docker/docker-compose.yml` includes `../reports:/app/reports` under `dashboard.volumes`.
+* `/api/ssot/snapshot/latest` returns `{status: "ok", data.file != null}`.
+* `/api/ssot/watchdog/log` returns `{status: "ok"}`.
