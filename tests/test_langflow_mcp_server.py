@@ -4,7 +4,6 @@ Unit tests for Langflow MCP Server
 Tests the create_langflow functionality and error handling
 """
 
-import json
 from unittest.mock import Mock, patch
 
 import pytest

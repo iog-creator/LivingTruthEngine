@@ -3,8 +3,6 @@
 Test script to create a simple Langflow flow
 """
 
-import json
-import time
 
 import requests
 

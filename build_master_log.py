@@ -11,12 +11,11 @@ Usage:
 from __future__ import annotations
 
 import hashlib
-import os
 import re
 import sys
 import time
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import List, Tuple
 
 ROOT = Path(__file__).resolve().parent
 DOCS = ROOT / "docs"

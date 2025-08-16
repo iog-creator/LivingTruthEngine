@@ -8,7 +8,6 @@ import json
 import logging
 import os
 import sys
-import time
 from pathlib import Path
 
 import requests
@@ -553,9 +552,9 @@ class FunctionalTester:
                     "❌ create_langflow should have raised ValueError for invalid config"
                 )
                 return False
-            except ValueError as e:
+            except ValueError:
                 logger.info("✅ create_langflow properly validates required fields")
-            except Exception as e:
+            except Exception:
                 logger.info("✅ create_langflow properly handles invalid config")
 
             # Test 3: Test with None configuration
@@ -565,9 +564,9 @@ class FunctionalTester:
                     "❌ create_langflow should have raised ValueError for None config"
                 )
                 return False
-            except ValueError as e:
+            except ValueError:
                 logger.info("✅ create_langflow properly validates None config")
-            except Exception as e:
+            except Exception:
                 logger.info("✅ create_langflow properly handles None config")
 
             return True

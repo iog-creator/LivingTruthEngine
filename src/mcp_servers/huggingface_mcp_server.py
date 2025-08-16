@@ -7,9 +7,8 @@ Provides access to Hugging Face models and datasets
 import json
 import logging
 import os
-import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict
 
 import requests
 from dotenv import load_dotenv

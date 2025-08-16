@@ -1,4 +1,3 @@
-import os
 
 import dash
 import plotly.express as px

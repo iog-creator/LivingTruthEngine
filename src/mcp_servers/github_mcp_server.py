@@ -7,9 +7,8 @@ Provides GitHub repository management and collaboration tools
 import json
 import logging
 import os
-import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Dict, List
 
 import requests
 from dotenv import load_dotenv

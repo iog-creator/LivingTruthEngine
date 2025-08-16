@@ -19,12 +19,11 @@ Features:
 import importlib
 import json
 import logging
-import os
 import sys
 import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 # Add src to path for imports
 project_root = Path(__file__).parent.parent.parent

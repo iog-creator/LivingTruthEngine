@@ -12,7 +12,7 @@ import os
 import pathlib
 import sys
 import time
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 import requests
 from dotenv import load_dotenv
@@ -44,24 +44,16 @@ from pathlib import Path
 
 # Import AGI integration components
 from integration.agi_integration import (
-    AGIAnalysisResult,
-    AGIComponent,
     AGILivingTruthIntegration,
 )
 
 # Import channel archiver components
 from processing.channel_archiver import (
-    ArchiveResult,
     ChannelArchiver,
-    ChannelArchiveSummary,
-    VideoInfo,
 )
 from src.analysis.ingestion import IngestionPipeline
 from src.analysis.notebook_agent import (
     AdvancedNotebookAgent,
-    DocumentSummary,
-    ResearchReport,
-    StudyGuide,
 )
 from visualization.advanced_viz import AdvancedVisualizer
 

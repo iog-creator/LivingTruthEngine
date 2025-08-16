@@ -10,7 +10,7 @@ for the Living Truth Engine multi-agent system.
 import json
 import uuid
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 
 def load_schemas(schemas_path: str) -> Dict[str, Any]:

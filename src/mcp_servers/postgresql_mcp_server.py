@@ -7,9 +7,7 @@ Provides database access and querying capabilities
 import json
 import logging
 import os
-import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
 
 import psycopg2
 from dotenv import load_dotenv

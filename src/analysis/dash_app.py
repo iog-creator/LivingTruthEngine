@@ -6,13 +6,10 @@ Interactive dashboard for survivor testimony analysis
 
 import json
 import logging
-import os
 from datetime import datetime
 from pathlib import Path
 
 import dash
-import pandas as pd
-import plotly.express as px
 import plotly.graph_objs as go
 from dash import Input, Output, dcc, html
 
@@ -285,7 +282,6 @@ def update_refresh_button(n_clicks):
 # Create ASGI app for uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.wsgi import WSGIMiddleware
-from fastapi.responses import RedirectResponse
 
 # Create FastAPI app
 fastapi_app = FastAPI(title="Living Truth Engine Dashboard")

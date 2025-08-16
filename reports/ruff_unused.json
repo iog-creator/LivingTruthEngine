@@ -1,0 +1,2246 @@
+[
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 14
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/build_master_log.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 15
+          },
+          "location": {
+            "column": 1,
+            "row": 14
+          }
+        }
+      ],
+      "message": "Remove unused import: `os`"
+    },
+    "location": {
+      "column": 8,
+      "row": 14
+    },
+    "message": "`os` imported but unused",
+    "noqa_row": 14,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 24,
+      "row": 19
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/build_master_log.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import List, Tuple",
+          "end_location": {
+            "column": 37,
+            "row": 19
+          },
+          "location": {
+            "column": 1,
+            "row": 19
+          }
+        }
+      ],
+      "message": "Remove unused import: `typing.Dict`"
+    },
+    "location": {
+      "column": 20,
+      "row": 19
+    },
+    "message": "`typing.Dict` imported but unused",
+    "noqa_row": 19,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 35,
+      "row": 13
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/setup/generate_langflow_flow.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Any, Dict",
+          "end_location": {
+            "column": 35,
+            "row": 13
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import: `typing.List`"
+    },
+    "location": {
+      "column": 31,
+      "row": 13
+    },
+    "message": "`typing.List` imported but unused",
+    "noqa_row": 13,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 23,
+      "row": 12
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/setup/import_langflow_workflow.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Optional",
+          "end_location": {
+            "column": 39,
+            "row": 12
+          },
+          "location": {
+            "column": 1,
+            "row": 12
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 20,
+      "row": 12
+    },
+    "message": "`typing.Any` imported but unused",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 29,
+      "row": 12
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/setup/import_langflow_workflow.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Optional",
+          "end_location": {
+            "column": 39,
+            "row": 12
+          },
+          "location": {
+            "column": 1,
+            "row": 12
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 25,
+      "row": 12
+    },
+    "message": "`typing.Dict` imported but unused",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 12,
+      "row": 9
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/setup/test_langflow_api.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 10
+          },
+          "location": {
+            "column": 1,
+            "row": 9
+          }
+        }
+      ],
+      "message": "Remove unused import: `json`"
+    },
+    "location": {
+      "column": 8,
+      "row": 9
+    },
+    "message": "`json` imported but unused",
+    "noqa_row": 9,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 11,
+      "row": 11
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/setup/use_langflow_mcp.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 12
+          },
+          "location": {
+            "column": 1,
+            "row": 11
+          }
+        }
+      ],
+      "message": "Remove unused import: `sys`"
+    },
+    "location": {
+      "column": 8,
+      "row": 11
+    },
+    "message": "`sys` imported but unused",
+    "noqa_row": 11,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 12,
+      "row": 11
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/testing/functional_tests.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 12
+          },
+          "location": {
+            "column": 1,
+            "row": 11
+          }
+        }
+      ],
+      "message": "Remove unused import: `time`"
+    },
+    "location": {
+      "column": 8,
+      "row": 11
+    },
+    "message": "`time` imported but unused",
+    "noqa_row": 11,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 35,
+      "row": 556
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/testing/functional_tests.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 35,
+            "row": 556
+          },
+          "location": {
+            "column": 30,
+            "row": 556
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `e`"
+    },
+    "location": {
+      "column": 34,
+      "row": 556
+    },
+    "message": "Local variable `e` is assigned to but never used",
+    "noqa_row": 556,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 34,
+      "row": 558
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/testing/functional_tests.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 34,
+            "row": 558
+          },
+          "location": {
+            "column": 29,
+            "row": 558
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `e`"
+    },
+    "location": {
+      "column": 33,
+      "row": 558
+    },
+    "message": "Local variable `e` is assigned to but never used",
+    "noqa_row": 558,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 35,
+      "row": 568
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/testing/functional_tests.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 35,
+            "row": 568
+          },
+          "location": {
+            "column": 30,
+            "row": 568
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `e`"
+    },
+    "location": {
+      "column": 34,
+      "row": 568
+    },
+    "message": "Local variable `e` is assigned to but never used",
+    "noqa_row": 568,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 34,
+      "row": 570
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/scripts/testing/functional_tests.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 34,
+            "row": 570
+          },
+          "location": {
+            "column": 29,
+            "row": 570
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `e`"
+    },
+    "location": {
+      "column": 33,
+      "row": 570
+    },
+    "message": "Local variable `e` is assigned to but never used",
+    "noqa_row": 570,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 9
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/analysis/dash_app.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 10
+          },
+          "location": {
+            "column": 1,
+            "row": 9
+          }
+        }
+      ],
+      "message": "Remove unused import: `os`"
+    },
+    "location": {
+      "column": 8,
+      "row": 9
+    },
+    "message": "`os` imported but unused",
+    "noqa_row": 9,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 20,
+      "row": 14
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/analysis/dash_app.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 15
+          },
+          "location": {
+            "column": 1,
+            "row": 14
+          }
+        }
+      ],
+      "message": "Remove unused import: `pandas`"
+    },
+    "location": {
+      "column": 18,
+      "row": 14
+    },
+    "message": "`pandas` imported but unused",
+    "noqa_row": 14,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 28,
+      "row": 15
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/analysis/dash_app.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 16
+          },
+          "location": {
+            "column": 1,
+            "row": 15
+          }
+        }
+      ],
+      "message": "Remove unused import: `plotly.express`"
+    },
+    "location": {
+      "column": 26,
+      "row": 15
+    },
+    "message": "`plotly.express` imported but unused",
+    "noqa_row": 15,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 47,
+      "row": 288
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/analysis/dash_app.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 289
+          },
+          "location": {
+            "column": 1,
+            "row": 288
+          }
+        }
+      ],
+      "message": "Remove unused import: `fastapi.responses.RedirectResponse`"
+    },
+    "location": {
+      "column": 31,
+      "row": 288
+    },
+    "message": "`fastapi.responses.RedirectResponse` imported but unused",
+    "noqa_row": 288,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 25,
+      "row": 12
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/analysis/ingestion.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 13
+          },
+          "location": {
+            "column": 1,
+            "row": 12
+          }
+        }
+      ],
+      "message": "Remove unused import: `pathlib.Path`"
+    },
+    "location": {
+      "column": 21,
+      "row": 12
+    },
+    "message": "`pathlib.Path` imported but unused",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 15,
+      "row": 165
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/analysis/ingestion.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 18,
+            "row": 165
+          },
+          "location": {
+            "column": 13,
+            "row": 165
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `vs`"
+    },
+    "location": {
+      "column": 13,
+      "row": 165
+    },
+    "message": "Local variable `vs` is assigned to but never used",
+    "noqa_row": 165,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 1
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/dashboard.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 2
+          },
+          "location": {
+            "column": 1,
+            "row": 1
+          }
+        }
+      ],
+      "message": "Remove unused import: `os`"
+    },
+    "location": {
+      "column": 8,
+      "row": 1
+    },
+    "message": "`os` imported but unused",
+    "noqa_row": 1,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 23,
+      "row": 13
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/devdocs_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 20,
+      "row": 13
+    },
+    "message": "`typing.Any` imported but unused",
+    "noqa_row": 13,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 29,
+      "row": 13
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/devdocs_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 25,
+      "row": 13
+    },
+    "message": "`typing.Dict` imported but unused",
+    "noqa_row": 13,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 35,
+      "row": 13
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/devdocs_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 31,
+      "row": 13
+    },
+    "message": "`typing.List` imported but unused",
+    "noqa_row": 13,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 45,
+      "row": 13
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/devdocs_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 37,
+      "row": 13
+    },
+    "message": "`typing.Optional` imported but unused",
+    "noqa_row": 13,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 11,
+      "row": 10
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/github_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 11
+          },
+          "location": {
+            "column": 1,
+            "row": 10
+          }
+        }
+      ],
+      "message": "Remove unused import: `sys`"
+    },
+    "location": {
+      "column": 8,
+      "row": 10
+    },
+    "message": "`sys` imported but unused",
+    "noqa_row": 10,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 23,
+      "row": 12
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/github_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Dict, List",
+          "end_location": {
+            "column": 45,
+            "row": 12
+          },
+          "location": {
+            "column": 1,
+            "row": 12
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 20,
+      "row": 12
+    },
+    "message": "`typing.Any` imported but unused",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 45,
+      "row": 12
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/github_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Dict, List",
+          "end_location": {
+            "column": 45,
+            "row": 12
+          },
+          "location": {
+            "column": 1,
+            "row": 12
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 37,
+      "row": 12
+    },
+    "message": "`typing.Optional` imported but unused",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 11,
+      "row": 10
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/huggingface_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 11
+          },
+          "location": {
+            "column": 1,
+            "row": 10
+          }
+        }
+      ],
+      "message": "Remove unused import: `sys`"
+    },
+    "location": {
+      "column": 8,
+      "row": 10
+    },
+    "message": "`sys` imported but unused",
+    "noqa_row": 10,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 23,
+      "row": 12
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/huggingface_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Dict",
+          "end_location": {
+            "column": 45,
+            "row": 12
+          },
+          "location": {
+            "column": 1,
+            "row": 12
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 20,
+      "row": 12
+    },
+    "message": "`typing.Any` imported but unused",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 35,
+      "row": 12
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/huggingface_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Dict",
+          "end_location": {
+            "column": 45,
+            "row": 12
+          },
+          "location": {
+            "column": 1,
+            "row": 12
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 31,
+      "row": 12
+    },
+    "message": "`typing.List` imported but unused",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 45,
+      "row": 12
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/huggingface_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Dict",
+          "end_location": {
+            "column": 45,
+            "row": 12
+          },
+          "location": {
+            "column": 1,
+            "row": 12
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 37,
+      "row": 12
+    },
+    "message": "`typing.Optional` imported but unused",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 11,
+      "row": 13
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/langflow_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import: `sys`"
+    },
+    "location": {
+      "column": 8,
+      "row": 13
+    },
+    "message": "`sys` imported but unused",
+    "noqa_row": 13,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 35,
+      "row": 16
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/langflow_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Any, Dict, Optional",
+          "end_location": {
+            "column": 45,
+            "row": 16
+          },
+          "location": {
+            "column": 1,
+            "row": 16
+          }
+        }
+      ],
+      "message": "Remove unused import: `typing.List`"
+    },
+    "location": {
+      "column": 31,
+      "row": 16
+    },
+    "message": "`typing.List` imported but unused",
+    "noqa_row": 16,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 23,
+      "row": 15
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Optional",
+          "end_location": {
+            "column": 45,
+            "row": 15
+          },
+          "location": {
+            "column": 1,
+            "row": 15
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 20,
+      "row": 15
+    },
+    "message": "`typing.Any` imported but unused",
+    "noqa_row": 15,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 29,
+      "row": 15
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Optional",
+          "end_location": {
+            "column": 45,
+            "row": 15
+          },
+          "location": {
+            "column": 1,
+            "row": 15
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 25,
+      "row": 15
+    },
+    "message": "`typing.Dict` imported but unused",
+    "noqa_row": 15,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 35,
+      "row": 15
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Optional",
+          "end_location": {
+            "column": 45,
+            "row": 15
+          },
+          "location": {
+            "column": 1,
+            "row": 15
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 31,
+      "row": 15
+    },
+    "message": "`typing.List` imported but unused",
+    "noqa_row": 15,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 22,
+      "row": 47
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from integration.agi_integration import (\n    AGILivingTruthIntegration,\n)",
+          "end_location": {
+            "column": 2,
+            "row": 50
+          },
+          "location": {
+            "column": 1,
+            "row": 46
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 5,
+      "row": 47
+    },
+    "message": "`integration.agi_integration.AGIAnalysisResult` imported but unused",
+    "noqa_row": 47,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 17,
+      "row": 48
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from integration.agi_integration import (\n    AGILivingTruthIntegration,\n)",
+          "end_location": {
+            "column": 2,
+            "row": 50
+          },
+          "location": {
+            "column": 1,
+            "row": 46
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 5,
+      "row": 48
+    },
+    "message": "`integration.agi_integration.AGIComponent` imported but unused",
+    "noqa_row": 48,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 18,
+      "row": 54
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from processing.channel_archiver import (\n    ChannelArchiver,\n)",
+          "end_location": {
+            "column": 2,
+            "row": 58
+          },
+          "location": {
+            "column": 1,
+            "row": 53
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 5,
+      "row": 54
+    },
+    "message": "`processing.channel_archiver.ArchiveResult` imported but unused",
+    "noqa_row": 54,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 26,
+      "row": 56
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from processing.channel_archiver import (\n    ChannelArchiver,\n)",
+          "end_location": {
+            "column": 2,
+            "row": 58
+          },
+          "location": {
+            "column": 1,
+            "row": 53
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 5,
+      "row": 56
+    },
+    "message": "`processing.channel_archiver.ChannelArchiveSummary` imported but unused",
+    "noqa_row": 56,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 14,
+      "row": 57
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from processing.channel_archiver import (\n    ChannelArchiver,\n)",
+          "end_location": {
+            "column": 2,
+            "row": 58
+          },
+          "location": {
+            "column": 1,
+            "row": 53
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 5,
+      "row": 57
+    },
+    "message": "`processing.channel_archiver.VideoInfo` imported but unused",
+    "noqa_row": 57,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 20,
+      "row": 62
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from src.analysis.notebook_agent import (\n    AdvancedNotebookAgent,\n)",
+          "end_location": {
+            "column": 2,
+            "row": 65
+          },
+          "location": {
+            "column": 1,
+            "row": 60
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 5,
+      "row": 62
+    },
+    "message": "`src.analysis.notebook_agent.DocumentSummary` imported but unused",
+    "noqa_row": 62,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 19,
+      "row": 63
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from src.analysis.notebook_agent import (\n    AdvancedNotebookAgent,\n)",
+          "end_location": {
+            "column": 2,
+            "row": 65
+          },
+          "location": {
+            "column": 1,
+            "row": 60
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 5,
+      "row": 63
+    },
+    "message": "`src.analysis.notebook_agent.ResearchReport` imported but unused",
+    "noqa_row": 63,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 15,
+      "row": 64
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from src.analysis.notebook_agent import (\n    AdvancedNotebookAgent,\n)",
+          "end_location": {
+            "column": 2,
+            "row": 65
+          },
+          "location": {
+            "column": 1,
+            "row": 60
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 5,
+      "row": 64
+    },
+    "message": "`src.analysis.notebook_agent.StudyGuide` imported but unused",
+    "noqa_row": 64,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 16,
+      "row": 616
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 19,
+            "row": 616
+          },
+          "location": {
+            "column": 13,
+            "row": 616
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `fig`"
+    },
+    "location": {
+      "column": 13,
+      "row": 616
+    },
+    "message": "Local variable `fig` is assigned to but never used",
+    "noqa_row": 616,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 16,
+      "row": 638
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 19,
+            "row": 638
+          },
+          "location": {
+            "column": 13,
+            "row": 638
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `fig`"
+    },
+    "location": {
+      "column": 13,
+      "row": 638
+    },
+    "message": "Local variable `fig` is assigned to but never used",
+    "noqa_row": 638,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 16,
+      "row": 657
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 19,
+            "row": 657
+          },
+          "location": {
+            "column": 13,
+            "row": 657
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `fig`"
+    },
+    "location": {
+      "column": 13,
+      "row": 657
+    },
+    "message": "Local variable `fig` is assigned to but never used",
+    "noqa_row": 657,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 16,
+      "row": 676
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/living_truth_fastmcp_server.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 19,
+            "row": 676
+          },
+          "location": {
+            "column": 13,
+            "row": 676
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `app`"
+    },
+    "location": {
+      "column": 13,
+      "row": 676
+    },
+    "message": "Local variable `app` is assigned to but never used",
+    "noqa_row": 676,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 10,
+      "row": 22
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/mcp_hub_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 23
+          },
+          "location": {
+            "column": 1,
+            "row": 22
+          }
+        }
+      ],
+      "message": "Remove unused import: `os`"
+    },
+    "location": {
+      "column": 8,
+      "row": 22
+    },
+    "message": "`os` imported but unused",
+    "noqa_row": 22,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 52,
+      "row": 27
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/mcp_hub_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "from typing import Any, Dict, List, Optional",
+          "end_location": {
+            "column": 52,
+            "row": 27
+          },
+          "location": {
+            "column": 1,
+            "row": 27
+          }
+        }
+      ],
+      "message": "Remove unused import: `typing.Union`"
+    },
+    "location": {
+      "column": 47,
+      "row": 27
+    },
+    "message": "`typing.Union` imported but unused",
+    "noqa_row": 27,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 15,
+      "row": 851
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/mcp_hub_server.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 18,
+            "row": 851
+          },
+          "location": {
+            "column": 9,
+            "row": 851
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `server`"
+    },
+    "location": {
+      "column": 9,
+      "row": 851
+    },
+    "message": "Local variable `server` is assigned to but never used",
+    "noqa_row": 851,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 23,
+      "row": 13
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/mcp_solver_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 20,
+      "row": 13
+    },
+    "message": "`typing.Any` imported but unused",
+    "noqa_row": 13,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 29,
+      "row": 13
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/mcp_solver_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 25,
+      "row": 13
+    },
+    "message": "`typing.Dict` imported but unused",
+    "noqa_row": 13,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 35,
+      "row": 13
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/mcp_solver_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 31,
+      "row": 13
+    },
+    "message": "`typing.List` imported but unused",
+    "noqa_row": 13,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 45,
+      "row": 13
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/mcp_solver_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 37,
+      "row": 13
+    },
+    "message": "`typing.Optional` imported but unused",
+    "noqa_row": 13,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 11,
+      "row": 10
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/postgresql_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 11
+          },
+          "location": {
+            "column": 1,
+            "row": 10
+          }
+        }
+      ],
+      "message": "Remove unused import: `sys`"
+    },
+    "location": {
+      "column": 8,
+      "row": 10
+    },
+    "message": "`sys` imported but unused",
+    "noqa_row": 10,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 23,
+      "row": 12
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/postgresql_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 13
+          },
+          "location": {
+            "column": 1,
+            "row": 12
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 20,
+      "row": 12
+    },
+    "message": "`typing.Any` imported but unused",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 29,
+      "row": 12
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/postgresql_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 13
+          },
+          "location": {
+            "column": 1,
+            "row": 12
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 25,
+      "row": 12
+    },
+    "message": "`typing.Dict` imported but unused",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 35,
+      "row": 12
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/postgresql_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 13
+          },
+          "location": {
+            "column": 1,
+            "row": 12
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 31,
+      "row": 12
+    },
+    "message": "`typing.List` imported but unused",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 45,
+      "row": 12
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/postgresql_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 13
+          },
+          "location": {
+            "column": 1,
+            "row": 12
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 37,
+      "row": 12
+    },
+    "message": "`typing.Optional` imported but unused",
+    "noqa_row": 12,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 23,
+      "row": 13
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/rulego_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 20,
+      "row": 13
+    },
+    "message": "`typing.Any` imported but unused",
+    "noqa_row": 13,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 29,
+      "row": 13
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/rulego_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 25,
+      "row": 13
+    },
+    "message": "`typing.Dict` imported but unused",
+    "noqa_row": 13,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 35,
+      "row": 13
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/rulego_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 31,
+      "row": 13
+    },
+    "message": "`typing.List` imported but unused",
+    "noqa_row": 13,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 45,
+      "row": 13
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/src/mcp_servers/rulego_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 14
+          },
+          "location": {
+            "column": 1,
+            "row": 13
+          }
+        }
+      ],
+      "message": "Remove unused import"
+    },
+    "location": {
+      "column": 37,
+      "row": 13
+    },
+    "message": "`typing.Optional` imported but unused",
+    "noqa_row": 13,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 12,
+      "row": 6
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/tests/test_langflow_flow.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 7
+          },
+          "location": {
+            "column": 1,
+            "row": 6
+          }
+        }
+      ],
+      "message": "Remove unused import: `json`"
+    },
+    "location": {
+      "column": 8,
+      "row": 6
+    },
+    "message": "`json` imported but unused",
+    "noqa_row": 6,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 12,
+      "row": 7
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/tests/test_langflow_flow.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 8
+          },
+          "location": {
+            "column": 1,
+            "row": 7
+          }
+        }
+      ],
+      "message": "Remove unused import: `time`"
+    },
+    "location": {
+      "column": 8,
+      "row": 7
+    },
+    "message": "`time` imported but unused",
+    "noqa_row": 7,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 12,
+      "row": 7
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/tests/test_langflow_mcp_server.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 8
+          },
+          "location": {
+            "column": 1,
+            "row": 7
+          }
+        }
+      ],
+      "message": "Remove unused import: `json`"
+    },
+    "location": {
+      "column": 8,
+      "row": 7
+    },
+    "message": "`json` imported but unused",
+    "noqa_row": 7,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 12,
+      "row": 6
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/tests/test_simple_flow.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 7
+          },
+          "location": {
+            "column": 1,
+            "row": 6
+          }
+        }
+      ],
+      "message": "Remove unused import: `json`"
+    },
+    "location": {
+      "column": 8,
+      "row": 6
+    },
+    "message": "`json` imported but unused",
+    "noqa_row": 6,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  },
+  {
+    "cell": null,
+    "code": "F401",
+    "end_location": {
+      "column": 12,
+      "row": 7
+    },
+    "filename": "/home/mccoy/Projects/NotebookLM/LivingTruthEngine/tests/test_simple_flow.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 1,
+            "row": 8
+          },
+          "location": {
+            "column": 1,
+            "row": 7
+          }
+        }
+      ],
+      "message": "Remove unused import: `time`"
+    },
+    "location": {
+      "column": 8,
+      "row": 7
+    },
+    "message": "`time` imported but unused",
+    "noqa_row": 7,
+    "url": "https://docs.astral.sh/ruff/rules/unused-import"
+  }
+]

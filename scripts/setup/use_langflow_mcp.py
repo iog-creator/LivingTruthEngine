@@ -8,7 +8,6 @@ This script shows the proper way to interact with Langflow via MCP.
 """
 
 import json
-import sys
 from pathlib import Path
 
 

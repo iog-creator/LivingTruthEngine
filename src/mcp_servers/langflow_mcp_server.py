@@ -10,10 +10,9 @@ import os
 
 # Load environment variables from project root
 import pathlib
-import sys
 import time
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 import requests
 from dotenv import load_dotenv
