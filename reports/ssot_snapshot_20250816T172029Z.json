@@ -1,0 +1,431 @@
+{
+  "generated_at_utc": "2025-08-16T17:20:29Z",
+  "results": {
+    "get_ssot_meta_index": {
+      "status": "ok",
+      "data": {
+        "status": "ok",
+        "data": {
+          "generated_at_utc": "2025-08-16T17:09:37Z",
+          "rules": [
+            {
+              "file": ".cursor/rules/00-global.mdc",
+              "description": "00-Global rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": true,
+              "type": "Always",
+              "ssot_meta": [
+                {
+                  "owner": "researcher-ssot",
+                  "severity": "critical",
+                  "tags": [
+                    "ssot",
+                    "global",
+                    "enforcement",
+                    "rules"
+                  ],
+                  "phase": "9.5.7.4.10",
+                  "dependsOn": [
+                    "verify-complete-ssot",
+                    "mcp-router-check"
+                  ],
+                  "autofixAllowed": false,
+                  "notes": "Global rule that enforces SSOT gates on every commit"
+                }
+              ]
+            },
+            {
+              "file": ".cursor/rules/ai_integration.mdc",
+              "description": "Ai Integration rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/analysis_batching.mdc",
+              "description": "Analysis Batching rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/api_contracts.mdc",
+              "description": "Api Contracts rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/automated_development_management.mdc",
+              "description": "Automated Development Management rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/coding_standards.mdc",
+              "description": "Coding Standards rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/complete_analysis_pipeline.mdc",
+              "description": "Complete Analysis Pipeline rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/core_workflow.mdc",
+              "description": "Core Workflow rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/cursor_apparmor_fix.mdc",
+              "description": "Cursor Apparmor Fix rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/database_schema_consistency.mdc",
+              "description": "Database Schema Consistency rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/docker_best_practices.mdc",
+              "description": "Docker Best Practices rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/docker_health_checks.mdc",
+              "description": "Docker Health Checks rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/docker_management.mdc",
+              "description": "Docker Management rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/error_handling_and_testing.mdc",
+              "description": "Error Handling And Testing rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/fallbacks_and_health.mdc",
+              "description": "Fallbacks And Health rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/how_to_make_a_cursor_rule.mdc",
+              "description": "How To Make A Cursor Rule rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/living_truth_agent_integration.mdc",
+              "description": "Living Truth Agent Integration rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/master_log.mdc",
+              "description": "Master Log rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/mcp_enforcement.mdc",
+              "description": "MCP enforcement rules for Living Truth Engine. Enforce SSOT verification and rule validity.",
+              "globs": [
+                "**/*"
+              ],
+              "alwaysApply": true,
+              "type": "Always"
+            },
+            {
+              "file": ".cursor/rules/mcp_hub_server_status.mdc",
+              "description": "Mcp Hub Server Status rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/mcp_integration.mdc",
+              "description": "Mcp Integration rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/mcp_ops.mdc",
+              "description": "Mcp Ops rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/mcp_server_integration.mdc",
+              "description": "Mcp Server Integration rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/models_and_embeddings.mdc",
+              "description": "Models And Embeddings rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/project_overview.mdc",
+              "description": "Project Overview rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/resilience_dashboard_ui.mdc",
+              "description": "Resilience Dashboard Ui rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/ssot_meta_index.mdc",
+              "description": "Ensure SSOT metadata index exists, validates, and stays fresh",
+              "globs": null,
+              "alwaysApply": true,
+              "type": "Always",
+              "ssot_meta": [
+                {
+                  "owner": "researcher-ssot",
+                  "severity": "high",
+                  "tags": [
+                    "ssot",
+                    "metadata",
+                    "validation"
+                  ],
+                  "phase": "9.5.7.4.12",
+                  "dependsOn": [
+                    "meta-index",
+                    "meta-validate"
+                  ],
+                  "autofixAllowed": true
+                }
+              ]
+            },
+            {
+              "file": ".cursor/rules/system_integration_status.mdc",
+              "description": "System Integration Status rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/system_management.mdc",
+              "description": "System Management rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/system_status.mdc",
+              "description": "System Status rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/testing_standards.mdc",
+              "description": "Testing Standards rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/ui_policy.mdc",
+              "description": "Ui Policy rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/veritas_runs.mdc",
+              "description": "Veritas Runs rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            },
+            {
+              "file": ".cursor/rules/visualization_system.mdc",
+              "description": "Visualization System rule for Living Truth Engine",
+              "globs": null,
+              "alwaysApply": false,
+              "type": "Agent-Requested"
+            }
+          ],
+          "docs": [
+            {
+              "file": "PHASE_9_COMPLETION_SUMMARY.md",
+              "frontmatter": {
+                "phase": 9,
+                "status": "completed",
+                "completion_date": "2025-08-14",
+                "depends_on": [
+                  8
+                ],
+                "summary": "Multi-Source Expansion & Advanced Evidence Linking with SSOT Enforcement (Complete)"
+              }
+            },
+            {
+              "file": "SERVICES_MANIFEST.md",
+              "frontmatter": {
+                "phase": "9.5.7.2",
+                "status": "active",
+                "last_reviewed": "2025-08-14",
+                "related_files": [
+                  "docker/docker-compose.yml",
+                  "scripts/service_feature_map.py",
+                  "scripts/verify_service_docs_complete.py",
+                  "scripts/verify_compose_healthchecks.py",
+                  "scripts/gen_service_docs.py",
+                  "scripts/readme_sync.py"
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    "get_rule_integrity_status": {
+      "status": "ok",
+      "data": {
+        "status": "ok",
+        "data": {
+          "generated_at_utc": "2025-08-16T17:09:37Z",
+          "counts": {
+            "rules_total": 34,
+            "rules_with_meta": 2,
+            "rules_without_meta": 32
+          }
+        }
+      }
+    }
+  },
+  "compose": {
+    "services": [
+      {
+        "name": "dashboard",
+        "ports": [
+          "8050:8050"
+        ],
+        "health": true
+      },
+      {
+        "name": "devdocs",
+        "ports": [
+          "9126:24125"
+        ],
+        "health": true
+      },
+      {
+        "name": "langflow",
+        "ports": [
+          "7860:7860"
+        ],
+        "health": true
+      },
+      {
+        "name": "living-truth-engine",
+        "ports": [
+          "9123:8000",
+          "9124:8001"
+        ],
+        "health": true
+      },
+      {
+        "name": "lm-studio",
+        "ports": [
+          "1235:1234"
+        ],
+        "health": true
+      },
+      {
+        "name": "mcp-solver",
+        "ports": [
+          "9128:3000"
+        ],
+        "health": true
+      },
+      {
+        "name": "neo4j",
+        "ports": [
+          "7474:7474",
+          "7687:7687"
+        ],
+        "health": true
+      },
+      {
+        "name": "postgres",
+        "ports": [
+          "5434:5432"
+        ],
+        "health": true
+      },
+      {
+        "name": "redis",
+        "ports": [
+          "6380:6379"
+        ],
+        "health": true
+      },
+      {
+        "name": "rulego",
+        "ports": [
+          "9127:8080"
+        ],
+        "health": true
+      },
+      {
+        "name": "veritas_api",
+        "ports": [
+          "8080:8080"
+        ],
+        "health": false
+      },
+      {
+        "name": "veritas_console",
+        "ports": [
+          "8501:8501"
+        ],
+        "health": false
+      },
+      {
+        "name": "veritas_worker",
+        "ports": [],
+        "health": false
+      }
+    ]
+  }
+}

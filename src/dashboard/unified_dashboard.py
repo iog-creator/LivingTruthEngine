@@ -95,6 +95,38 @@ class UnifiedDashboard:
             allow_headers=["*"],
         )
 
+        # --- SSOT Watchdog Endpoints (auto-added) ---
+        from fastapi.responses import JSONResponse
+        import glob, json, os
+
+        @self.app.get("/api/ssot/snapshot/latest")
+        def ssot_snapshot_latest():
+            try:
+                files = sorted(glob.glob("reports/ssot_snapshot_*.json"))
+                if not files:
+                    return JSONResponse({"status":"ok","data":{"file": None, "snapshot": None, "note":"no snapshots found"}})
+                latest = files[-1]
+                with open(latest, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                return JSONResponse({"status":"ok","data":{"file": os.path.basename(latest), "snapshot": data}})
+            except Exception as e:
+                return JSONResponse({"status":"error","error":str(e)})
+
+        @self.app.get("/api/ssot/watchdog/log")
+        def ssot_watchdog_log(limit: int = 100):
+            try:
+                p = "reports/ssot_watchdog_log.jsonl"
+                if not os.path.exists(p):
+                    return JSONResponse({"status":"ok","data":{"entries": []}})
+                with open(p, "r", encoding="utf-8") as f:
+                    lines = f.readlines()
+                lines = [json.loads(x) for x in lines[-limit:]]
+                return JSONResponse({"status":"ok","data":{"entries": lines}})
+            except Exception as e:
+                return JSONResponse({"status":"error","error":str(e)})
+        # --- /SSOT Watchdog Endpoints ---
+
+
         # Initialize services
         if MCPHubServer:
             try:
@@ -2128,6 +2160,8 @@ class UnifiedDashboard:
                 logger.error(f"Failed to send WebSocket message: {e}")
 
 
+
+
 def main():
     """Start the unified dashboard server"""
     dashboard = UnifiedDashboard()
@@ -2137,3 +2171,4 @@ def main():
 # For direct execution
 if __name__ == "__main__":
     uvicorn.run(main(), host="0.0.0.0", port=8050, log_level="info")
+

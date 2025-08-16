@@ -568,3 +568,39 @@
     document.getElementById('refresh-meta-rollups').addEventListener('click', loadMetaRollups);
 </script>
 {% endblock %}
+
+<!-- SSOT Watchdog (auto-added) -->
+<div class="card" id="ssot-watchdog-card" style="margin-top:1rem;">
+  <h3>SSOT Watchdog</h3>
+  <div style="margin:.5rem 0;">
+    <button id="btn-ssot-refresh">Refresh</button>
+  </div>
+  <details open>
+    <summary>Latest Snapshot</summary>
+    <pre id="ssot-watchdog-snapshot" style="max-height:240px;overflow:auto;"></pre>
+  </details>
+  <details>
+    <summary>Recent Log (last 50)</summary>
+    <pre id="ssot-watchdog-log" style="max-height:240px;overflow:auto;"></pre>
+  </details>
+</div>
+<script>
+async function loadSsot() {
+  try {
+    const snap = await fetch('/api/ssot/snapshot/latest').then(r => r.json());
+    document.getElementById('ssot-watchdog-snapshot').textContent =
+      JSON.stringify(snap, null, 2);
+    const log = await fetch('/api/ssot/watchdog/log?limit=50').then(r => r.json());
+    document.getElementById('ssot-watchdog-log').textContent =
+      JSON.stringify(log, null, 2);
+  } catch (e) {
+    console.error('SSOT load error', e);
+  }
+}
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('btn-ssot-refresh');
+  if (btn) btn.addEventListener('click', loadSsot);
+  loadSsot();
+});
+</script>
+<!-- /SSOT Watchdog -->
