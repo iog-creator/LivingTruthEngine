@@ -56,7 +56,7 @@ rules-fix:
 # One-time: enable project githooks (pre-commit runs rules-validate)
 enable-githooks:
 	@mkdir -p .githooks
-	@printf '%s\n' '#!/usr/bin/env bash' 'python scripts/validate_cursor_rules_frontmatter.py' > .githooks/pre-commit
+	@printf '%s\n' '#!/usr/bin/env bash\nset -euo pipefail\npython scripts/validate_cursor_rules_frontmatter.py\npython scripts/meta_precommit_guard.py\n' > .githooks/pre-commit
 	@chmod +x .githooks/pre-commit
 	@git config core.hooksPath .githooks
 	@echo "✓ Git hooks enabled (rules-validate on pre-commit)"
@@ -72,6 +72,14 @@ meta-index:
 meta-validate:
 	@python scripts/validate_ssot_meta_index.py
 	@echo "✓ SSOT metadata index validated"
+
+# CI-safe: generate + validate (no silent fallbacks)
+meta-ci: meta-index meta-validate
+	@echo "✓ SSOT meta CI step ok"
+
+# Focused unit tests for metadata system
+test-meta:
+	pytest -q tests/test_ssot_meta_index.py
 
 
 

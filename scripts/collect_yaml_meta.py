@@ -154,12 +154,16 @@ def main():
         "docs": collect_doc_frontmatter(),
     }
     
-    # Write to file if --out specified, otherwise print to stdout
-    if args.out:
-        with open(out_path, 'w', encoding='utf-8') as f:
-            json.dump(idx, f, indent=2, ensure_ascii=False)
-    else:
-        print(json.dumps(idx, indent=2))
+    # Write to file
+    data = json.dumps(idx, indent=2)
+    out_path.write_text(data, encoding="utf-8")
+    
+    # maintain a stable "latest" sibling file for dashboards / MCP
+    latest = out_path.with_name(out_path.stem.replace(".json","") + "_latest.json") \
+             if out_path.name.endswith(".json") else out_path.with_name("ssot_meta_index_latest.json")
+    latest.write_text(data, encoding="utf-8")
+    
+    print(data)
 
 if __name__ == "__main__":
     main()
