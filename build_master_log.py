@@ -7,10 +7,16 @@ Usage:
   python build_master_log.py rebuild
   python build_master_log.py append  # (re-scan and update changed/new phases)
 """
+
 from __future__ import annotations
-import sys, re, os, time, hashlib
+
+import hashlib
+import os
+import re
+import sys
+import time
 from pathlib import Path
-from typing import List, Tuple, Dict
+from typing import Dict, List, Tuple
 
 ROOT = Path(__file__).resolve().parent
 DOCS = ROOT / "docs"
@@ -22,6 +28,7 @@ PHASE_FILE_RE = re.compile(
     re.IGNORECASE,
 )
 
+
 def phase_sort_key(fname: str) -> Tuple[int, int, int, int]:
     m = PHASE_FILE_RE.match(fname)
     if not m:
@@ -32,6 +39,7 @@ def phase_sort_key(fname: str) -> Tuple[int, int, int, int]:
     # always put PLAN before COMPLETION for same phase
     kind_rank = 1 if m.group("kind").upper() == "PLAN" else 2
     return (maj, minr, pat, kind_rank)
+
 
 def find_phase_files() -> List[Path]:
     # search repo root + docs/ for PHASE_* files
@@ -54,26 +62,31 @@ def find_phase_files() -> List[Path]:
     uniq.sort(key=lambda x: phase_sort_key(x.name))
     return uniq
 
+
 def read(p: Path) -> str:
     try:
         return p.read_text(encoding="utf-8").strip()
     except Exception as e:
         return f"_Error reading {p}: {e}_"
 
+
 def short_sha(contents: str) -> str:
     return hashlib.sha1(contents.encode("utf-8")).hexdigest()[:10]
+
 
 def build(sections: List[Tuple[str, Path, str]]) -> str:
     ts = time.strftime("%Y-%m-%d %H:%M:%S")
     lines: List[str] = []
     lines.append("# Living Truth Engine — Project Master Log")
     lines.append("")
-    lines.append(f"_Auto-generated on **{ts}** by `build_master_log.py`. Do not hand-edit this file._")
+    lines.append(
+        f"_Auto-generated on **{ts}** by `build_master_log.py`. Do not hand-edit this file._"
+    )
     lines.append("")
     # TOC
     lines.append("## Table of Contents")
     for title, path, _ in sections:
-        anchor = re.sub(r'[^a-z0-9]+', '-', title.lower()).strip('-')
+        anchor = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
         lines.append(f"- [{title}](#{anchor}) — `{path.name}`")
     lines.append("")
     # Sections
@@ -86,6 +99,7 @@ def build(sections: List[Tuple[str, Path, str]]) -> str:
         lines.append("---")
         lines.append("")
     return "\n".join(lines).rstrip() + "\n"
+
 
 def make_title(p: Path) -> str:
     # PHASE_9_2_PLAN.md -> "Phase 9.2 — PLAN"
@@ -101,7 +115,8 @@ def make_title(p: Path) -> str:
         ver += f".{minr}"
     if pat:
         ver += f".{pat}"
-    return f"Phase {ver} — {('PLAN' if kind=='PLAN' else 'COMPLETION SUMMARY')}"
+    return f"Phase {ver} — {('PLAN' if kind == 'PLAN' else 'COMPLETION SUMMARY')}"
+
 
 def main():
     mode = (sys.argv[1].lower() if len(sys.argv) > 1 else "append").strip()
@@ -126,10 +141,6 @@ def main():
     OUT.write_text(new_contents, encoding="utf-8")
     print(f"Wrote {OUT}")
 
+
 if __name__ == "__main__":
     main()
-
-
-
-
-

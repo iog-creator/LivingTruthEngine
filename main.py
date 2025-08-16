@@ -4,12 +4,13 @@ Living Truth Engine - FastAPI Server
 Main entry point for the Living Truth Engine API
 """
 
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse, PlainTextResponse
 from pathlib import Path
 from typing import Optional
-from fastapi.middleware.cors import CORSMiddleware
+
 import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 app = FastAPI(title="Living Truth Engine", version="1.0.0")
 
@@ -22,15 +23,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "service": "Living Truth Engine"}
 
+
 @app.get("/")
 async def root():
     """Root endpoint."""
     return {"message": "Living Truth Engine API", "status": "operational"}
+
 
 @app.get("/dashboard")
 async def dashboard():
@@ -65,6 +69,7 @@ async def telemetry_stream(lines: int = 200) -> PlainTextResponse:
 
 # Ingestion API
 import json
+
 from src.analysis.ingestion import IngestionPipeline
 
 
@@ -74,13 +79,15 @@ async def ingest(channel: Optional[str] = None) -> JSONResponse:
     try:
         pipeline = IngestionPipeline()
         summary = pipeline.ingest(channel=channel)
-        return JSONResponse({
-            "total_files": summary.total_files,
-            "chunks_indexed": summary.chunks_indexed,
-            "channel": summary.channel,
-            "started_at": summary.started_at,
-            "completed_at": summary.completed_at,
-        })
+        return JSONResponse(
+            {
+                "total_files": summary.total_files,
+                "chunks_indexed": summary.chunks_indexed,
+                "channel": summary.channel,
+                "started_at": summary.started_at,
+                "completed_at": summary.completed_at,
+            }
+        )
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
@@ -92,9 +99,12 @@ async def ingest_telemetry(lines: int = 200) -> PlainTextResponse:
     if not stream.exists():
         return PlainTextResponse("")
     try:
-        return PlainTextResponse("\n".join(stream.read_text(encoding="utf-8").splitlines()[-lines:]))
+        return PlainTextResponse(
+            "\n".join(stream.read_text(encoding="utf-8").splitlines()[-lines:])
+        )
     except Exception:
         return PlainTextResponse("", status_code=500)
 
+
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host="0.0.0.0", port=8000)

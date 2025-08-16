@@ -11,12 +11,13 @@ import json
 import sys
 from pathlib import Path
 
+
 def demonstrate_langflow_mcp_usage():
     """Demonstrate how to use Langflow MCP server."""
-    
+
     print("🚀 Langflow MCP Server Usage Guide")
     print("=" * 50)
-    
+
     print("\n📋 Configuration in .cursor/mcp.json:")
     print("""
 {
@@ -32,7 +33,7 @@ def demonstrate_langflow_mcp_usage():
   }
 }
 """)
-    
+
     print("\n🎯 Available MCP Tools in Cursor:")
     print("""
 Once the MCP server is configured and Cursor is restarted, you can use:
@@ -46,7 +47,7 @@ Example usage in Cursor:
 - mcp_lf-cursor_run_flow() - Execute a flow
 - mcp_lf-cursor_get_flow_status() - Get flow status
 """)
-    
+
     print("\n🔧 Testing MCP Server Connection:")
     print("""
 1. Restart Cursor to load the new MCP configuration
@@ -54,18 +55,18 @@ Example usage in Cursor:
 3. Test with: mcp_lf-cursor_list_flows()
 4. If successful, you'll see available Langflow tools
 """)
-    
+
     print("\n📁 Current Flow Status:")
     flow_file = Path("flows/living_truth_engine_flow.json")
     if flow_file.exists():
-        with open(flow_file, 'r') as f:
+        with open(flow_file, "r") as f:
             flow_data = json.load(f)
         print(f"✅ Flow file exists: {flow_data.get('name', 'Unknown')}")
         print(f"📋 Nodes: {len(flow_data.get('data', {}).get('nodes', []))}")
         print(f"🔗 Edges: {len(flow_data.get('data', {}).get('edges', []))}")
     else:
         print("❌ Flow file not found")
-    
+
     print("\n🎯 Next Steps:")
     print("1. Restart Cursor to load MCP configuration")
     print("2. Test MCP connection: mcp_lf-cursor_list_flows()")
@@ -73,9 +74,10 @@ Example usage in Cursor:
     print("4. Run flow: mcp_lf-cursor_run_flow()")
     print("5. Monitor: mcp_lf-cursor_get_flow_status()")
 
+
 def create_mcp_test_script():
     """Create a test script for MCP operations."""
-    
+
     test_script = """#!/usr/bin/env python3
 \"\"\"
 Test Langflow MCP Operations
@@ -125,22 +127,24 @@ def test_langflow_mcp():
 if __name__ == "__main__":
     test_langflow_mcp()
 """
-    
+
     with open("scripts/setup/test_mcp_operations.py", "w") as f:
         f.write(test_script)
-    
+
     print("✅ Created test script: scripts/setup/test_mcp_operations.py")
+
 
 def main():
     """Main function."""
-    
+
     demonstrate_langflow_mcp_usage()
     create_mcp_test_script()
-    
+
     print("\n🎯 Summary:")
     print("The Langflow MCP server is now configured in .cursor/mcp.json")
     print("Restart Cursor to load the configuration and test the MCP tools")
     print("Use mcp_lf-cursor_* commands to interact with Langflow directly")
 
+
 if __name__ == "__main__":
-    main() 
+    main()

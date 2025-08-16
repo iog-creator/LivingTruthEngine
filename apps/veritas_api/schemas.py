@@ -1,7 +1,9 @@
-from pydantic import BaseModel
-from typing import List, Dict, Optional, Literal
+from typing import Dict, List, Literal, Optional
 
-Connector = Literal["youtube","web","pdf"]
+from pydantic import BaseModel
+
+Connector = Literal["youtube", "web", "pdf"]
+
 
 class RunRequest(BaseModel):
     target: str
@@ -9,16 +11,18 @@ class RunRequest(BaseModel):
     max_items: int = 10
     crawl_depth: int = 1
     gates: Dict[str, float] = {"budget_usd_per_run": 0.0}
-    order: Literal["oldest","newest"] = "oldest"
+    order: Literal["oldest", "newest"] = "oldest"
     video_ids: Optional[List[str]] = None  # optional manual override
+
 
 class JobStatus(BaseModel):
     job_id: str
-    state: Literal["queued","running","done","error","paused"]
+    state: Literal["queued", "running", "done", "error", "paused"]
     stage: Optional[str] = None
     progress: float = 0.0
     metrics: Dict[str, float] = {}
     message: Optional[str] = None
+
 
 class JobResults(BaseModel):
     claims: List[dict]
@@ -26,5 +30,3 @@ class JobResults(BaseModel):
     unity_bridges: List[dict]
     run_folder: str
     notes: Optional[Dict] = None
-
-

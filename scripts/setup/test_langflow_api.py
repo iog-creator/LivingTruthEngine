@@ -6,14 +6,16 @@ Test Langflow API Directly
 Test Langflow API endpoints directly.
 """
 
-import requests
 import json
 import os
 from pathlib import Path
 
+import requests
+
+
 def test_langflow_api():
     """Test Langflow API endpoints."""
-    
+
     # Load environment
     if Path(".env").exists():
         with open(".env", "r") as f:
@@ -21,20 +23,17 @@ def test_langflow_api():
                 if "=" in line and not line.startswith("#"):
                     key, value = line.strip().split("=", 1)
                     os.environ[key] = value
-    
+
     LANGFLOW_API_ENDPOINT = "http://localhost:7860"
     LANGFLOW_API_KEY = os.getenv("LANGFLOW_API_KEY", "admin")
-    
+
     print(f"🔧 Testing Langflow API")
     print(f"   Endpoint: {LANGFLOW_API_ENDPOINT}")
     print(f"   API Key: {LANGFLOW_API_KEY[:10]}...")
     print("=" * 50)
-    
-    headers = {
-        "Content-Type": "application/json",
-        "x-api-key": LANGFLOW_API_KEY
-    }
-    
+
+    headers = {"Content-Type": "application/json", "x-api-key": LANGFLOW_API_KEY}
+
     # Test 1: Health check
     print("\n1. Testing health check...")
     try:
@@ -43,11 +42,13 @@ def test_langflow_api():
         print(f"   Response: {response.text}")
     except Exception as e:
         print(f"   ❌ Health check failed: {e}")
-    
+
     # Test 2: List flows
     print("\n2. Testing list flows...")
     try:
-        response = requests.get(f"{LANGFLOW_API_ENDPOINT}/api/v1/flows/", headers=headers)
+        response = requests.get(
+            f"{LANGFLOW_API_ENDPOINT}/api/v1/flows/", headers=headers
+        )
         print(f"   Status: {response.status_code}")
         if response.status_code == 200:
             flows = response.json()
@@ -56,20 +57,18 @@ def test_langflow_api():
             print(f"   Response: {response.text}")
     except Exception as e:
         print(f"   ❌ List flows failed: {e}")
-    
+
     # Test 3: Create flow
     print("\n3. Testing create flow...")
     try:
         flow_data = {
             "name": "Test Flow",
             "description": "Test flow for API",
-            "data": {
-                "nodes": [],
-                "edges": []
-            }
+            "data": {"nodes": [], "edges": []},
         }
-        response = requests.post(f"{LANGFLOW_API_ENDPOINT}/api/v1/flows/", 
-                               json=flow_data, headers=headers)
+        response = requests.post(
+            f"{LANGFLOW_API_ENDPOINT}/api/v1/flows/", json=flow_data, headers=headers
+        )
         print(f"   Status: {response.status_code}")
         if response.status_code == 200:
             result = response.json()
@@ -79,5 +78,6 @@ def test_langflow_api():
     except Exception as e:
         print(f"   ❌ Create flow failed: {e}")
 
+
 if __name__ == "__main__":
-    test_langflow_api() 
+    test_langflow_api()

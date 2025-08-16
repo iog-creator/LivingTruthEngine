@@ -8,15 +8,15 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from datetime import datetime
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-from src.config import get_config
 from src.analysis.hybrid_retrieval import LMStudioEmbeddings
+from src.config import get_config
 
 try:
     from langchain_community.vectorstores.pgvector import PGVector
@@ -53,19 +53,26 @@ class IngestionPipeline:
         )
 
         # Embeddings (LM Studio)
-        self.embeddings = LMStudioEmbeddings(self.config.model.LMSTUDIO_EMBEDDING_MODEL_QWEN3)
+        self.embeddings = LMStudioEmbeddings(
+            self.config.model.LMSTUDIO_EMBEDDING_MODEL_QWEN3
+        )
 
         # Vector store connection (lazy)
         self._vector_store = None
 
     def _emit(self, event: str, payload: Dict[str, Any]) -> None:
-        record: Dict[str, Any] = {"ts": datetime.utcnow().isoformat() + "Z", "event": event}
+        record: Dict[str, Any] = {
+            "ts": datetime.utcnow().isoformat() + "Z",
+            "event": event,
+        }
         record.update(payload)
         try:
             self.stream_file.parent.mkdir(parents=True, exist_ok=True)
             with self.stream_file.open("a", encoding="utf-8") as f:
                 f.write(json.dumps(record, ensure_ascii=False) + "\n")
-            self.status_file.write_text(json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8")
+            self.status_file.write_text(
+                json.dumps(record, indent=2, ensure_ascii=False), encoding="utf-8"
+            )
         except Exception:
             pass
 
@@ -112,9 +119,13 @@ class IngestionPipeline:
                         logger.warning(f"Failed to read {p}: {e}")
         return docs
 
-    def ingest(self, channel: Optional[str] = None, clear_index: bool = False) -> IngestSummary:
+    def ingest(
+        self, channel: Optional[str] = None, clear_index: bool = False
+    ) -> IngestSummary:
         start = datetime.utcnow().isoformat() + "Z"
-        self._emit("ingest_start", {"channel": channel, "message": "Starting ingestion"})
+        self._emit(
+            "ingest_start", {"channel": channel, "message": "Starting ingestion"}
+        )
 
         docs = self._collect_documents(channel)
         self._emit("ingest_collected", {"count": len(docs)})
@@ -122,8 +133,17 @@ class IngestionPipeline:
 
         if not docs:
             end = datetime.utcnow().isoformat() + "Z"
-            self._emit("ingest_complete", {"channel": channel, "chunks": 0, "message": "No documents"})
-            return IngestSummary(total_files=0, chunks_indexed=0, channel=channel, started_at=start, completed_at=end)
+            self._emit(
+                "ingest_complete",
+                {"channel": channel, "chunks": 0, "message": "No documents"},
+            )
+            return IngestSummary(
+                total_files=0,
+                chunks_indexed=0,
+                channel=channel,
+                started_at=start,
+                completed_at=end,
+            )
 
         # Split into chunks
         chunk_docs: List[Document] = []
@@ -135,7 +155,10 @@ class IngestionPipeline:
 
         # Optionally clear index (not implemented here to avoid destructive ops)
         if clear_index:
-            self._emit("ingest_warning", {"message": "clear_index requested but not implemented (safety)"})
+            self._emit(
+                "ingest_warning",
+                {"message": "clear_index requested but not implemented (safety)"},
+            )
 
         # Upsert to vector store
         try:
@@ -153,8 +176,18 @@ class IngestionPipeline:
             raise
 
         end = datetime.utcnow().isoformat() + "Z"
-        self._emit("ingest_complete", {"channel": channel, "chunks": chunks_total, "message": "Ingestion complete"})
-        return IngestSummary(total_files=len(docs), chunks_indexed=chunks_total, channel=channel, started_at=start, completed_at=end)
-
-
-
+        self._emit(
+            "ingest_complete",
+            {
+                "channel": channel,
+                "chunks": chunks_total,
+                "message": "Ingestion complete",
+            },
+        )
+        return IngestSummary(
+            total_files=len(docs),
+            chunks_indexed=chunks_total,
+            channel=channel,
+            started_at=start,
+            completed_at=end,
+        )
