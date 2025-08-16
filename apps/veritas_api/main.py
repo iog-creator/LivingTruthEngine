@@ -1,10 +1,12 @@
 from fastapi.staticfiles import StaticFiles
 import os
+from pathlib import Path
 
 import redis
 import structlog
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from schemas import JobResults, JobStatus, RunRequest
 from store import create_job, read_results, read_status
 
@@ -22,6 +24,15 @@ try:
     app.mount("/react", StaticFiles(directory="static", html=True), name="react")
 except Exception as e:
     log.warning(f"Could not mount React UI: {e}")
+
+# SPA fallback for client-side routes under /react/*
+@app.get("/react/{path:path}", include_in_schema=False)
+def react_spa_fallback(path: str):
+    index = Path("static/index.html")
+    if index.exists():
+        return HTMLResponse(index.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>React app not built</h1>", status_code=503)
+
 r = redis.from_url(os.getenv("REDIS_URL", "redis://living-truth-redis:6379/0"))
 
 
