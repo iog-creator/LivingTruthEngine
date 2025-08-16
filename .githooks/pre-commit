@@ -1,2 +1,4 @@
 #!/usr/bin/env bash
-python scripts/validate_cursor_rules_frontmatter.py --strict
+set -euo pipefail
+python scripts/validate_cursor_rules_frontmatter.py
+python scripts/meta_precommit_guard.py
