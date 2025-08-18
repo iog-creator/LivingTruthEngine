@@ -293,4 +293,5 @@ fastapi_app.mount("/", WSGIMiddleware(app.server))
 # We'll use a different approach - add it to the Dash app itself
 
 if __name__ == "__main__":
-    app.run_server(debug=True, host="0.0.0.0", port=8050)
+    # Dash 3+: run_server is obsolete; use app.run
+    app.run(debug=True, host="0.0.0.0", port=8050)
