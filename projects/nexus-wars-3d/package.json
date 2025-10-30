@@ -1,0 +1,21 @@
+{
+  "name": "nexus-wars-3d",
+  "version": "0.1.0",
+  "description": "Three.js-powered tug-of-war RTS prototype inspired by Nexus Wars.",
+  "license": "MIT",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "three": "^0.158.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.158.3",
+    "typescript": "^5.3.2",
+    "vite": "^4.5.0"
+  }
+}

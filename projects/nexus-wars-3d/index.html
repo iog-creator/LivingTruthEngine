@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Nexus Wars 3D Tug-of-War</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: "Inter", Arial, sans-serif;
+        background: radial-gradient(circle at top, #0b1a3b, #020409 60%);
+        color: #f5f6fa;
+      }
+      #hud {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background: rgba(3, 9, 18, 0.7);
+        padding: 12px 16px;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+      }
+      button {
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #1f78ff, #5b9eff);
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .resource {
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="hud"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
