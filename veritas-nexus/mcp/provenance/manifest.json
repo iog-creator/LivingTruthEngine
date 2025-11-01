@@ -1,0 +1,8 @@
+{
+  "name": "mcp-provenance",
+  "description": "Sentence hashing + Merkle root",
+  "tools": [
+    {"name":"hash_sentences","input_schema":{"type":"object","properties":{"sentences":{"type":"array","items":{"type":"string"}}},"required":["sentences"]},
+     "output_schema":{"type":"object","properties":{"hashes":{"type":"array","items":{"type":"string"}},"merkle_root":{"type":"string"}}}}
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "mcp-pdf",
+  "description": "Extract PDF text (Phase 1 simple)",
+  "tools": [
+    {
+      "name":"extract_pdf",
+      "input_schema":{"type":"object","properties":{"url":{"type":"string"}},"required":["url"]},
+      "output_schema":{"type":"object","properties":{"doc_id":{"type":"string"},"text":{"type":"string"},"pages":{"type":"integer"}}}
+    }
+  ]
+}

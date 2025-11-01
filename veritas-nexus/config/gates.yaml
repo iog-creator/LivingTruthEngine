@@ -1,0 +1,5 @@
+coverage_required: 1.0
+drift_threshold: 0.15
+margin_threshold: 0.06
+budget_usd_per_run: 0.00
+qwen_boost_allowed: false

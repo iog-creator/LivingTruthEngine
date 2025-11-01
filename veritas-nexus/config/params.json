@@ -1,0 +1,7 @@
+{
+  "retrieval": {"k": 200, "topk_embed": 1000},
+  "rerank": {"m": 100},
+  "validator": {"temperature": 0.0},
+  "generator": {"temperature": 0.2, "max_tokens": 800},
+  "seeds": {"random_seed": 42}
+}

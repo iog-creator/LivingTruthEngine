@@ -76,6 +76,17 @@ The Living Truth Engine is an advanced AI system that combines multiple technolo
 
 ## 🚀 **Quick Start**
 
+### 🎮 Nexus Wars 3D Prototype
+This repository now houses a standalone Three.js tug-of-war prototype under [`projects/nexus-wars-3d`](./projects/nexus-wars-3d). The mini-repo includes its own tooling, changelog, and MIT license so it can be promoted to a dedicated GitHub repository when ready.
+
+```bash
+cd projects/nexus-wars-3d
+npm install
+npm run dev
+```
+
+Visit `http://localhost:5173` to view the battlefield simulation, queue units, and progress through technology tiers.
+
 ### **1. Prerequisites**
 - **Docker**: Latest version with Compose v2
 - **Python 3.13**: With virtual environment support

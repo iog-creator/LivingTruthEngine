@@ -1,0 +1,8 @@
+{
+  "name": "mcp-reranker",
+  "description": "Local reranker with bge-reranker-base",
+  "tools": [
+    {"name":"rerank","input_schema":{"type":"object","properties":{"query":{"type":"string"},"docs":{"type":"array","items":{"type":"string"}}},"required":["query","docs"]},
+     "output_schema":{"type":"object","properties":{"indices":{"type":"array","items":{"type":"integer"}}}}}
+  ]
+}

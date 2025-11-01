@@ -1,0 +1,18 @@
+{
+  "name": "mcp-web",
+  "description": "Fetch web pages with readability",
+  "tools": [
+    {
+      "name": "fetch",
+      "input_schema": {
+        "type": "object",
+        "properties": { "url": {"type":"string"} },
+        "required": ["url"]
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": { "url":{"type":"string"}, "html":{"type":"string"}, "text":{"type":"string"} }
+      }
+    }
+  ]
+}

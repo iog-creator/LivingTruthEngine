@@ -1,0 +1,28 @@
+# Veritas Nexus (Phase 1) — Cursor Rules
+
+## Goals
+- Build a topic-agnostic pipeline that: fetches sources (web + PDFs + YouTube transcripts), canonicalizes with per-sentence proofs (SHA-256 + Merkle), retrieves→reranks→validates claims, and emits an audit-ready report.
+- Models: all local by default; ≤10 GB per model; HF burst disabled in Phase 1.
+- Orchestrator: LangGraph DAG. MCP used only for major modules (web, pdf, llm, embeddings/reranker, provenance, graph). Internal helpers are local functions.
+
+## Non-negotiables
+- Coverage = 100% (every output sentence must have a valid span citation & hash or be dropped).
+- Mean drift < 0.15; outliers > 0.25 are dropped.
+- No AutoGen, no DSPy in Phase 1.
+- No HF GPU endpoints; use serverless only if explicitly enabled later.
+
+## Coding directives
+- Prefer FastAPI for services; Python 3.11.
+- Keep modules small; type hints required; add TODOs not features.
+- For PDFs: start simple (pdfminer/pymupdf) and leave TODO hooks for Docling/Éclair; do not block MVP.
+- Use Redis queue for jobs; never block UI.
+- Write smoke tests for API endpoints.
+
+## MCP policy
+- Provide MCP servers for: web, pdf, llm-local, embeddings/reranker, provenance, graph.
+- Each MCP tool must have a JSON manifest + a Python server entry.
+- Keep schemas minimal and typed.
+
+## Test policy
+- One scripted e2e run: “oldest 10 YouTube videos” of supplied channel, transcripts only, HF burst OFF, Adobe OFF.
+
